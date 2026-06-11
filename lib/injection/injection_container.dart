@@ -10,3 +10,11 @@ Future<void> initInjection() async {
 
   // Feature - Auth (Nanti kita daftarkan RemoteDataSource, Repo, dan Bloc di sini)
 }
+
+// Jangan lupa import file AuthBloc-nya di bagian atas file ini
+  // import '../presentation/blocs/auth/auth_bloc.dart';
+
+  // --- Blocs ---
+  sl.registerFactory<AuthBloc>(
+    () => AuthBloc(authRepository: sl()),
+  );
