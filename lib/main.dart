@@ -12,13 +12,14 @@ void main() async {
   const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
   if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
-    throw Exception("Gagal memuat API Key Supabase. Pastikan flag --dart-define-from-file=.env sudah terpasang.");
+    throw Exception(
+        "Gagal memuat API Key Supabase. Pastikan flag --dart-define-from-file=.env sudah terpasang.");
   }
 
   // 1. Inisialisasi Supabase
   await Supabase.initialize(
     url: supabaseUrl,
-    anonKey: supabaseAnonKey,
+    publishableKey: supabaseAnonKey,
   );
 
   // 2. Inisialisasi Dependency Injection
