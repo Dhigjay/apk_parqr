@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:apk_parqr/domain/repositories/i_auth_repository.dart';
+import 'package:parqr/domain/repositories/i_auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -7,7 +7,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final IAuthRepository authRepository;
 
   AuthBloc({required this.authRepository}) : super(AuthInitial()) {
-    
     // Mengecek apakah user sudah login sebelumnya
     on<AuthCheckStatusRequested>((event, emit) {
       if (authRepository.isLoggedIn) {
@@ -34,7 +33,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         await authRepository.register(event.email, event.password, event.name);
         // Bisa langsung dianggap login setelah register sukses
-        emit(AuthAuthenticated()); 
+        emit(AuthAuthenticated());
+      } catch (e) {
+        emit(AuthError(e.toString()));
+      }
+    });
+
+    // Mengirim email reset password melalui Supabase Auth
+    on<AuthForgotPasswordRequested>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        await authRepository.sendPasswordResetEmail(event.email);
+        emit(AuthPasswordResetEmailSent());
       } catch (e) {
         emit(AuthError(e.toString()));
       }
