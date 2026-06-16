@@ -49,18 +49,18 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
 
 ### Maulana Dhigjay
 
-- [ ] Buat `lib/data/datasources/remote/auth_remote_ds.dart`.
-- [ ] Buat `lib/data/repositories/auth_repo_impl.dart`.
-- [ ] Implementasikan login, register, logout, forgot password menggunakan Supabase Auth.
-- [ ] Pastikan `AuthRepositoryImpl` memenuhi kontrak `IAuthRepository`.
-- [ ] Siapkan struktur awal folder backend sesuai PRD:
+- [x] Buat `lib/data/datasources/remote/auth_remote_ds.dart`.
+- [x] Buat `lib/data/repositories/auth_repo_impl.dart`.
+- [x] Implementasikan login, register, logout, forgot password menggunakan Supabase Auth.
+- [x] Pastikan `AuthRepositoryImpl` memenuhi kontrak `IAuthRepository`.
+- [x] Siapkan struktur awal folder backend sesuai PRD:
   - `lib/data/datasources/remote`
   - `lib/data/datasources/local`
   - `lib/data/models`
   - `lib/data/repositories`
   - `lib/domain/entities`
   - `lib/domain/usecases`
-- [ ] Susun draft SQL migration Supabase untuk tabel inti: `users`, `vehicles`, `parking_lots`, `parking_slots`, `parking_sessions`, `payments`, `operator_verifications`, `operator_registrations`, `notifications`.
+- [x] Susun draft SQL migration Supabase untuk tabel inti: `users`, `vehicles`, `parking_lots`, `parking_slots`, `parking_sessions`, `payments`, `operator_verifications`, `operator_registrations`, `notifications`.
 
 ### Afif Abdilah
 
@@ -97,13 +97,13 @@ Target: user bisa daftar, login, melengkapi profil, dan menambah kendaraan.
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `User`, `Vehicle`, dan mapping `fromJson/toJson`.
-- [ ] Buat repository interface dan implementation untuk user dan vehicle.
-- [ ] Implementasikan Supabase table access untuk profil user.
-- [ ] Implementasikan CRUD kendaraan.
-- [ ] Buat upload foto kendaraan ke Supabase Storage.
-- [ ] Buat RLS policy agar user hanya bisa membaca/mengubah data miliknya.
-- [ ] Buat seed data minimal untuk role admin dan sample user bila diperlukan.
+- [x] Buat model/entity `User`, `Vehicle`, dan mapping `fromJson/toJson`.
+- [x] Buat repository interface dan implementation untuk user dan vehicle.
+- [x] Implementasikan Supabase table access untuk profil user.
+- [x] Implementasikan CRUD kendaraan.
+- [x] Buat upload foto kendaraan ke Supabase Storage.
+- [x] Buat RLS policy agar user hanya bisa membaca/mengubah data miliknya.
+- [x] Buat seed data minimal untuk role admin dan sample user bila diperlukan.
 
 ### Afif Abdilah
 
