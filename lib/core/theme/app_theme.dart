@@ -34,13 +34,15 @@ class AppTheme {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.border),
+            side: const BorderSide(color: AppColors.border),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: AppColors.bgElevated,
           hintStyle: const TextStyle(color: AppColors.textSecondary),
+          prefixIconColor: AppColors.textSecondary,
+          suffixIconColor: AppColors.textSecondary,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: AppColors.border),
@@ -56,6 +58,20 @@ class AppTheme {
           ),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.accentBlue,
+            textStyle:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          ),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: AppColors.bgElevated,
+          contentTextStyle: GoogleFonts.inter(color: AppColors.textPrimary),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(

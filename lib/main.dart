@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/constants/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'injection/injection_container.dart';
@@ -12,7 +13,8 @@ void main() async {
   const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
   if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
-    throw Exception("Gagal memuat API Key Supabase. Pastikan flag --dart-define-from-file=.env sudah terpasang.");
+    throw Exception(
+        "Gagal memuat API Key Supabase. Pastikan flag --dart-define-from-file=.env sudah terpasang.");
   }
 
   // 1. Inisialisasi Supabase
@@ -33,7 +35,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'ParkirKu',
+      title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       routerConfig: AppRouter.router,
