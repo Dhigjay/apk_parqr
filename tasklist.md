@@ -129,12 +129,12 @@ Target: pengunjung bisa mencari lahan parkir, melihat detail, booking, dan menda
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `ParkingLot`, `ParkingSlot`, dan `ParkingSession`.
-- [ ] Buat repository parking lot untuk search, detail, slot tersedia, dan filter.
-- [ ] Buat repository parking session untuk booking dan generate session.
-- [ ] Definisikan payload QR masuk berisi minimal: `session_id`, `type`, `issued_at`, `expires_at`, dan nonce/signature server-side.
-- [ ] Tambahkan validasi QR expired setelah 24 jam bila belum dipakai.
-- [ ] Buat RLS policy untuk sesi parkir user dan operator.
+- [x] Buat model/entity `ParkingLot`, `ParkingSlot`, dan `ParkingSession`.
+- [x] Buat repository parking lot untuk search, detail, slot tersedia, dan filter.
+- [x] Buat repository parking session untuk booking dan generate session.
+- [x] Definisikan payload QR masuk berisi minimal: `session_id`, `type`, `issued_at`, `expires_at`, dan nonce/signature server-side.
+- [x] Tambahkan validasi QR expired setelah 24 jam bila belum dipakai.
+- [x] Buat RLS policy untuk sesi parkir user dan operator.
 
 ### Afif Abdilah
 
