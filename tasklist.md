@@ -196,13 +196,13 @@ Target: operator bisa daftar lahan, scan QR masuk/keluar, lihat dashboard, verif
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `OperatorRegistration`.
-- [ ] Buat backend flow pengajuan operator.
-- [ ] Buat repository operator untuk dashboard, active vehicle list, scan check-in/check-out.
-- [ ] Buat CRUD parking lot, floor, slot, tariff.
-- [ ] Buat query statistik: kendaraan masuk hari ini, aktif, pendapatan hari ini.
-- [ ] Buat Supabase Realtime channel untuk active sessions per operator.
-- [ ] Buat RLS agar operator hanya akses lahan dan sesi miliknya.
+- [x] Buat model/entity `OperatorRegistration`.
+- [x] Buat backend flow pengajuan operator.
+- [x] Buat repository operator untuk dashboard, active vehicle list, scan check-in/check-out.
+- [x] Buat CRUD parking lot, floor, slot, tariff.
+- [x] Buat query statistik: kendaraan masuk hari ini, aktif, pendapatan hari ini.
+- [x] Buat Supabase Realtime channel untuk active sessions per operator.
+- [x] Buat RLS agar operator hanya akses lahan dan sesi miliknya.
 
 ### Afif Abdilah
 
