@@ -13,6 +13,8 @@ import '../data/repositories/vehicle_repo_impl.dart';
 import '../domain/repositories/i_auth_repository.dart';
 import '../domain/repositories/i_user_repository.dart';
 import '../domain/repositories/i_vehicle_repository.dart';
+import '../domain/repositories/i_operator_repository.dart';
+import '../data/repositories/operator_repo_impl.dart';
 
 import '../presentation/blocs/auth/auth_bloc.dart';
 
@@ -43,6 +45,9 @@ Future<void> initInjection() async {
   );
   sl.registerLazySingleton<IVehicleRepository>(
     () => VehicleRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<IOperatorRepository>(
+    () => OperatorRepoImpl(sl()),
   );
 
   // --- Blocs ---

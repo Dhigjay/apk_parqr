@@ -57,4 +57,87 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
       throw Exception('Failed to get available slots: $e');
     }
   }
+
+  @override
+  Future<void> createParkingLot(ParkingLotEntity lot) async {
+    try {
+      final model = ParkingLotModel(
+        id: lot.id,
+        operatorId: lot.operatorId,
+        name: lot.name,
+        address: lot.address,
+        latitude: lot.latitude,
+        longitude: lot.longitude,
+        totalCapacity: lot.totalCapacity,
+        totalFloors: lot.totalFloors,
+        pricePerHour: lot.pricePerHour,
+        photoUrl: lot.photoUrl,
+        createdAt: lot.createdAt,
+      );
+
+      await _supabaseClient.from('parking_lots').insert(model.toJson());
+    } catch (e) {
+      throw Exception('Failed to create parking lot: $e');
+    }
+  }
+
+  @override
+  Future<void> updateParkingLot(ParkingLotEntity lot) async {
+    try {
+      final model = ParkingLotModel(
+        id: lot.id,
+        operatorId: lot.operatorId,
+        name: lot.name,
+        address: lot.address,
+        latitude: lot.latitude,
+        longitude: lot.longitude,
+        totalCapacity: lot.totalCapacity,
+        totalFloors: lot.totalFloors,
+        pricePerHour: lot.pricePerHour,
+        photoUrl: lot.photoUrl,
+        createdAt: lot.createdAt,
+      );
+
+      await _supabaseClient
+          .from('parking_lots')
+          .update(model.toJson())
+          .eq('id', lot.id);
+    } catch (e) {
+      throw Exception('Failed to update parking lot: $e');
+    }
+  }
+
+  @override
+  Future<void> addParkingSlot(ParkingSlotEntity slot) async {
+    try {
+      final model = ParkingSlotModel(
+        id: slot.id,
+        parkingLotId: slot.parkingLotId,
+        code: slot.code,
+        floor: slot.floor,
+        isAvailable: slot.isAvailable,
+      );
+
+      await _supabaseClient.from('parking_slots').insert(model.toJson());
+    } catch (e) {
+      throw Exception('Failed to add parking slot: $e');
+    }
+  }
+
+  @override
+  Future<void> updateParkingSlot(ParkingSlotEntity slot) async {
+    try {
+      final model = ParkingSlotModel(
+        id: slot.id,
+        parkingLotId: slot.parkingLotId,
+        code: slot.code,
+        floor: slot.floor,
+        isAvailable: slot.isAvailable,
+      );
+
+      await _supabaseClient.from('parking_slots').update(model.toJson()).eq('id', slot.id);
+    } catch (e) {
+      throw Exception('Failed to update parking slot: $e');
+    }
+  }
 }
