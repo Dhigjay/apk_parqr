@@ -164,13 +164,13 @@ Target: stopwatch berjalan, user checkout, memilih cash/QRIS, dan mendapatkan QR
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `Payment`.
-- [ ] Buat repository payment untuk create payment, get status, verify cash, dan generate exit QR.
-- [ ] Implementasikan kalkulasi tarif berdasarkan durasi dan tarif per jam.
-- [ ] Pastikan stopwatch/tarif hanya berhenti setelah payment verified.
-- [ ] Siapkan kontrak integrasi QRIS/payment gateway.
-- [ ] Buat Supabase Edge Function atau endpoint webhook untuk update status QRIS.
-- [ ] Buat log `operator_verifications` untuk cash payment.
+- [x] Buat model/entity `Payment`.
+- [x] Buat repository payment untuk create payment, get status, verify cash, dan generate exit QR.
+- [x] Implementasikan kalkulasi tarif berdasarkan durasi dan tarif per jam.
+- [x] Pastikan stopwatch/tarif hanya berhenti setelah payment verified.
+- [x] Siapkan kontrak integrasi QRIS/payment gateway.
+- [x] Buat Supabase Edge Function atau endpoint webhook untuk update status QRIS.
+- [x] Buat log `operator_verifications` untuk cash payment.
 
 ### Afif Abdilah
 
