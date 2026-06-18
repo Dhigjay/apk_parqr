@@ -20,7 +20,7 @@ void main() async {
   // 1. Inisialisasi Supabase
   await Supabase.initialize(
     url: supabaseUrl,
-    anonKey: supabaseAnonKey,
+    publishableKey: supabaseAnonKey,
   );
 
   // 2. Inisialisasi Dependency Injection
