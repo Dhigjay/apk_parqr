@@ -10,48 +10,38 @@ class AuthRemoteDataSource {
 
   bool get isLoggedIn => currentUser != null;
 
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  String? get currentRole {
+    final user = currentUser;
+    if (user == null) {
+      return null;
+    }
+
+    final metadataRole = user.appMetadata['role'] ?? user.userMetadata?['role'];
+    return metadataRole is String && metadataRole.isNotEmpty
+        ? metadataRole
+        : 'user';
+  }
+
+  Future<void> login(String email, String password) async {
     await _supabaseClient.auth.signInWithPassword(
       email: email.trim(),
       password: password,
     );
   }
 
-  Future<void> register({
-    required String email,
-    required String password,
-    required String name,
-  }) async {
-    final response = await _supabaseClient.auth.signUp(
+  Future<void> register(String email, String password, String name, String phone) async {
+    await _supabaseClient.auth.signUp(
       email: email.trim(),
       password: password,
       data: {
         'name': name.trim(),
+        'phone': phone.trim(),
         'role': 'user',
       },
-    );
-
-    final user = response.user;
-    if (user == null) {
-      return;
-    }
-
-    await _supabaseClient.from('users').upsert(
-      {
-        'id': user.id,
-        'email': email.trim(),
-        'full_name': name.trim(),
-        'role': 'user',
-        'profile_completed': false,
-      },
-      onConflict: 'id',
     );
   }
 
-  Future<void> sendPasswordResetEmail({required String email}) async {
+  Future<void> forgotPassword(String email) async {
     await _supabaseClient.auth.resetPasswordForEmail(email.trim());
   }
 

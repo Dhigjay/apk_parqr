@@ -11,25 +11,21 @@ class AuthRepositoryImpl implements IAuthRepository {
   bool get isLoggedIn => _remoteDataSource.isLoggedIn;
 
   @override
+  String? get currentRole => _remoteDataSource.currentRole;
+
+  @override
   Future<void> login(String email, String password) {
-    return _remoteDataSource.login(
-      email: email,
-      password: password,
-    );
+    return _remoteDataSource.login(email, password);
   }
 
   @override
-  Future<void> register(String email, String password, String name) {
-    return _remoteDataSource.register(
-      email: email,
-      password: password,
-      name: name,
-    );
+  Future<void> register(String email, String password, String name, String phone) {
+    return _remoteDataSource.register(email, password, name, phone);
   }
 
   @override
-  Future<void> sendPasswordResetEmail(String email) {
-    return _remoteDataSource.sendPasswordResetEmail(email: email);
+  Future<void> forgotPassword(String email) {
+    return _remoteDataSource.forgotPassword(email);
   }
 
   @override

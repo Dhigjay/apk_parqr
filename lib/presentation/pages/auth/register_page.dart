@@ -12,21 +12,25 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/loading_overlay.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -48,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
         return LoadingOverlay(
           isLoading: state is AuthLoading,
           child: Scaffold(
-            appBar: AppBar(title: const Text(AppStrings.login)),
+            appBar: AppBar(title: const Text(AppStrings.register)),
             body: SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -57,19 +61,12 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 48),
-                      Text(
-                        AppStrings.appName,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineLarge,
+                      AppTextField(
+                        label: AppStrings.fullName,
+                        controller: _nameController,
+                        validator: (value) => Validators.required(value, fieldName: 'Nama Lengkap'),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        AppStrings.tagline,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 16),
                       AppTextField(
                         label: AppStrings.email,
                         controller: _emailController,
@@ -78,26 +75,25 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 16),
                       AppTextField(
+                        label: 'Nomor HP',
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        validator: Validators.phone,
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
                         label: AppStrings.password,
                         controller: _passwordController,
                         obscureText: true,
                         validator: Validators.password,
                       ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () =>
-                              context.go(RouteNames.forgotPassword),
-                          child: const Text(AppStrings.forgotPass),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      AppButton(label: AppStrings.login, onPressed: _submit),
+                      const SizedBox(height: 24),
+                      AppButton(label: AppStrings.register, onPressed: _submit),
                       const SizedBox(height: 16),
                       TextButton(
-                        onPressed: () => context.go(RouteNames.register),
+                        onPressed: () => context.go(RouteNames.login),
                         child: const Text(
-                          '${AppStrings.noAccount}${AppStrings.register}',
+                          '${AppStrings.hasAccount}${AppStrings.login}',
                         ),
                       ),
                     ],
@@ -116,8 +112,10 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
     context.read<AuthBloc>().add(
-          AuthLoginRequested(
+          AuthRegisterRequested(
+            name: _nameController.text,
             email: _emailController.text,
+            phone: _phoneController.text,
             password: _passwordController.text,
           ),
         );
