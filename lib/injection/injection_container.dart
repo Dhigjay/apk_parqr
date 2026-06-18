@@ -14,7 +14,11 @@ import '../domain/repositories/i_auth_repository.dart';
 import '../domain/repositories/i_user_repository.dart';
 import '../domain/repositories/i_vehicle_repository.dart';
 import '../domain/repositories/i_operator_repository.dart';
+import '../domain/repositories/i_admin_repository.dart';
+
 import '../data/repositories/operator_repo_impl.dart';
+import '../data/repositories/admin_repo_impl.dart';
+import '../data/datasources/remote/admin_remote_ds.dart';
 
 import '../presentation/blocs/auth/auth_bloc.dart';
 
@@ -35,6 +39,9 @@ Future<void> initInjection() async {
   sl.registerLazySingleton<VehicleRemoteDataSource>(
     () => VehicleRemoteDataSource(supabaseClient: sl()),
   );
+  sl.registerLazySingleton<AdminRemoteDataSource>(
+    () => AdminRemoteDataSourceImpl(supabase: sl()),
+  );
 
   // --- Repositories ---
   sl.registerLazySingleton<IAuthRepository>(
@@ -48,6 +55,9 @@ Future<void> initInjection() async {
   );
   sl.registerLazySingleton<IOperatorRepository>(
     () => OperatorRepoImpl(sl()),
+  );
+  sl.registerLazySingleton<IAdminRepository>(
+    () => AdminRepositoryImpl(remoteDataSource: sl()),
   );
 
   // --- Blocs ---

@@ -231,15 +231,15 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ### Maulana Dhigjay
 
-- [ ] Buat repository admin untuk daftar pengajuan operator.
-- [ ] Implementasikan approve operator:
+- [x] Buat repository admin untuk daftar pengajuan operator.
+- [x] Implementasikan approve operator:
   - update status pengajuan
   - buat akun operator
   - hubungkan operator dengan parking lot
   - kirim email kredensial atau reset link
-- [ ] Implementasikan reject operator dengan alasan wajib.
-- [ ] Buat query statistik global aplikasi.
-- [ ] Buat RLS/admin policy khusus untuk akses semua data.
+- [x] Implementasikan reject operator dengan alasan wajib.
+- [x] Buat query statistik global aplikasi.
+- [x] Buat RLS/admin policy khusus untuk akses semua data.
 
 ### Afif Abdilah
 
