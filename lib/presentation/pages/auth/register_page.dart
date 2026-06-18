@@ -1,55 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:parqr/core/constants/app_colors.dart';
 import 'package:parqr/core/constants/app_strings.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
-import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/app_text_field.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      context.go(RouteNames.home);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Register siap dihubungkan ke AuthBloc')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text(AppStrings.register)),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
+          padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const _AuthBrandHeader(
-                  title: 'Masuk ke ParQr',
-                  subtitle:
-                      'Kelola parkir, kendaraan, dan pembayaran dari satu aplikasi.',
+                Text('Buat akun ParQr', style: AppTextStyles.h2),
+                const SizedBox(height: 8),
+                Text(
+                  'Daftar untuk mulai mencari tempat parkir dan menyimpan kendaraanmu.',
+                  style: AppTextStyles.bodySecondary,
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 28),
+                AppTextField(
+                  label: AppStrings.fullName,
+                  controller: _nameController,
+                  hintText: 'Nama lengkap',
+                  prefixIcon: Icons.person_outline_rounded,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) =>
+                      (value ?? '').trim().isEmpty ? 'Nama wajib diisi' : null,
+                ),
+                const SizedBox(height: 18),
                 AppTextField(
                   label: AppStrings.email,
                   controller: _emailController,
@@ -66,12 +82,23 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 18),
                 AppTextField(
+                  label: AppStrings.phone,
+                  controller: _phoneController,
+                  hintText: '08xxxxxxxxxx',
+                  prefixIcon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) => (value ?? '').trim().isEmpty
+                      ? 'Nomor HP wajib diisi'
+                      : null,
+                ),
+                const SizedBox(height: 18),
+                AppTextField(
                   label: AppStrings.password,
                   controller: _passwordController,
                   hintText: 'Minimal 6 karakter',
                   prefixIcon: Icons.lock_outline_rounded,
                   obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
                   suffixIcon: IconButton(
                     onPressed: () =>
                         setState(() => _obscurePassword = !_obscurePassword),
@@ -91,28 +118,21 @@ class _LoginPageState extends State<LoginPage> {
                     return null;
                   },
                 ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.push(RouteNames.forgotPassword),
-                    child: const Text(AppStrings.forgotPass),
-                  ),
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 28),
                 AppButton(
-                  label: AppStrings.login,
-                  icon: Icons.login_rounded,
+                  label: AppStrings.register,
+                  icon: Icons.person_add_alt_1_rounded,
                   onPressed: _submit,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(AppStrings.noAccount,
+                    Text(AppStrings.hasAccount,
                         style: AppTextStyles.bodySecondary),
                     TextButton(
-                      onPressed: () => context.push(RouteNames.register),
-                      child: const Text(AppStrings.register),
+                      onPressed: () => context.pop(),
+                      child: const Text(AppStrings.login),
                     ),
                   ],
                 ),
@@ -121,48 +141,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _AuthBrandHeader extends StatelessWidget {
-  const _AuthBrandHeader({
-    required this.title,
-    required this.subtitle,
-  });
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentPurple.withValues(alpha: 0.22),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.local_parking_rounded,
-              size: 42, color: Colors.white),
-        ),
-        const SizedBox(height: 24),
-        Text(AppStrings.appName, style: AppTextStyles.h1),
-        const SizedBox(height: 8),
-        Text(title, style: AppTextStyles.h2),
-        const SizedBox(height: 8),
-        Text(subtitle, style: AppTextStyles.bodySecondary),
-      ],
     );
   }
 }

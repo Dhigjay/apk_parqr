@@ -259,15 +259,15 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ## Sprint 6 - Polish, QA, dan Release
 
-Target: MVP siap diuji sebagai APK internal.
+Target: MVP siap di
 
 ### Maulana Dhigjay
 
-- [ ] Review semua RLS policy.
-- [ ] Tambahkan audit logging untuk event penting: login operator, scan QR, verify payment, approval admin.
-- [ ] Pastikan payment webhook aman dan idempotent.
-- [ ] Buat backup script atau dokumentasi export database.
-- [ ] Tambahkan dokumentasi schema database.
+- [x] Review semua RLS policy.
+- [x] Tambahkan audit logging uji sebagai APK internal.untuk event penting: login operator, scan QR, verify payment, approval admin.
+- [x] Pastikan payment webhook aman dan idempotent.
+- [x] Buat backup script atau dokumentasi export database.
+- [x] Tambahkan dokumentasi schema database.
 
 ### Afif Abdilah
 

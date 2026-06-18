@@ -1,9 +1,7 @@
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/i_user_repository.dart';
 import '../datasources/remote/user_remote_ds.dart';
-import '../models/user_model.dart';
 import '../../core/error/exceptions.dart';
-import '../../core/error/failures.dart';
 
 class UserRepositoryImpl implements IUserRepository {
   final UserRemoteDataSource remoteDataSource;
