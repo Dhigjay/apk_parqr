@@ -63,7 +63,7 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
         throw ServerException(message: 'Failed to approve operator: ${response.data}');
       }
     } on FunctionException catch (e) {
-      throw ServerException(message: e.reason ?? 'Failed to invoke edge function');
+      throw ServerException(message: e.toString());
     } catch (e) {
       throw ServerException(message: e.toString());
     }

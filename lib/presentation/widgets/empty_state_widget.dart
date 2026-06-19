@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
-
-import '../../core/constants/app_colors.dart';
+import 'package:parqr/core/constants/app_colors.dart';
+import 'package:parqr/core/constants/app_text_style.dart';
+import 'package:parqr/presentation/widgets/app_button.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   const EmptyStateWidget({
-    required this.title,
-    this.message,
-    this.icon = Icons.inbox_outlined,
     super.key,
+    required this.title,
+    required this.message,
+    this.icon = Icons.inbox_rounded,
+    this.actionLabel,
+    this.onAction,
   });
 
   final String title;
-  final String? message;
+  final String message;
   final IconData icon;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -22,18 +27,25 @@ class EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: AppColors.textSecondary, size: 48),
-            const SizedBox(height: 12),
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            if (message != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                message!,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.bgElevated,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
               ),
+              child: Icon(icon, color: AppColors.accentBlue, size: 34),
+            ),
+            const SizedBox(height: 18),
+            Text(title, style: AppTextStyles.h3, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(message,
+                style: AppTextStyles.bodySecondary,
+                textAlign: TextAlign.center),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 22),
+              AppButton(label: actionLabel!, onPressed: onAction),
             ],
           ],
         ),

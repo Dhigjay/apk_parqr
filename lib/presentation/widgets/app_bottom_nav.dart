@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:parqr/core/constants/app_colors.dart';
 
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
+    super.key,
     required this.currentIndex,
     required this.onTap,
-    super.key,
   });
 
   final int currentIndex;
@@ -12,20 +13,32 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: onTap,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.history_outlined),
-          label: 'Riwayat',
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.bgCard,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: onTap,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_rounded),
+              label: 'Riwayat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded),
+              label: 'Profil',
+            ),
+          ],
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          label: 'Profil',
-        ),
-      ],
+      ),
     );
   }
 }

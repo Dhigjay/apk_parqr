@@ -20,13 +20,32 @@ serve(async (req) => {
       const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
       const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-      // Update payment status to PAID
-      const { data, error } = await supabase
+      // Fetch payment to check current status (idempotency check)
+      const { data: payment, error: fetchError } = await supabase
         .from('payments')
-        .update({ status: 'PAID', updated_at: new Date().toISOString() })
+        .select('status')
         .eq('id', order_id)
+        .single()
 
-      if (error) throw error
+      if (fetchError) throw fetchError
+
+      // Only update if not already paid
+      if (payment.status !== 'paid') {
+        const { error: updateError } = await supabase
+          .from('payments')
+          .update({ status: 'paid', paid_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .eq('id', order_id)
+
+        if (updateError) throw updateError
+
+        // Log the event
+        await supabase.rpc('log_audit_event', {
+          p_action: 'qris_payment_verified',
+          p_entity_type: 'payment',
+          p_entity_id: order_id,
+          p_metadata: { gross_amount, transaction_status }
+        })
+      }
 
       return new Response(JSON.stringify({ message: 'Payment verified successfully' }), { status: 200 })
     }
