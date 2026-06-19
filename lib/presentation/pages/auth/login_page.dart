@@ -6,6 +6,9 @@ import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/app_text_field.dart';
+import 'package:parqr/presentation/widgets/form_feedback_banner.dart';
+
+enum _FormStatus { idle, loading, error, success }
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,6 +22,8 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  _FormStatus _status = _FormStatus.idle;
+  String? _feedbackMessage;
 
   @override
   void dispose() {
@@ -27,10 +32,31 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      context.go(RouteNames.home);
+  Future<void> _submit() async {
+    FocusScope.of(context).unfocus();
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      setState(() {
+        _status = _FormStatus.error;
+        _feedbackMessage = 'Email dan kata sandi wajib diisi dengan benar.';
+      });
+      return;
     }
+
+    setState(() {
+      _status = _FormStatus.loading;
+      _feedbackMessage = null;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+
+    setState(() {
+      _status = _FormStatus.success;
+      _feedbackMessage = 'Login berhasil. Mengarahkan ke Home.';
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    if (mounted) context.go(RouteNames.home);
   }
 
   @override
@@ -99,10 +125,20 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
+                if (_feedbackMessage != null) ...[
+                  FormFeedbackBanner(
+                    message: _feedbackMessage!,
+                    type: _status == _FormStatus.success
+                        ? FormFeedbackType.success
+                        : FormFeedbackType.error,
+                  ),
+                  const SizedBox(height: 18),
+                ],
                 AppButton(
                   label: AppStrings.login,
                   icon: Icons.login_rounded,
-                  onPressed: _submit,
+                  isLoading: _status == _FormStatus.loading,
+                  onPressed: _status == _FormStatus.loading ? null : _submit,
                 ),
                 const SizedBox(height: 24),
                 Row(
