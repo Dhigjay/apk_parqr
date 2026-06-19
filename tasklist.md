@@ -49,23 +49,23 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
 
 ### Maulana Dhigjay
 
-- [ ] Buat `lib/data/datasources/remote/auth_remote_ds.dart`.
-- [ ] Buat `lib/data/repositories/auth_repo_impl.dart`.
-- [ ] Implementasikan login, register, logout, forgot password menggunakan Supabase Auth.
-- [ ] Pastikan `AuthRepositoryImpl` memenuhi kontrak `IAuthRepository`.
-- [ ] Siapkan struktur awal folder backend sesuai PRD:
+- [x] Buat `lib/data/datasources/remote/auth_remote_ds.dart`.
+- [x] Buat `lib/data/repositories/auth_repo_impl.dart`.
+- [x] Implementasikan login, register, logout, forgot password menggunakan Supabase Auth.
+- [x] Pastikan `AuthRepositoryImpl` memenuhi kontrak `IAuthRepository`.
+- [x] Siapkan struktur awal folder backend sesuai PRD:
   - `lib/data/datasources/remote`
   - `lib/data/datasources/local`
   - `lib/data/models`
   - `lib/data/repositories`
   - `lib/domain/entities`
   - `lib/domain/usecases`
-- [ ] Susun draft SQL migration Supabase untuk tabel inti: `users`, `vehicles`, `parking_lots`, `parking_slots`, `parking_sessions`, `payments`, `operator_verifications`, `operator_registrations`, `notifications`.
+- [x] Susun draft SQL migration Supabase untuk tabel inti: `users`, `vehicles`, `parking_lots`, `parking_slots`, `parking_sessions`, `payments`, `operator_verifications`, `operator_registrations`, `notifications`.
 
 ### Afif Abdilah
 
-- [x] Rapikan nama aplikasi di UI dari placeholder menjadi `ParQr`.
-- [x] Buat shared widget awal:
+- [ ] Rapikan nama aplikasi di UI dari placeholder menjadi `ParQr`.
+- [ ] Buat shared widget awal:
   - `AppButton`
   - `AppTextField`
   - `StatusBadge`
@@ -74,10 +74,10 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
   - `QrDisplayCard`
   - `VehicleCardWidget`
   - `AppBottomNav`
-- [x] Ubah halaman login dari tombol bypass menjadi layout form lengkap.
-- [x] Siapkan layout register dan forgot password.
-- [x] Tambahkan placeholder asset/logo ParQr di `assets/images`.
-- [x] Pastikan tema mengikuti PRD: dark background, card gelap, accent blue/purple, CTA gradient.
+- [ ] Ubah halaman login dari tombol bypass menjadi layout form lengkap.
+- [ ] Siapkan layout register dan forgot password.
+- [ ] Tambahkan placeholder asset/logo ParQr di `assets/images`.
+- [ ] Pastikan tema mengikuti PRD: dark background, card gelap, accent blue/purple, CTA gradient.
 
 ### Shandy Satria
 
@@ -97,13 +97,13 @@ Target: user bisa daftar, login, melengkapi profil, dan menambah kendaraan.
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `User`, `Vehicle`, dan mapping `fromJson/toJson`.
-- [ ] Buat repository interface dan implementation untuk user dan vehicle.
-- [ ] Implementasikan Supabase table access untuk profil user.
-- [ ] Implementasikan CRUD kendaraan.
-- [ ] Buat upload foto kendaraan ke Supabase Storage.
-- [ ] Buat RLS policy agar user hanya bisa membaca/mengubah data miliknya.
-- [ ] Buat seed data minimal untuk role admin dan sample user bila diperlukan.
+- [x] Buat model/entity `User`, `Vehicle`, dan mapping `fromJson/toJson`.
+- [x] Buat repository interface dan implementation untuk user dan vehicle.
+- [x] Implementasikan Supabase table access untuk profil user.
+- [x] Implementasikan CRUD kendaraan.
+- [x] Buat upload foto kendaraan ke Supabase Storage.
+- [x] Buat RLS policy agar user hanya bisa membaca/mengubah data miliknya.
+- [x] Buat seed data minimal untuk role admin dan sample user bila diperlukan.
 
 ### Afif Abdilah
 
@@ -129,12 +129,12 @@ Target: pengunjung bisa mencari lahan parkir, melihat detail, booking, dan menda
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `ParkingLot`, `ParkingSlot`, dan `ParkingSession`.
-- [ ] Buat repository parking lot untuk search, detail, slot tersedia, dan filter.
-- [ ] Buat repository parking session untuk booking dan generate session.
-- [ ] Definisikan payload QR masuk berisi minimal: `session_id`, `type`, `issued_at`, `expires_at`, dan nonce/signature server-side.
-- [ ] Tambahkan validasi QR expired setelah 24 jam bila belum dipakai.
-- [ ] Buat RLS policy untuk sesi parkir user dan operator.
+- [x] Buat model/entity `ParkingLot`, `ParkingSlot`, dan `ParkingSession`.
+- [x] Buat repository parking lot untuk search, detail, slot tersedia, dan filter.
+- [x] Buat repository parking session untuk booking dan generate session.
+- [x] Definisikan payload QR masuk berisi minimal: `session_id`, `type`, `issued_at`, `expires_at`, dan nonce/signature server-side.
+- [x] Tambahkan validasi QR expired setelah 24 jam bila belum dipakai.
+- [x] Buat RLS policy untuk sesi parkir user dan operator.
 
 ### Afif Abdilah
 
@@ -164,13 +164,13 @@ Target: stopwatch berjalan, user checkout, memilih cash/QRIS, dan mendapatkan QR
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `Payment`.
-- [ ] Buat repository payment untuk create payment, get status, verify cash, dan generate exit QR.
-- [ ] Implementasikan kalkulasi tarif berdasarkan durasi dan tarif per jam.
-- [ ] Pastikan stopwatch/tarif hanya berhenti setelah payment verified.
-- [ ] Siapkan kontrak integrasi QRIS/payment gateway.
-- [ ] Buat Supabase Edge Function atau endpoint webhook untuk update status QRIS.
-- [ ] Buat log `operator_verifications` untuk cash payment.
+- [x] Buat model/entity `Payment`.
+- [x] Buat repository payment untuk create payment, get status, verify cash, dan generate exit QR.
+- [x] Implementasikan kalkulasi tarif berdasarkan durasi dan tarif per jam.
+- [x] Pastikan stopwatch/tarif hanya berhenti setelah payment verified.
+- [x] Siapkan kontrak integrasi QRIS/payment gateway.
+- [x] Buat Supabase Edge Function atau endpoint webhook untuk update status QRIS.
+- [x] Buat log `operator_verifications` untuk cash payment.
 
 ### Afif Abdilah
 
@@ -196,13 +196,13 @@ Target: operator bisa daftar lahan, scan QR masuk/keluar, lihat dashboard, verif
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `OperatorRegistration`.
-- [ ] Buat backend flow pengajuan operator.
-- [ ] Buat repository operator untuk dashboard, active vehicle list, scan check-in/check-out.
-- [ ] Buat CRUD parking lot, floor, slot, tariff.
-- [ ] Buat query statistik: kendaraan masuk hari ini, aktif, pendapatan hari ini.
-- [ ] Buat Supabase Realtime channel untuk active sessions per operator.
-- [ ] Buat RLS agar operator hanya akses lahan dan sesi miliknya.
+- [x] Buat model/entity `OperatorRegistration`.
+- [x] Buat backend flow pengajuan operator.
+- [x] Buat repository operator untuk dashboard, active vehicle list, scan check-in/check-out.
+- [x] Buat CRUD parking lot, floor, slot, tariff.
+- [x] Buat query statistik: kendaraan masuk hari ini, aktif, pendapatan hari ini.
+- [x] Buat Supabase Realtime channel untuk active sessions per operator.
+- [x] Buat RLS agar operator hanya akses lahan dan sesi miliknya.
 
 ### Afif Abdilah
 
@@ -231,15 +231,15 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ### Maulana Dhigjay
 
-- [ ] Buat repository admin untuk daftar pengajuan operator.
-- [ ] Implementasikan approve operator:
+- [x] Buat repository admin untuk daftar pengajuan operator.
+- [x] Implementasikan approve operator:
   - update status pengajuan
   - buat akun operator
   - hubungkan operator dengan parking lot
   - kirim email kredensial atau reset link
-- [ ] Implementasikan reject operator dengan alasan wajib.
-- [ ] Buat query statistik global aplikasi.
-- [ ] Buat RLS/admin policy khusus untuk akses semua data.
+- [x] Implementasikan reject operator dengan alasan wajib.
+- [x] Buat query statistik global aplikasi.
+- [x] Buat RLS/admin policy khusus untuk akses semua data.
 
 ### Afif Abdilah
 
@@ -259,15 +259,15 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ## Sprint 6 - Polish, QA, dan Release
 
-Target: MVP siap diuji sebagai APK internal.
+Target: MVP siap di
 
 ### Maulana Dhigjay
 
-- [ ] Review semua RLS policy.
-- [ ] Tambahkan audit logging untuk event penting: login operator, scan QR, verify payment, approval admin.
-- [ ] Pastikan payment webhook aman dan idempotent.
-- [ ] Buat backup script atau dokumentasi export database.
-- [ ] Tambahkan dokumentasi schema database.
+- [x] Review semua RLS policy.
+- [x] Tambahkan audit logging uji sebagai APK internal.untuk event penting: login operator, scan QR, verify payment, approval admin.
+- [x] Pastikan payment webhook aman dan idempotent.
+- [x] Buat backup script atau dokumentasi export database.
+- [x] Tambahkan dokumentasi schema database.
 
 ### Afif Abdilah
 
