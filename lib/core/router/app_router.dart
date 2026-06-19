@@ -6,7 +6,10 @@ import '../../presentation/pages/auth/register_page.dart';
 import '../../presentation/pages/auth/forgot_password_page.dart';
 import '../../presentation/pages/onboarding/add_vehicle_page.dart';
 import '../../presentation/pages/onboarding/complete_profile_page.dart';
+import '../../presentation/pages/user/booking/booking_page.dart';
+import '../../presentation/pages/user/booking/qr_entry_page.dart';
 import '../../presentation/pages/user/home/home_page.dart';
+import '../../presentation/pages/user/parking_detail/parking_detail_page.dart';
 
 class AppRouter {
   AppRouter._();
@@ -42,6 +45,18 @@ class AppRouter {
       GoRoute(
         path: RouteNames.home,
         builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: RouteNames.parkingDetail,
+        builder: (context, state) => const ParkingDetailPage(),
+      ),
+      GoRoute(
+        path: RouteNames.booking,
+        builder: (context, state) => const BookingPage(),
+      ),
+      GoRoute(
+        path: RouteNames.qrEntry,
+        builder: (context, state) => const QrEntryPage(),
       ),
       // Rute lain (operator, payment, admin, dll) akan didaftarkan seiring implementasi modul.
     ],

@@ -138,16 +138,16 @@ Target: pengunjung bisa mencari lahan parkir, melihat detail, booking, dan menda
 
 ### Afif Abdilah
 
-- [ ] Buat home screen lengkap:
+- [x] Buat home screen lengkap:
   - search bar
   - banner daftar lahan
   - list parking card
   - bottom navigation Home/Riwayat/Profil
-- [ ] Buat `parking_card_widget.dart`.
-- [ ] Buat halaman detail parkir: nama, alamat, kapasitas, tarif, lantai, map thumbnail.
-- [ ] Buat halaman booking: pilih kendaraan, pilih slot/lantai, konfirmasi.
-- [ ] Buat halaman QR entry: QR besar, nama parkir, waktu, status menunggu scan operator.
-- [ ] Buat komponen loading skeleton dan empty state untuk hasil pencarian.
+- [x] Buat `parking_card_widget.dart`.
+- [x] Buat halaman detail parkir: nama, alamat, kapasitas, tarif, lantai, map thumbnail.
+- [x] Buat halaman booking: pilih kendaraan, pilih slot/lantai, konfirmasi.
+- [x] Buat halaman QR entry: QR besar, nama parkir, waktu, status menunggu scan operator.
+- [x] Buat komponen loading skeleton dan empty state untuk hasil pencarian.
 
 ### Shandy Satria
 
