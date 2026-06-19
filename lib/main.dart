@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/constants/app_strings.dart';
 import 'core/theme/app_theme.dart';
@@ -11,20 +12,27 @@ void main() async {
   // Load environment variables via --dart-define-from-file
   const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  final hasSupabaseConfig =
+      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 
-  if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+  if (hasSupabaseConfig) {
+    // 1. Inisialisasi Supabase
+    await Supabase.initialize(
+      url: supabaseUrl,
+      publishableKey: supabaseAnonKey,
+    );
+
+    // 2. Inisialisasi Dependency Injection
+    await initInjection();
+  } else if (kDebugMode) {
+    debugPrint(
+      'ParQr berjalan dalam development UI mode: Supabase belum dikonfigurasi.',
+    );
+  } else {
     throw Exception(
-        "Gagal memuat API Key Supabase. Pastikan flag --dart-define-from-file=.env sudah terpasang.");
+      'Gagal memuat API Key Supabase. Pastikan flag --dart-define-from-file=.env sudah terpasang.',
+    );
   }
-
-  // 1. Inisialisasi Supabase
-  await Supabase.initialize(
-    url: supabaseUrl,
-    publishableKey: supabaseAnonKey,
-  );
-
-  // 2. Inisialisasi Dependency Injection
-  await initInjection();
 
   runApp(const MyApp());
 }
