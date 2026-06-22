@@ -7,7 +7,7 @@ import 'package:parqr/presentation/blocs/auth/auth_state.dart';
 class MockAuthRepository implements IAuthRepository {
   bool shouldThrowError = false;
   bool _isLoggedIn = false;
-  String? _role = 'user';
+  final String _role = 'user';
 
   @override
   bool get isLoggedIn => _isLoggedIn;

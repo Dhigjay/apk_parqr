@@ -13,7 +13,7 @@ void main() {
     });
 
     test('calculateTariff returns correct tariff based on duration', () {
-      final tariffPerHour = 5000.0;
+      const tariffPerHour = 5000.0;
       
       // 0 minutes = 0
       expect(StopwatchManager.calculateTariff(const Duration(minutes: 0), tariffPerHour), 0.0);
@@ -29,10 +29,10 @@ void main() {
     });
 
     test('formatDuration returns HH:MM:SS format', () {
-      final duration = const Duration(hours: 1, minutes: 5, seconds: 9);
+      const duration = Duration(hours: 1, minutes: 5, seconds: 9);
       expect(StopwatchManager.formatDuration(duration), "01:05:09");
       
-      final duration2 = const Duration(hours: 12, minutes: 30, seconds: 0);
+      const duration2 = Duration(hours: 12, minutes: 30, seconds: 0);
       expect(StopwatchManager.formatDuration(duration2), "12:30:00");
     });
   });
