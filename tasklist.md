@@ -271,28 +271,28 @@ Target: MVP siap di
 
 ### Afif Abdilah
 
-- [ ] Polish spacing, typography, contrast, dan responsive layout untuk layar 5 sampai 6.7 inci.
-- [ ] Tambahkan animasi transisi yang ringan.
-- [ ] Buat toast/snackbar success, error, info.
-- [ ] Buat empty state yang konsisten.
-- [ ] Pastikan semua text tidak overflow.
-- [ ] Siapkan asset final: logo, ilustrasi empty state, loading/success animation bila ada.
+- [x] Polish spacing, typography, contrast, dan responsive layout untuk layar 5 sampai 6.7 inci.
+- [x] Tambahkan animasi transisi yang ringan.
+- [x] Buat toast/snackbar success, error, info.
+- [x] Buat empty state yang konsisten.
+- [x] Pastikan semua text tidak overflow.
+- [x] Siapkan asset final: logo, ilustrasi empty state, loading/success animation bila ada.
 
 ### Shandy Satria
 
-- [ ] Jalankan `flutter analyze` sampai clean atau semua issue penting tercatat.
-- [ ] Jalankan `flutter test`.
-- [ ] Buat integration test untuk flow utama:
+- [x] Jalankan `flutter analyze` sampai clean atau semua issue penting tercatat.
+- [x] Jalankan `flutter test`.
+- [x] Buat integration test untuk flow utama:
   - register/login
   - tambah kendaraan
   - booking sampai QR masuk
   - scan operator
   - payment cash
   - QR keluar
-- [ ] Siapkan `.env.example`.
-- [ ] Perbarui `README.md` dengan setup, env, run command, dan build command.
-- [ ] Build APK debug/internal testing.
-- [ ] Catat bug hasil QA ke backlog.
+- [x] Siapkan `.env.example`.
+- [x] Perbarui `README.md` dengan setup, env, run command, dan build command.
+- [x] Build APK debug/internal testing.
+- [x] Catat bug hasil QA ke backlog.
 
 ## Kontrak Antar Tim
 

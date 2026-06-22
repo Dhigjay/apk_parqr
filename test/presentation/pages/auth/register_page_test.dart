@@ -42,7 +42,7 @@ void main() {
       expect(find.byType(AppTextField), findsNWidgets(4));
       expect(find.text('Nama Lengkap'), findsOneWidget);
       expect(find.text('Email'), findsOneWidget);
-      expect(find.text('Nomor HP'), findsOneWidget);
+      expect(find.text('No. Handphone'), findsOneWidget);
       expect(find.byType(AppButton), findsOneWidget);
     });
 
@@ -58,10 +58,10 @@ void main() {
       await tester.tap(find.byType(AppButton));
       await tester.pumpAndSettle();
 
-      expect(find.text('Nama Lengkap wajib diisi'), findsOneWidget);
+      expect(find.text('Nama wajib diisi'), findsOneWidget);
       expect(find.text('Email wajib diisi'), findsOneWidget);
       expect(find.text('Nomor HP wajib diisi'), findsOneWidget);
-      expect(find.text('Password wajib diisi'), findsOneWidget);
+      expect(find.text('Kata sandi wajib diisi'), findsOneWidget);
     });
   });
 }

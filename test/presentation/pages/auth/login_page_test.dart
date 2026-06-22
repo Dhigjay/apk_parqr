@@ -52,7 +52,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Email wajib diisi'), findsOneWidget);
-      expect(find.text('Password wajib diisi'), findsOneWidget);
+      expect(find.text('Kata sandi wajib diisi'), findsOneWidget);
     });
     
     testWidgets('shows validation error for invalid email', (WidgetTester tester) async {
@@ -62,7 +62,7 @@ void main() {
       await tester.tap(find.byType(AppButton));
       await tester.pump();
 
-      expect(find.text('Format email tidak valid'), findsOneWidget);
+      expect(find.text('Format email belum valid'), findsOneWidget);
     });
   });
 }
