@@ -107,12 +107,12 @@ Target: user bisa daftar, login, melengkapi profil, dan menambah kendaraan.
 
 ### Afif Abdilah
 
-- [ ] Buat halaman `register_page.dart` sesuai PRD: nama, email, phone, password.
-- [ ] Buat halaman `forgot_password_page.dart`.
-- [ ] Buat halaman `complete_profile_page.dart`: nama lengkap dan alamat.
-- [ ] Buat halaman `add_vehicle_page.dart`: merk, model, jenis, nomor polisi, upload foto.
-- [ ] Tambahkan validasi visual pada field wajib.
-- [ ] Buat state loading, error, success untuk semua form.
+- [x] Buat halaman `register_page.dart` sesuai PRD: nama, email, phone, password.
+- [x] Buat halaman `forgot_password_page.dart`.
+- [x] Buat halaman `complete_profile_page.dart`: nama lengkap dan alamat.
+- [x] Buat halaman `add_vehicle_page.dart`: merk, model, jenis, nomor polisi, upload foto.
+- [x] Tambahkan validasi visual pada field wajib.
+- [x] Buat state loading, error, success untuk semua form.
 
 ### Shandy Satria
 
@@ -138,16 +138,16 @@ Target: pengunjung bisa mencari lahan parkir, melihat detail, booking, dan menda
 
 ### Afif Abdilah
 
-- [ ] Buat home screen lengkap:
+- [x] Buat home screen lengkap:
   - search bar
   - banner daftar lahan
   - list parking card
   - bottom navigation Home/Riwayat/Profil
-- [ ] Buat `parking_card_widget.dart`.
-- [ ] Buat halaman detail parkir: nama, alamat, kapasitas, tarif, lantai, map thumbnail.
-- [ ] Buat halaman booking: pilih kendaraan, pilih slot/lantai, konfirmasi.
-- [ ] Buat halaman QR entry: QR besar, nama parkir, waktu, status menunggu scan operator.
-- [ ] Buat komponen loading skeleton dan empty state untuk hasil pencarian.
+- [x] Buat `parking_card_widget.dart`.
+- [x] Buat halaman detail parkir: nama, alamat, kapasitas, tarif, lantai, map thumbnail.
+- [x] Buat halaman booking: pilih kendaraan, pilih slot/lantai, konfirmasi.
+- [x] Buat halaman QR entry: QR besar, nama parkir, waktu, status menunggu scan operator.
+- [x] Buat komponen loading skeleton dan empty state untuk hasil pencarian.
 
 ### Shandy Satria
 

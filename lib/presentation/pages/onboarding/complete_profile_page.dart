@@ -2,28 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:parqr/core/constants/app_strings.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
+import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/app_text_field.dart';
 import 'package:parqr/presentation/widgets/form_feedback_banner.dart';
 
 enum _FormStatus { idle, loading, error, success }
 
-class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({super.key});
+class CompleteProfilePage extends StatefulWidget {
+  const CompleteProfilePage({super.key});
 
   @override
-  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  State<CompleteProfilePage> createState() => _CompleteProfilePageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _CompleteProfilePageState extends State<CompleteProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _addressController = TextEditingController();
   _FormStatus _status = _FormStatus.idle;
   String? _feedbackMessage;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _fullNameController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -32,7 +35,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (!(_formKey.currentState?.validate() ?? false)) {
       setState(() {
         _status = _FormStatus.error;
-        _feedbackMessage = 'Masukkan email valid untuk menerima link reset.';
+        _feedbackMessage = 'Nama lengkap dan alamat wajib diisi.';
       });
       return;
     }
@@ -47,15 +50,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
     setState(() {
       _status = _FormStatus.success;
-      _feedbackMessage =
-          'Jika email terdaftar, link reset kata sandi akan dikirim.';
+      _feedbackMessage = 'Profil tersimpan. Lanjut tambahkan kendaraan.';
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset Kata Sandi')),
+      appBar: AppBar(title: const Text(AppStrings.completeProfile)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
@@ -64,26 +66,34 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(AppStrings.forgotPass, style: AppTextStyles.h2),
+                Text('Lengkapi profilmu', style: AppTextStyles.h2),
                 const SizedBox(height: 8),
                 Text(
-                  'Masukkan email akun ParQr. Kami akan menyiapkan tautan untuk membuat kata sandi baru.',
+                  'Data ini membantu operator mengenali pemilik kendaraan saat proses parkir.',
                   style: AppTextStyles.bodySecondary,
                 ),
                 const SizedBox(height: 28),
                 AppTextField(
-                  label: AppStrings.email,
-                  controller: _emailController,
-                  hintText: 'nama@email.com',
-                  prefixIcon: Icons.mail_outline_rounded,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.done,
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) return 'Email wajib diisi';
-                    if (!text.contains('@')) return 'Format email belum valid';
-                    return null;
-                  },
+                  label: AppStrings.fullName,
+                  controller: _fullNameController,
+                  hintText: 'Nama sesuai identitas',
+                  prefixIcon: Icons.badge_outlined,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) => (value ?? '').trim().isEmpty
+                      ? 'Nama lengkap wajib diisi'
+                      : null,
+                ),
+                const SizedBox(height: 18),
+                AppTextField(
+                  label: AppStrings.address,
+                  controller: _addressController,
+                  hintText: 'Alamat rumah',
+                  prefixIcon: Icons.home_outlined,
+                  textInputAction: TextInputAction.newline,
+                  maxLines: 4,
+                  validator: (value) => (value ?? '').trim().isEmpty
+                      ? 'Alamat wajib diisi'
+                      : null,
                 ),
                 const SizedBox(height: 28),
                 if (_feedbackMessage != null) ...[
@@ -96,15 +106,19 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   const SizedBox(height: 18),
                 ],
                 AppButton(
-                  label: 'Kirim Link Reset',
-                  icon: Icons.mark_email_read_outlined,
+                  label: AppStrings.save,
+                  icon: Icons.save_outlined,
                   isLoading: _status == _FormStatus.loading,
                   onPressed: _status == _FormStatus.loading ? null : _submit,
                 ),
-                const SizedBox(height: 18),
-                TextButton(
-                  onPressed: () => context.pop(),
-                  child: const Text('Kembali ke Login'),
+                const SizedBox(height: 14),
+                AppButton(
+                  label: 'Lanjut Tambah Kendaraan',
+                  icon: Icons.directions_car_filled_outlined,
+                  variant: AppButtonVariant.secondary,
+                  onPressed: _status == _FormStatus.success
+                      ? () => context.go(RouteNames.addVehicle)
+                      : null,
                 ),
               ],
             ),
