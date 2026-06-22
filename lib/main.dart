@@ -50,7 +50,8 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<AuthBloc>(
           create: (context) {
-            final hasSupabaseConfig = const String.fromEnvironment('SUPABASE_URL').isNotEmpty;
+            final hasSupabaseConfig = const String.fromEnvironment('SUPABASE_URL').isNotEmpty && 
+                                      const String.fromEnvironment('SUPABASE_ANON_KEY').isNotEmpty;
             if (hasSupabaseConfig) {
               return sl<AuthBloc>()..add(AuthCheckStatusRequested());
             }
