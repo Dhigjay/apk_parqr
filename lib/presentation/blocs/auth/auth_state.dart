@@ -14,7 +14,9 @@ class AuthAuthenticated extends AuthState {}
 
 class AuthUnauthenticated extends AuthState {}
 
-class AuthPasswordResetEmailSent extends AuthState {}
+class AuthPasswordResetSent extends AuthState {
+  const AuthPasswordResetSent();
+}
 
 class AuthError extends AuthState {
   final String message;
