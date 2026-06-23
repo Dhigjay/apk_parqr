@@ -31,7 +31,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRegisterRequested>((event, emit) async {
       emit(AuthLoading());
       try {
-        await authRepository.register(event.email, event.password, event.name);
+        await authRepository.register(event.email, event.password, event.name, event.phone);
         // Bisa langsung dianggap login setelah register sukses
         emit(AuthAuthenticated());
       } catch (e) {
@@ -39,12 +39,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     });
 
-    // Mengirim email reset password melalui Supabase Auth
     on<AuthForgotPasswordRequested>((event, emit) async {
       emit(AuthLoading());
       try {
-        await authRepository.sendPasswordResetEmail(event.email);
-        emit(AuthPasswordResetEmailSent());
+        await authRepository.forgotPassword(event.email);
+        emit(const AuthPasswordResetSent());
       } catch (e) {
         emit(AuthError(e.toString()));
       }
