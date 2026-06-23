@@ -15,6 +15,7 @@ class RouteNames {
   static const String payment = '/payment';
   static const String exitQr = '/exit-qr';
   static const String history = '/history';
+  static const String historyDetail = '/history-detail';
   static const String profile = '/profile';
 
   // Operator
