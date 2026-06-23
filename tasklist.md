@@ -64,8 +64,8 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
 
 ### Afif Abdilah
 
-- [ ] Rapikan nama aplikasi di UI dari placeholder menjadi `ParQr`.
-- [ ] Buat shared widget awal:
+- [x] Rapikan nama aplikasi di UI dari placeholder menjadi `ParQr`.
+- [x] Buat shared widget awal:
   - `AppButton`
   - `AppTextField`
   - `StatusBadge`
@@ -74,10 +74,10 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
   - `QrDisplayCard`
   - `VehicleCardWidget`
   - `AppBottomNav`
-- [ ] Ubah halaman login dari tombol bypass menjadi layout form lengkap.
-- [ ] Siapkan layout register dan forgot password.
-- [ ] Tambahkan placeholder asset/logo ParQr di `assets/images`.
-- [ ] Pastikan tema mengikuti PRD: dark background, card gelap, accent blue/purple, CTA gradient.
+- [x] Ubah halaman login dari tombol bypass menjadi layout form lengkap.
+- [x] Siapkan layout register dan forgot password.
+- [x] Tambahkan placeholder asset/logo ParQr di `assets/images`.
+- [x] Pastikan tema mengikuti PRD: dark background, card gelap, accent blue/purple, CTA gradient.
 
 ### Shandy Satria
 
