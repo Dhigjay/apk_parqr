@@ -11,7 +11,7 @@ class AppSnackbar {
   }
 
   static void showInfo(BuildContext context, String message) {
-    _show(context, message, AppColors.primary, Icons.info);
+    _show(context, message, AppColors.accentBlue, Icons.info);
   }
 
   static void _show(
