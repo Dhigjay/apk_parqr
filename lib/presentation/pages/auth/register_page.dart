@@ -5,6 +5,11 @@ import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/app_text_field.dart';
 import 'package:parqr/presentation/widgets/form_feedback_banner.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:parqr/presentation/blocs/auth/auth_bloc.dart';
+import 'package:parqr/presentation/blocs/auth/auth_event.dart';
+import 'package:parqr/presentation/blocs/auth/auth_state.dart';
+import 'package:parqr/core/router/route_names.dart';
 
 enum _FormStatus { idle, loading, error, success }
 
@@ -22,8 +27,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  _FormStatus _status = _FormStatus.idle;
-  String? _feedbackMessage;
 
   @override
   void dispose() {
@@ -34,43 +37,39 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  void _submit() {
     FocusScope.of(context).unfocus();
-    if (!(_formKey.currentState?.validate() ?? false)) {
-      setState(() {
-        _status = _FormStatus.error;
-        _feedbackMessage = 'Lengkapi semua field wajib sebelum daftar.';
-      });
-      return;
+    if (_formKey.currentState?.validate() ?? false) {
+      context.read<AuthBloc>().add(
+            AuthRegisterRequested(
+              email: _emailController.text,
+              password: _passwordController.text,
+              name: _nameController.text,
+              phone: _phoneController.text,
+            ),
+          );
     }
-
-    setState(() {
-      _status = _FormStatus.loading;
-      _feedbackMessage = null;
-    });
-
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-
-    setState(() {
-      _status = _FormStatus.success;
-      _feedbackMessage =
-          'Akun siap dibuat. Integrasi AuthBloc akan mengirim data ini ke Supabase.';
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.register)),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          context.go(RouteNames.home);
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(title: const Text(AppStrings.register)),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                 Text('Buat akun ParQr', style: AppTextStyles.h2),
                 const SizedBox(height: 8),
                 Text(
@@ -141,20 +140,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                 ),
                 const SizedBox(height: 28),
-                if (_feedbackMessage != null) ...[
+                if (state is AuthError) ...[
                   FormFeedbackBanner(
-                    message: _feedbackMessage!,
-                    type: _status == _FormStatus.success
-                        ? FormFeedbackType.success
-                        : FormFeedbackType.error,
+                    message: state.message,
+                    type: FormFeedbackType.error,
                   ),
                   const SizedBox(height: 18),
                 ],
                 AppButton(
                   label: AppStrings.register,
                   icon: Icons.person_add_alt_1_rounded,
-                  isLoading: _status == _FormStatus.loading,
-                  onPressed: _status == _FormStatus.loading ? null : _submit,
+                  isLoading: state is AuthLoading,
+                  onPressed: state is AuthLoading ? null : _submit,
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -173,6 +170,8 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ),
+    );
+    },
     );
   }
 }
