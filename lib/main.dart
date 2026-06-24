@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/constants/app_strings.dart';
 import 'core/theme/app_theme.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/auth/auth_event.dart';
 import 'injection/injection_container.dart';
+import 'presentation/blocs/auth/auth_bloc.dart';
+import 'presentation/blocs/auth/auth_event.dart';
 import 'domain/repositories/i_auth_repository.dart';
 
 void main() async {
@@ -22,8 +25,8 @@ void main() async {
   if (hasSupabaseConfig) {
     // 1. Inisialisasi Supabase
     await Supabase.initialize(
-      url: supabaseUrl,
-      publishableKey: supabaseAnonKey,
+      url: 'https://rtchxgkayaquwzuicuzy.supabase.co',
+      publishableKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Y2h4Z2theWFxdXd6dWljdXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDg4MzMsImV4cCI6MjA5NjU4NDgzM30.mSCi-u3KD55EQJgbiA1yu9cvbcAi_Sq6OeU1vfXsy_g',
     );
 
     // 2. Inisialisasi Dependency Injection
