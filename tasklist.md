@@ -97,11 +97,11 @@ Target: user bisa daftar, login, melengkapi profil, dan menambah kendaraan.
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `User`, `Vehicle`, dan mapping `fromJson/toJson`.
-- [ ] Buat repository interface dan implementation untuk user dan vehicle.
-- [ ] Implementasikan Supabase table access untuk profil user.
-- [ ] Implementasikan CRUD kendaraan.
-- [ ] Buat upload foto kendaraan ke Supabase Storage.
+- [x] Buat model/entity `User`, `Vehicle`, dan mapping `fromJson/toJson`.
+- [x] Buat repository interface dan implementation untuk user dan vehicle.
+- [x] Implementasikan Supabase table access untuk profil user.
+- [x] Implementasikan CRUD kendaraan.
+- [x] Buat upload foto kendaraan ke Supabase Storage.
 - [ ] Buat RLS policy agar user hanya bisa membaca/mengubah data miliknya.
 - [ ] Buat seed data minimal untuk role admin dan sample user bila diperlukan.
 
@@ -120,8 +120,8 @@ Target: user bisa daftar, login, melengkapi profil, dan menambah kendaraan.
 - [x] Buat `ProfileCubit` dan `VehicleCubit`.
 - [x] Atur flow setelah register: login/register sukses -> complete profile -> add vehicle -> home.
 - [x] Tambahkan validasi client-side untuk email, password, nomor HP, nomor polisi.
-- [x] Buat unit test dasar untuk auth bloc/cubit.
-- [x] Buat widget test untuk login/register form.
+- [ ] Buat unit test dasar untuk auth bloc/cubit.
+- [ ] Buat widget test untuk login/register form.
 
 ## Sprint 2 - User Flow Parkir
 
@@ -129,9 +129,9 @@ Target: pengunjung bisa mencari lahan parkir, melihat detail, booking, dan menda
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `ParkingLot`, `ParkingSlot`, dan `ParkingSession`.
-- [ ] Buat repository parking lot untuk search, detail, slot tersedia, dan filter.
-- [ ] Buat repository parking session untuk booking dan generate session.
+- [x] Buat model/entity `ParkingLot`, `ParkingSlot`, dan `ParkingSession`.
+- [x] Buat repository parking lot untuk search, detail, slot tersedia, dan filter.
+- [x] Buat repository parking session untuk booking dan generate session.
 - [ ] Definisikan payload QR masuk berisi minimal: `session_id`, `type`, `issued_at`, `expires_at`, dan nonce/signature server-side.
 - [ ] Tambahkan validasi QR expired setelah 24 jam bila belum dipakai.
 - [ ] Buat RLS policy untuk sesi parkir user dan operator.
@@ -147,11 +147,11 @@ Target: pengunjung bisa mencari lahan parkir, melihat detail, booking, dan menda
 - [x] Buat halaman detail parkir: nama, alamat, kapasitas, tarif, lantai, map thumbnail.
 - [x] Buat halaman booking: pilih kendaraan, pilih slot/lantai, konfirmasi.
 - [x] Buat halaman QR entry: QR besar, nama parkir, waktu, status menunggu scan operator.
-- [x] Buat komponen loading skeleton dan empty state untuk hasil pencarian.
+- [ ] Buat komponen loading skeleton dan empty state untuk hasil pencarian.
 
 ### Shandy Satria
 
-- [ ] Buat `ParkingSessionBloc`.
+- [x] Buat `ParkingSessionBloc`.
 - [ ] Hubungkan home/detail/booking/QR entry dengan repository Maulana.
 - [ ] Integrasikan `qr_flutter` untuk QR masuk.
 - [ ] Tambahkan permission dan utilitas lokasi untuk "Simpan Lokasi Kendaraan".
@@ -164,9 +164,9 @@ Target: stopwatch berjalan, user checkout, memilih cash/QRIS, dan mendapatkan QR
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `Payment`.
-- [ ] Buat repository payment untuk create payment, get status, verify cash, dan generate exit QR.
-- [ ] Implementasikan kalkulasi tarif berdasarkan durasi dan tarif per jam.
+- [x] Buat model/entity `Payment`.
+- [x] Buat repository payment untuk create payment, get status, verify cash, dan generate exit QR.
+- [x] Implementasikan kalkulasi tarif berdasarkan durasi dan tarif per jam.
 - [ ] Pastikan stopwatch/tarif hanya berhenti setelah payment verified.
 - [ ] Siapkan kontrak integrasi QRIS/payment gateway.
 - [ ] Buat Supabase Edge Function atau endpoint webhook untuk update status QRIS.
@@ -184,11 +184,11 @@ Target: stopwatch berjalan, user checkout, memilih cash/QRIS, dan mendapatkan QR
 ### Shandy Satria
 
 - [x] Buat `PaymentCubit`.
-- [x] Hubungkan active parking ke session realtime.
+- [ ] Hubungkan active parking ke session realtime.
 - [x] Implementasikan timer/stopwatch yang tahan navigasi antar halaman.
-- [x] Integrasikan polling/realtime status pembayaran.
-- [x] Integrasikan `qr_flutter` untuk QR keluar.
-- [x] Buat test perhitungan durasi dan status payment.
+- [ ] Integrasikan polling/realtime status pembayaran.
+- [ ] Integrasikan `qr_flutter` untuk QR keluar.
+- [ ] Buat test perhitungan durasi dan status payment.
 
 ## Sprint 4 - Fitur Operator
 
@@ -196,9 +196,9 @@ Target: operator bisa daftar lahan, scan QR masuk/keluar, lihat dashboard, verif
 
 ### Maulana Dhigjay
 
-- [ ] Buat model/entity `OperatorRegistration`.
+- [x] Buat model/entity `OperatorRegistration`.
 - [ ] Buat backend flow pengajuan operator.
-- [ ] Buat repository operator untuk dashboard, active vehicle list, scan check-in/check-out.
+- [x] Buat repository operator untuk dashboard, active vehicle list, scan check-in/check-out.
 - [ ] Buat CRUD parking lot, floor, slot, tariff.
 - [ ] Buat query statistik: kendaraan masuk hari ini, aktif, pendapatan hari ini.
 - [ ] Buat Supabase Realtime channel untuk active sessions per operator.
@@ -217,13 +217,13 @@ Target: operator bisa daftar lahan, scan QR masuk/keluar, lihat dashboard, verif
 
 ### Shandy Satria
 
-- [x] Integrasikan `mobile_scanner` untuk scan QR masuk/keluar.
-- [x] Buat validasi tipe QR: entry vs exit.
+- [ ] Integrasikan `mobile_scanner` untuk scan QR masuk/keluar.
+- [ ] Buat validasi tipe QR: entry vs exit.
 - [x] Buat `OperatorDashboardCubit`.
-- [x] Hubungkan dashboard operator dengan realtime sessions.
-- [x] Hubungkan verifikasi cash ke payment repository.
-- [x] Tambahkan error handling saat QR invalid, expired, atau bukan milik operator.
-- [x] Buat integration test alur scan masuk dan scan keluar.
+- [ ] Hubungkan dashboard operator dengan realtime sessions.
+- [ ] Hubungkan verifikasi cash ke payment repository.
+- [ ] Tambahkan error handling saat QR invalid, expired, atau bukan milik operator.
+- [ ] Buat integration test alur scan masuk dan scan keluar.
 
 ## Sprint 5 - Fitur Admin
 
@@ -231,7 +231,7 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ### Maulana Dhigjay
 
-- [ ] Buat repository admin untuk daftar pengajuan operator.
+- [x] Buat repository admin untuk daftar pengajuan operator.
 - [ ] Implementasikan approve operator:
   - update status pengajuan
   - buat akun operator
@@ -251,11 +251,11 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ### Shandy Satria
 
-- [x] Buat route guard admin.
+- [ ] Buat route guard admin.
 - [x] Buat cubit/bloc admin approval.
-- [x] Hubungkan approve/reject ke repository admin.
+- [ ] Hubungkan approve/reject ke repository admin.
 - [x] Tambahkan konfirmasi dialog sebelum approve/reject.
-- [x] Buat widget test untuk approval list dan approval detail.
+- [ ] Buat widget test untuk approval list dan approval detail.
 
 ## Sprint 6 - Polish, QA, dan Release
 
@@ -263,36 +263,36 @@ Target: MVP siap di
 
 ### Maulana Dhigjay
 
-- [x] Review semua RLS policy.
-- [x] Tambahkan audit logging uji sebagai APK internal.untuk event penting: login operator, scan QR, verify payment, approval admin.
-- [x] Pastikan payment webhook aman dan idempotent.
-- [x] Buat backup script atau dokumentasi export database.
-- [x] Tambahkan dokumentasi schema database.
+- [ ] Review semua RLS policy.
+- [ ] Tambahkan audit logging uji sebagai APK internal.untuk event penting: login operator, scan QR, verify payment, approval admin.
+- [ ] Pastikan payment webhook aman dan idempotent.
+- [ ] Buat backup script atau dokumentasi export database.
+- [ ] Tambahkan dokumentasi schema database.
 
 ### Afif Abdilah
 
-- [x] Polish spacing, typography, contrast, dan responsive layout untuk layar 5 sampai 6.7 inci.
-- [x] Tambahkan animasi transisi yang ringan.
+- [ ] Polish spacing, typography, contrast, dan responsive layout untuk layar 5 sampai 6.7 inci.
+- [ ] Tambahkan animasi transisi yang ringan.
 - [x] Buat toast/snackbar success, error, info.
 - [x] Buat empty state yang konsisten.
-- [x] Pastikan semua text tidak overflow.
-- [x] Siapkan asset final: logo, ilustrasi empty state, loading/success animation bila ada.
+- [ ] Pastikan semua text tidak overflow.
+- [ ] Siapkan asset final: logo, ilustrasi empty state, loading/success animation bila ada.
 
 ### Shandy Satria
 
-- [x] Jalankan `flutter analyze` sampai clean atau semua issue penting tercatat.
-- [x] Jalankan `flutter test`.
-- [x] Buat integration test untuk flow utama:
+- [ ] Jalankan `flutter analyze` sampai clean atau semua issue penting tercatat.
+- [ ] Jalankan `flutter test`.
+- [ ] Buat integration test untuk flow utama:
   - register/login
   - tambah kendaraan
   - booking sampai QR masuk
   - scan operator
   - payment cash
   - QR keluar
-- [x] Siapkan `.env.example`.
-- [x] Perbarui `README.md` dengan setup, env, run command, dan build command.
-- [x] Build APK debug/internal testing.
-- [x] Catat bug hasil QA ke backlog.
+- [ ] Siapkan `.env.example`.
+- [ ] Perbarui `README.md` dengan setup, env, run command, dan build command.
+- [ ] Build APK debug/internal testing.
+- [ ] Catat bug hasil QA ke backlog.
 
 ## Kontrak Antar Tim
 
