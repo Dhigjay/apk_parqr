@@ -1,4 +1,6 @@
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../injection/injection_container.dart';
 import 'route_names.dart';
 import '../../presentation/pages/splash/splash_page.dart';
 import '../../presentation/pages/auth/login_page.dart';
@@ -17,6 +19,17 @@ import '../../presentation/pages/user/payment/exit_qr_page.dart';
 import '../../presentation/pages/user/history/history_page.dart';
 import '../../presentation/pages/user/history/history_detail_page.dart';
 import '../../presentation/widgets/status_badge.dart';
+
+// Operator Pages
+import '../../presentation/pages/operator/registration/operator_register_page.dart';
+import '../../presentation/pages/operator/dashboard/operator_dashboard_page.dart';
+import '../../presentation/pages/operator/scanner/qr_scanner_page.dart';
+import '../../presentation/pages/operator/vehicle_detail/scanned_vehicle_page.dart';
+import '../../presentation/pages/operator/lot_management/lot_management_page.dart';
+import '../../presentation/pages/operator/lot_management/add_edit_lot_page.dart';
+
+// Cubits
+import '../../presentation/blocs/operator/operator_dashboard_cubit.dart';
 
 class AppRouter {
   AppRouter._();
@@ -143,6 +156,64 @@ class AppRouter {
             statusLabel: statusLabel,
             statusType: statusType,
             isOngoing: isOngoing,
+          );
+        },
+      ),
+      
+      // Operator Routes
+      GoRoute(
+        path: RouteNames.operatorRegister,
+        builder: (context, state) => const OperatorRegisterPage(),
+      ),
+      GoRoute(
+        path: RouteNames.operatorDashboard,
+        builder: (context, state) => BlocProvider<OperatorDashboardCubit>(
+          create: (context) => sl<OperatorDashboardCubit>(),
+          child: const OperatorDashboardPage(),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.qrScanner,
+        builder: (context, state) => const QrScannerPage(),
+      ),
+      GoRoute(
+        path: RouteNames.lotManagement,
+        builder: (context, state) => const LotManagementPage(),
+      ),
+      GoRoute(
+        path: RouteNames.addEditLot,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return AddEditLotPage(
+            initialName: extra?['name'] as String? ?? '',
+            initialAddress: extra?['address'] as String? ?? '',
+            initialCapacity: extra?['capacity'] as int? ?? 0,
+            initialFloors: extra?['floors'] as int? ?? 0,
+            initialPricePerHour: extra?['pricePerHour'] as double? ?? 0.0,
+          );
+        },
+      ),
+      GoRoute(
+        path: RouteNames.scannedVehicle,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final qrPayload = extra?['qrPayload'] as String?;
+          final sessionId = extra?['sessionId'] as String? ?? 'session-scanned-001';
+          final vehicleName = extra?['vehicleName'] as String? ?? 'Toyota Avanza';
+          final licensePlate = extra?['licensePlate'] as String? ?? 'B 1234 XY';
+          final checkInTimeStr = extra?['checkInTime'] as String? ?? DateTime.now().toIso8601String();
+          final checkInTime = DateTime.tryParse(checkInTimeStr) ?? DateTime.now();
+          final floor = extra?['floor'] as String? ?? 'Lantai 1';
+          final currentTariff = extra?['currentTariff'] as double? ?? 0.0;
+
+          return ScannedVehiclePage(
+            qrPayload: qrPayload,
+            sessionId: sessionId,
+            vehicleName: vehicleName,
+            licensePlate: licensePlate,
+            checkInTime: checkInTime,
+            floor: floor,
+            currentTariff: currentTariff,
           );
         },
       ),

@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/constants/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/auth/auth_event.dart';
 import 'injection/injection_container.dart';
-import 'presentation/blocs/auth/auth_bloc.dart';
-import 'presentation/blocs/auth/auth_event.dart';
-import 'domain/repositories/i_auth_repository.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,18 +48,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class _DummyAuthRepository implements IAuthRepository {
-  @override
-  Future<void> login(String email, String password) async {}
-  @override
-  Future<void> register(
-      String email, String password, String name, String phone) async {}
-  @override
-  Future<void> forgotPassword(String email) async {}
-  @override
-  Future<void> logout() async {}
-  @override
-  bool get isLoggedIn => false;
-  @override
-  String? get currentRole => null;
-}

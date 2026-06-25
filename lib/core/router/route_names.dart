@@ -23,6 +23,8 @@ class RouteNames {
   static const String operatorDashboard = '/operator-dashboard';
   static const String qrScanner = '/qr-scanner';
   static const String lotManagement = '/lot-management';
+  static const String scannedVehicle = '/scanned-vehicle';
+  static const String addEditLot = '/add-edit-lot';
 
   // Admin
   static const String adminDashboard = '/admin-dashboard';
