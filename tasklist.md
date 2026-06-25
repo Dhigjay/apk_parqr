@@ -64,8 +64,8 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
 
 ### Afif Abdilah
 
-- [x] Rapikan nama aplikasi di UI dari placeholder menjadi `ParQr`.
-- [x] Buat shared widget awal:
+- [ ] Rapikan nama aplikasi di UI dari placeholder menjadi `ParQr`.
+- [ ] Buat shared widget awal:
   - `AppButton`
   - `AppTextField`
   - `StatusBadge`
@@ -74,22 +74,22 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
   - `QrDisplayCard`
   - `VehicleCardWidget`
   - `AppBottomNav`
-- [x] Ubah halaman login dari tombol bypass menjadi layout form lengkap.
-- [x] Siapkan layout register dan forgot password.
-- [x] Tambahkan placeholder asset/logo ParQr di `assets/images`.
-- [x] Pastikan tema mengikuti PRD: dark background, card gelap, accent blue/purple, CTA gradient.
+- [ ] Ubah halaman login dari tombol bypass menjadi layout form lengkap.
+- [ ] Siapkan layout register dan forgot password.
+- [ ] Tambahkan placeholder asset/logo ParQr di `assets/images`.
+- [ ] Pastikan tema mengikuti PRD: dark background, card gelap, accent blue/purple, CTA gradient.
 
 ### Shandy Satria
 
-- [x] Betulkan semua import package agar konsisten dengan nama package `parqr`.
-- [x] Daftarkan route awal untuk register, forgot password, complete profile, add vehicle, home, history, profile.
-- [x] Tambahkan `BlocProvider` untuk `AuthBloc` pada level aplikasi atau route yang relevan.
-- [x] Buat route guard awal:
+- [ ] Betulkan semua import package agar konsisten dengan nama package `parqr`.
+- [ ] Daftarkan route awal untuk register, forgot password, complete profile, add vehicle, home, history, profile.
+- [ ] Tambahkan `BlocProvider` untuk `AuthBloc` pada level aplikasi atau route yang relevan.
+- [ ] Buat route guard awal:
   - user belum login diarahkan ke login
   - user login diarahkan sesuai role
   - role operator/admin tidak bisa masuk halaman user yang tidak sesuai
-- [x] Jalankan ulang `flutter analyze` setelah blocker import dibereskan.
-- [x] Dokumentasikan cara menjalankan app dengan `--dart-define` atau `--dart-define-from-file`.
+- [ ] Jalankan ulang `flutter analyze` setelah blocker import dibereskan.
+- [ ] Dokumentasikan cara menjalankan app dengan `--dart-define` atau `--dart-define-from-file`.
 
 ## Sprint 1 - Autentikasi, Profil, dan Kendaraan
 
@@ -237,9 +237,9 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
   - buat akun operator
   - hubungkan operator dengan parking lot
   - kirim email kredensial atau reset link
-- [ ] Implementasikan reject operator dengan alasan wajib.
-- [ ] Buat query statistik global aplikasi.
-- [ ] Buat RLS/admin policy khusus untuk akses semua data.
+- [x] Implementasikan reject operator dengan alasan wajib.
+- [x] Buat query statistik global aplikasi.
+- [x] Buat RLS/admin policy khusus untuk akses semua data.
 
 ### Afif Abdilah
 
@@ -259,7 +259,7 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ## Sprint 6 - Polish, QA, dan Release
 
-Target: MVP siap di
+Target: MVP siap diuji sebagai APK internal.
 
 ### Maulana Dhigjay
 
