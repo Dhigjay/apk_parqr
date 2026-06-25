@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:parqr/core/constants/app_colors.dart';
 import 'package:parqr/core/constants/app_strings.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
-import 'package:parqr/presentation/widgets/app_text_field.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parqr/presentation/blocs/auth/auth_bloc.dart';
 import 'package:parqr/presentation/blocs/auth/auth_event.dart';
 import 'package:parqr/presentation/blocs/auth/auth_state.dart';
+import 'package:parqr/presentation/widgets/app_text_field.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
