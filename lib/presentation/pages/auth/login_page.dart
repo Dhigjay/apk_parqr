@@ -32,6 +32,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _submit() {
+    FocusScope.of(context).unfocus();
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
             AuthLoginRequested(
@@ -57,87 +58,89 @@ class _LoginPageState extends State<LoginPage> {
       builder: (context, state) {
         return Scaffold(
           body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const _AuthBrandHeader(
-                  title: 'Masuk ke ParQr',
-                  subtitle:
-                      'Kelola parkir, kendaraan, dan pembayaran dari satu aplikasi.',
-                ),
-                const SizedBox(height: 36),
-                AppTextField(
-                  label: AppStrings.email,
-                  controller: _emailController,
-                  hintText: 'nama@email.com',
-                  prefixIcon: Icons.mail_outline_rounded,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) return 'Email wajib diisi';
-                    if (!text.contains('@')) return 'Format email belum valid';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 18),
-                AppTextField(
-                  label: AppStrings.password,
-                  controller: _passwordController,
-                  hintText: 'Minimal 6 karakter',
-                  prefixIcon: Icons.lock_outline_rounded,
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  suffixIcon: IconButton(
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off_rounded
-                          : Icons.visibility_rounded,
-                    ),
-                  ),
-                  validator: (value) {
-                    if ((value ?? '').isEmpty) {
-                      return 'Kata sandi wajib diisi';
-                    }
-                    if ((value ?? '').length < 6) {
-                      return 'Kata sandi minimal 6 karakter';
-                    }
-                    return null;
-                  },
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.push(RouteNames.forgotPassword),
-                    child: const Text(AppStrings.forgotPass),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                AppButton(
-                  label: AppStrings.login,
-                  icon: Icons.login_rounded,
-                  isLoading: state is AuthLoading,
-                  onPressed: _submit,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(AppStrings.noAccount,
-                        style: AppTextStyles.bodySecondary),
-                    TextButton(
-                      onPressed: () => context.push(RouteNames.register),
-                      child: const Text(AppStrings.register),
+                    const _AuthBrandHeader(
+                      title: 'Masuk ke ParQr',
+                      subtitle:
+                          'Kelola parkir, kendaraan, dan pembayaran dari satu aplikasi.',
+                    ),
+                    const SizedBox(height: 36),
+                    AppTextField(
+                      label: AppStrings.email,
+                      controller: _emailController,
+                      hintText: 'nama@email.com',
+                      prefixIcon: Icons.mail_outline_rounded,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        if (text.isEmpty) return 'Email wajib diisi';
+                        if (!text.contains('@')) return 'Format email belum valid';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 18),
+                    AppTextField(
+                      label: AppStrings.password,
+                      controller: _passwordController,
+                      hintText: 'Minimal 6 karakter',
+                      prefixIcon: Icons.lock_outline_rounded,
+                      obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.done,
+                      suffixIcon: IconButton(
+                        onPressed: () =>
+                            setState(() => _obscurePassword = !_obscurePassword),
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
+                        ),
+                      ),
+                      validator: (value) {
+                        if ((value ?? '').isEmpty) {
+                          return 'Kata sandi wajib diisi';
+                        }
+                        if ((value ?? '').length < 6) {
+                          return 'Kata sandi minimal 6 karakter';
+                        }
+                        return null;
+                      },
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => context.push(RouteNames.forgotPassword),
+                        child: const Text(AppStrings.forgotPass),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    AppButton(
+                      label: AppStrings.login,
+                      icon: Icons.login_rounded,
+                      isLoading: state is AuthLoading,
+                      onPressed: state is AuthLoading ? null : _submit,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(AppStrings.noAccount,
+                            style: AppTextStyles.bodySecondary),
+                        TextButton(
+                          onPressed: () => context.push(RouteNames.register),
+                          child: const Text(AppStrings.register),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         );

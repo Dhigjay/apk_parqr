@@ -42,7 +42,7 @@ class _QrScannerViewState extends State<QrScannerView> {
         // Dark overlay with transparent scan area
         ColorFiltered(
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.55),
+            Colors.black.withValues(alpha: 0.55),
             BlendMode.srcOut,
           ),
           child: Stack(
