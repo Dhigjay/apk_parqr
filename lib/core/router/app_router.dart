@@ -30,6 +30,12 @@ import '../../presentation/pages/operator/lot_management/add_edit_lot_page.dart'
 
 // Cubits
 import '../../presentation/blocs/operator/operator_dashboard_cubit.dart';
+import '../../presentation/blocs/admin/admin_approval_cubit.dart';
+
+// Admin Pages
+import '../../presentation/pages/admin/admin_dashboard_page.dart';
+import '../../presentation/pages/admin/approval_list_page.dart';
+import '../../presentation/pages/admin/approval_detail_page.dart';
 
 class AppRouter {
   AppRouter._();
@@ -214,6 +220,41 @@ class AppRouter {
             checkInTime: checkInTime,
             floor: floor,
             currentTariff: currentTariff,
+          );
+        },
+      ),
+      
+      // Admin Routes
+      GoRoute(
+        path: RouteNames.adminDashboard,
+        builder: (context, state) => const AdminDashboardPage(),
+      ),
+      GoRoute(
+        path: RouteNames.approvalList,
+        builder: (context, state) => BlocProvider<AdminApprovalCubit>(
+          create: (context) => sl<AdminApprovalCubit>(),
+          child: const ApprovalListPage(),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.approvalDetail,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final id = extra?['id'] as String? ?? '';
+          final businessName = extra?['businessName'] as String? ?? '';
+          final ownerName = extra?['ownerName'] as String? ?? '';
+          final address = extra?['address'] as String? ?? '';
+          final status = extra?['status'] as String? ?? 'pending';
+
+          return BlocProvider<AdminApprovalCubit>(
+            create: (context) => sl<AdminApprovalCubit>(),
+            child: ApprovalDetailPage(
+              id: id,
+              businessName: businessName,
+              ownerName: ownerName,
+              address: address,
+              status: status,
+            ),
           );
         },
       ),

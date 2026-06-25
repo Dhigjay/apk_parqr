@@ -243,17 +243,17 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ### Afif Abdilah
 
-- [ ] Buat admin dashboard page.
-- [ ] Buat approval list page dengan status Pending/Approved/Rejected.
-- [ ] Buat approval detail page dengan detail usaha, foto, alamat/map pin.
-- [ ] Buat form alasan reject.
-- [ ] Buat state empty/loading/error untuk list approval.
+- [x] Buat admin dashboard page.
+- [x] Buat approval list page dengan status Pending/Approved/Rejected.
+- [x] Buat approval detail page dengan detail usaha, foto, alamat/map pin.
+- [x] Buat form alasan reject.
+- [x] Buat state empty/loading/error untuk list approval.
 
 ### Shandy Satria
 
 - [ ] Buat route guard admin.
 - [x] Buat cubit/bloc admin approval.
-- [ ] Hubungkan approve/reject ke repository admin.
+- [x] Hubungkan approve/reject ke repository admin.
 - [x] Tambahkan konfirmasi dialog sebelum approve/reject.
 - [ ] Buat widget test untuk approval list dan approval detail.
 

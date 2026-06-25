@@ -29,4 +29,5 @@ class RouteNames {
   // Admin
   static const String adminDashboard = '/admin-dashboard';
   static const String approvalList = '/approval-list';
+  static const String approvalDetail = '/approval-detail';
 }

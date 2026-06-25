@@ -107,6 +107,6 @@ Future<void> initInjection() async {
     () => OperatorDashboardCubit(),
   );
   sl.registerFactory<AdminApprovalCubit>(
-    () => AdminApprovalCubit(),
+    () => AdminApprovalCubit(adminRepository: sl()),
   );
 }
