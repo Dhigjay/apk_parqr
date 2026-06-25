@@ -11,7 +11,6 @@ import 'package:parqr/presentation/blocs/auth/auth_event.dart';
 import 'package:parqr/presentation/blocs/auth/auth_state.dart';
 import 'package:parqr/core/router/route_names.dart';
 
-enum _FormStatus { idle, loading, error, success }
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

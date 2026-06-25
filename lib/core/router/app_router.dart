@@ -10,6 +10,7 @@ import '../../presentation/pages/user/booking/booking_page.dart';
 import '../../presentation/pages/user/booking/qr_entry_page.dart';
 import '../../presentation/pages/user/home/home_page.dart';
 import '../../presentation/pages/user/parking_detail/parking_detail_page.dart';
+import '../../presentation/pages/placeholder/placeholder_page.dart';
 
 class AppRouter {
   AppRouter._();
@@ -59,6 +60,27 @@ class AppRouter {
         builder: (context, state) => const QrEntryPage(),
       ),
       // Rute lain (operator, payment, admin, dll) akan didaftarkan seiring implementasi modul.
+      GoRoute(
+        path: RouteNames.history,
+        builder: (context, state) => const PlaceholderPage(
+          title: 'Riwayat',
+          message: 'Halaman riwayat sedang dalam pengembangan',
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.profile,
+        builder: (context, state) => const PlaceholderPage(
+          title: 'Profil',
+          message: 'Halaman profil sedang dalam pengembangan',
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.operatorRegister,
+        builder: (context, state) => const PlaceholderPage(
+          title: 'Daftarkan Lahan Parkirmu',
+          message: 'Halaman pendaftaran sedang dalam pengembangan',
+        ),
+      ),
     ],
   );
 }
