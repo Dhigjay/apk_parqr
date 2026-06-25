@@ -19,7 +19,8 @@ void main() async {
   // Inisialisasi Supabase
   await Supabase.initialize(
     url: 'https://rtchxgkayaquwzuicuzy.supabase.co',
-    publishableKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Y2h4Z2theWFxdXd6dWljdXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDg4MzMsImV4cCI6MjA5NjU4NDgzM30.mSCi-u3KD55EQJgbiA1yu9cvbcAi_Sq6OeU1vfXsy_g',
+    publishableKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Y2h4Z2theWFxdXd6dWljdXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDg4MzMsImV4cCI6MjA5NjU4NDgzM30.mSCi-u3KD55EQJgbiA1yu9cvbcAi_Sq6OeU1vfXsy_g',
   );
 
   // Inisialisasi Dependency Injection
@@ -55,7 +56,8 @@ class _DummyAuthRepository implements IAuthRepository {
   @override
   Future<void> login(String email, String password) async {}
   @override
-  Future<void> register(String email, String password, String name, String phone) async {}
+  Future<void> register(
+      String email, String password, String name, String phone) async {}
   @override
   Future<void> forgotPassword(String email) async {}
   @override
