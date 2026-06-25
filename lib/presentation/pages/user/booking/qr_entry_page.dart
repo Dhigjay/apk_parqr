@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:parqr/core/constants/app_colors.dart';
 import 'package:parqr/core/constants/app_strings.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
+import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/qr_display_card.dart';
 import 'package:parqr/presentation/widgets/status_badge.dart';
@@ -52,6 +54,15 @@ class QrEntryPage extends StatelessWidget {
               label: AppStrings.saveLocation,
               icon: Icons.my_location_rounded,
               onPressed: () {},
+            ),
+            const SizedBox(height: 10),
+            AppButton(
+              label: 'Simulasi Scan Masuk (Operator)',
+              icon: Icons.login_rounded,
+              variant: AppButtonVariant.secondary,
+              onPressed: () {
+                context.go(RouteNames.activeParking);
+              },
             ),
             const SizedBox(height: 12),
             Text(
