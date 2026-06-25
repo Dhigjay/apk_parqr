@@ -1,44 +1,29 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:parqr/domain/repositories/i_admin_repository.dart';
 import 'admin_approval_state.dart';
 
 class AdminApprovalCubit extends Cubit<AdminApprovalState> {
-  AdminApprovalCubit() : super(AdminApprovalInitial());
+  final IAdminRepository adminRepository;
+
+  AdminApprovalCubit({required this.adminRepository}) : super(AdminApprovalInitial());
 
   /// Fetch all operator registrations (pending, approved, rejected)
   Future<void> loadRegistrations() async {
     emit(AdminApprovalLoading());
     try {
-      // Simulated delay — replace with actual IAdminRepository call
-      await Future.delayed(const Duration(milliseconds: 500));
+      final registrations = await adminRepository.getPendingRegistrations();
+      
+      final entries = registrations.map((r) => OperatorRegistrationEntry(
+        id: r.id,
+        businessName: r.businessName,
+        ownerName: 'Pemilik Lahan', // look up applicant name or default
+        address: r.address,
+        submittedAt: r.createdAt.toIso8601String(),
+        status: r.status,
+        rejectionReason: r.rejectReason,
+      )).toList();
 
-      final registrations = [
-        const OperatorRegistrationEntry(
-          id: 'reg-001',
-          businessName: 'Parkir Sejahtera',
-          ownerName: 'Budi Santoso',
-          address: 'Jl. Sudirman No. 10, Jakarta',
-          submittedAt: '2026-06-15T10:00:00Z',
-          status: 'pending',
-        ),
-        const OperatorRegistrationEntry(
-          id: 'reg-002',
-          businessName: 'Lahan Parkir Maju',
-          ownerName: 'Siti Rahayu',
-          address: 'Jl. Gatot Subroto No. 5, Bandung',
-          submittedAt: '2026-06-14T08:30:00Z',
-          status: 'pending',
-        ),
-        const OperatorRegistrationEntry(
-          id: 'reg-003',
-          businessName: 'Parkir Cepat',
-          ownerName: 'Ahmad Fauzi',
-          address: 'Jl. Diponegoro No. 22, Surabaya',
-          submittedAt: '2026-06-12T14:00:00Z',
-          status: 'approved',
-        ),
-      ];
-
-      emit(AdminApprovalLoaded(registrations: registrations));
+      emit(AdminApprovalLoaded(registrations: entries));
     } catch (e) {
       emit(AdminApprovalError('Gagal memuat daftar pengajuan: ${e.toString()}'));
     }
@@ -48,8 +33,7 @@ class AdminApprovalCubit extends Cubit<AdminApprovalState> {
   Future<void> approveOperator(String registrationId) async {
     try {
       emit(AdminApprovalLoading());
-      // Simulated API call — replace with actual IAdminRepository.approveOperator()
-      await Future.delayed(const Duration(milliseconds: 500));
+      await adminRepository.approveOperator(registrationId);
       emit(AdminApproveSuccess(registrationId));
       // Reload the list after action
       await loadRegistrations();
@@ -66,8 +50,7 @@ class AdminApprovalCubit extends Cubit<AdminApprovalState> {
     }
     try {
       emit(AdminApprovalLoading());
-      // Simulated API call — replace with actual IAdminRepository.rejectOperator()
-      await Future.delayed(const Duration(milliseconds: 500));
+      await adminRepository.rejectOperator(registrationId, reason);
       emit(AdminRejectSuccess(registrationId));
       // Reload the list after action
       await loadRegistrations();

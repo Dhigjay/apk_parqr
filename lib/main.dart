@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/constants/app_strings.dart';
@@ -8,7 +7,7 @@ import 'core/router/app_router.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/auth/auth_event.dart';
 import 'injection/injection_container.dart';
-import 'domain/repositories/i_auth_repository.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +15,8 @@ void main() async {
   // Inisialisasi Supabase
   await Supabase.initialize(
     url: 'https://rtchxgkayaquwzuicuzy.supabase.co',
-    publishableKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Y2h4Z2theWFxdXd6dWljdXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDg4MzMsImV4cCI6MjA5NjU4NDgzM30.mSCi-u3KD55EQJgbiA1yu9cvbcAi_Sq6OeU1vfXsy_g',
+    publishableKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Y2h4Z2theWFxdXd6dWljdXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDg4MzMsImV4cCI6MjA5NjU4NDgzM30.mSCi-u3KD55EQJgbiA1yu9cvbcAi_Sq6OeU1vfXsy_g',
   );
 
   // Inisialisasi Dependency Injection
@@ -48,17 +48,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class _DummyAuthRepository implements IAuthRepository {
-  @override
-  Future<void> login(String email, String password) async {}
-  @override
-  Future<void> register(String email, String password, String name, String phone) async {}
-  @override
-  Future<void> forgotPassword(String email) async {}
-  @override
-  Future<void> logout() async {}
-  @override
-  bool get isLoggedIn => false;
-  @override
-  String? get currentRole => null;
-}
