@@ -184,7 +184,11 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: AppBottomNav(
         currentIndex: 0,
-        onTap: (_) {},
+        onTap: (index) {
+          if (index == 1) {
+            context.go(RouteNames.history);
+          }
+        },
       ),
     );
   }

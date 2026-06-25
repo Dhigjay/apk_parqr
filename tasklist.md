@@ -174,12 +174,12 @@ Target: stopwatch berjalan, user checkout, memilih cash/QRIS, dan mendapatkan QR
 
 ### Afif Abdilah
 
-- [ ] Buat `active_parking_page.dart` dengan stopwatch besar, info kendaraan, map pin, dan tombol keluar.
-- [ ] Buat `stopwatch_widget.dart`.
-- [ ] Buat payment screen: total bayar, pilihan Cash/QRIS, tombol bayar.
-- [ ] Buat QRIS payment page: QRIS, countdown 10 menit, status pembayaran.
-- [ ] Buat exit QR screen: success state, QR keluar, ringkasan transaksi.
-- [ ] Buat history screen dan history detail screen.
+- [x] Buat `active_parking_page.dart` dengan stopwatch besar, info kendaraan, map pin, dan tombol keluar.
+- [x] Buat `stopwatch_widget.dart`.
+- [x] Buat payment screen: total bayar, pilihan Cash/QRIS, tombol bayar.
+- [x] Buat QRIS payment page: QRIS, countdown 10 menit, status pembayaran.
+- [x] Buat exit QR screen: success state, QR keluar, ringkasan transaksi.
+- [x] Buat history screen dan history detail screen.
 
 ### Shandy Satria
 
