@@ -192,6 +192,7 @@ class _HomePageState extends State<HomePage> {
             context.push(RouteNames.history);
           } else if (index == 2) {
             context.push(RouteNames.profile);
+            context.go(RouteNames.history);
           }
         },
       ),

@@ -7,6 +7,7 @@ import 'core/router/app_router.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/auth/auth_event.dart';
 import 'injection/injection_container.dart';
+import 'domain/repositories/i_auth_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
