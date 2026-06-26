@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/constants/app_text_style.dart';
+import 'package:parqr/core/constants/app_colors.dart';
+import 'package:parqr/core/constants/app_text_style.dart';
 
 class QrScannerPage extends StatefulWidget {
   const QrScannerPage({super.key});

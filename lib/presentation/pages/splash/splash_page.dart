@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../core/router/route_names.dart';
+import 'package:parqr/core/constants/app_colors.dart';
+import 'package:parqr/core/constants/app_strings.dart';
+import 'package:parqr/core/router/route_names.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});

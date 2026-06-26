@@ -1,7 +1,7 @@
-import '../../domain/entities/user_entity.dart';
-import '../../domain/repositories/i_user_repository.dart';
-import '../datasources/remote/user_remote_ds.dart';
-import '../../core/error/exceptions.dart';
+import 'package:parqr/domain/entities/user_entity.dart';
+import 'package:parqr/domain/repositories/i_user_repository.dart';
+import 'package:parqr/data/datasources/remote/user_remote_ds.dart';
+import 'package:parqr/core/error/exceptions.dart';
 
 class UserRepositoryImpl implements IUserRepository {
   final UserRemoteDataSource remoteDataSource;

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'core/constants/app_strings.dart';
-import 'core/theme/app_theme.dart';
-import 'core/router/app_router.dart';
-import 'presentation/blocs/auth/auth_bloc.dart';
-import 'presentation/blocs/auth/auth_event.dart';
-import 'injection/injection_container.dart';
+import 'package:parqr/core/constants/app_strings.dart';
+import 'package:parqr/core/theme/app_theme.dart';
+import 'package:parqr/core/router/app_router.dart';
+import 'package:parqr/presentation/blocs/auth/auth_bloc.dart';
+import 'package:parqr/presentation/blocs/auth/auth_event.dart';
+import 'package:parqr/injection/injection_container.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

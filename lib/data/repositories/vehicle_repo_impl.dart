@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 
-import '../../domain/entities/vehicle_entity.dart';
-import '../../domain/repositories/i_vehicle_repository.dart';
-import '../datasources/remote/vehicle_remote_ds.dart';
-import '../../core/error/exceptions.dart';
+import 'package:parqr/domain/entities/vehicle_entity.dart';
+import 'package:parqr/domain/repositories/i_vehicle_repository.dart';
+import 'package:parqr/data/datasources/remote/vehicle_remote_ds.dart';
+import 'package:parqr/core/error/exceptions.dart';
 
 class VehicleRepositoryImpl implements IVehicleRepository {
   final VehicleRemoteDataSource remoteDataSource;

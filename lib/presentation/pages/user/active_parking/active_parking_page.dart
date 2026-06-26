@@ -8,7 +8,7 @@ import 'package:parqr/presentation/blocs/parking_session/active_session_cubit.da
 import 'package:parqr/presentation/blocs/parking_session/active_session_state.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/status_badge.dart';
-import 'widgets/stopwatch_widget.dart';
+import 'package:parqr/presentation/pages/user/active_parking/widgets/stopwatch_widget.dart';
 
 class ActiveParkingPage extends StatelessWidget {
   const ActiveParkingPage({super.key});

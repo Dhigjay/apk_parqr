@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parqr/domain/repositories/i_auth_repository.dart';
-import 'auth_event.dart';
-import 'auth_state.dart';
+import 'package:parqr/presentation/blocs/auth/auth_event.dart';
+import 'package:parqr/presentation/blocs/auth/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final IAuthRepository authRepository;
@@ -10,7 +10,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // Mengecek apakah user sudah login sebelumnya
     on<AuthCheckStatusRequested>((event, emit) {
       if (authRepository.isLoggedIn) {
-        emit(AuthAuthenticated());
+        emit(AuthAuthenticated(authRepository.currentRole ?? 'user'));
       } else {
         emit(AuthUnauthenticated());
       }
@@ -21,7 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoading());
       try {
         await authRepository.login(event.email, event.password);
-        emit(AuthAuthenticated());
+        emit(AuthAuthenticated(authRepository.currentRole ?? 'user'));
       } catch (e) {
         emit(AuthError(e.toString()));
       }
@@ -33,7 +33,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         await authRepository.register(event.email, event.password, event.name, event.phone);
         // Bisa langsung dianggap login setelah register sukses
-        emit(AuthAuthenticated());
+        emit(AuthAuthenticated(authRepository.currentRole ?? 'user'));
       } catch (e) {
         emit(AuthError(e.toString()));
       }

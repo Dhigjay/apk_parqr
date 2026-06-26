@@ -10,7 +10,14 @@ class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
 
-class AuthAuthenticated extends AuthState {}
+class AuthAuthenticated extends AuthState {
+  final String role;
+
+  const AuthAuthenticated(this.role);
+
+  @override
+  List<Object?> get props => [role];
+}
 
 class AuthUnauthenticated extends AuthState {}
 

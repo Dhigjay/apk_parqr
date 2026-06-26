@@ -1,9 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../domain/entities/parking_lot_entity.dart';
-import '../../domain/entities/parking_slot_entity.dart';
-import '../../domain/repositories/i_parking_lot_repository.dart';
-import '../models/parking_lot_model.dart';
-import '../models/parking_slot_model.dart';
+import 'package:parqr/domain/entities/parking_lot_entity.dart';
+import 'package:parqr/domain/entities/parking_slot_entity.dart';
+import 'package:parqr/domain/repositories/i_parking_lot_repository.dart';
+import 'package:parqr/data/models/parking_lot_model.dart';
+import 'package:parqr/data/models/parking_slot_model.dart';
 
 class ParkingLotRepoImpl implements IParkingLotRepository {
   final SupabaseClient _supabaseClient;

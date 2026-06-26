@@ -1,9 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../domain/entities/operator_registration_entity.dart';
-import '../../domain/entities/parking_session_entity.dart';
-import '../../domain/repositories/i_operator_repository.dart';
-import '../models/operator_registration_model.dart';
-import '../models/parking_session_model.dart';
+import 'package:parqr/domain/entities/operator_registration_entity.dart';
+import 'package:parqr/domain/entities/parking_session_entity.dart';
+import 'package:parqr/domain/repositories/i_operator_repository.dart';
+import 'package:parqr/data/models/operator_registration_model.dart';
+import 'package:parqr/data/models/parking_session_model.dart';
 
 class OperatorRepoImpl implements IOperatorRepository {
   final SupabaseClient _supabaseClient;

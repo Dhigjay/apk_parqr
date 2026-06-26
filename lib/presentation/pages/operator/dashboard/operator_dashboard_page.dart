@@ -6,8 +6,8 @@ import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart';
 import 'package:parqr/presentation/blocs/operator/operator_dashboard_state.dart';
-import 'widgets/stats_row_widget.dart';
-import 'widgets/active_vehicle_card.dart';
+import 'package:parqr/presentation/pages/operator/dashboard/widgets/stats_row_widget.dart';
+import 'package:parqr/presentation/pages/operator/dashboard/widgets/active_vehicle_card.dart';
 
 class OperatorDashboardPage extends StatefulWidget {
   const OperatorDashboardPage({super.key});

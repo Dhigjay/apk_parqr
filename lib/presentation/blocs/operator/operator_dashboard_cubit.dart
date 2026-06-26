@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/utils/qr_validator.dart';
-import 'operator_dashboard_state.dart';
+import 'package:parqr/core/utils/qr_validator.dart';
+import 'package:parqr/presentation/blocs/operator/operator_dashboard_state.dart';
 
 class OperatorDashboardCubit extends Cubit<OperatorDashboardState> {
   OperatorDashboardCubit() : super(OperatorDashboardInitial());

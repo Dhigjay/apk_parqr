@@ -1,42 +1,46 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../injection/injection_container.dart';
-import 'route_names.dart';
-import '../../presentation/pages/splash/splash_page.dart';
-import '../../presentation/pages/auth/login_page.dart';
-import '../../presentation/pages/auth/register_page.dart';
-import '../../presentation/pages/auth/forgot_password_page.dart';
-import '../../presentation/pages/onboarding/add_vehicle_page.dart';
-import '../../presentation/pages/onboarding/complete_profile_page.dart';
-import '../../presentation/pages/user/booking/booking_page.dart';
-import '../../presentation/pages/user/booking/qr_entry_page.dart';
-import '../../presentation/pages/user/home/home_page.dart';
-import '../../presentation/pages/user/parking_detail/parking_detail_page.dart';
-import '../../presentation/pages/user/active_parking/active_parking_page.dart';
-import '../../presentation/pages/user/payment/payment_page.dart';
-import '../../presentation/pages/user/payment/qris_payment_page.dart';
-import '../../presentation/pages/user/payment/exit_qr_page.dart';
-import '../../presentation/pages/user/history/history_page.dart';
-import '../../presentation/pages/user/history/history_detail_page.dart';
-import '../../presentation/pages/user/profile/profile_page.dart';
-import '../../presentation/widgets/status_badge.dart';
+import 'package:parqr/presentation/blocs/auth/auth_bloc.dart';
+import 'package:parqr/presentation/blocs/auth/auth_state.dart';
+import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/core/router/route_names.dart';
+import 'package:parqr/presentation/pages/splash/splash_page.dart';
+import 'package:parqr/presentation/pages/auth/login_page.dart';
+import 'package:parqr/presentation/pages/auth/register_page.dart';
+import 'package:parqr/presentation/pages/auth/forgot_password_page.dart';
+import 'package:parqr/presentation/pages/onboarding/add_vehicle_page.dart';
+import 'package:parqr/presentation/pages/onboarding/complete_profile_page.dart';
+import 'package:parqr/presentation/pages/user/booking/booking_page.dart';
+import 'package:parqr/presentation/pages/user/booking/qr_entry_page.dart';
+import 'package:parqr/presentation/pages/user/home/home_page.dart';
+import 'package:parqr/presentation/pages/user/parking_detail/parking_detail_page.dart';
+import 'package:parqr/presentation/pages/user/active_parking/active_parking_page.dart';
+import 'package:parqr/presentation/pages/user/payment/payment_page.dart';
+import 'package:parqr/presentation/pages/user/payment/qris_payment_page.dart';
+import 'package:parqr/presentation/pages/user/payment/exit_qr_page.dart';
+import 'package:parqr/presentation/pages/user/history/history_page.dart';
+import 'package:parqr/presentation/pages/user/history/history_detail_page.dart';
+import 'package:parqr/presentation/pages/user/profile/profile_page.dart';
+import 'package:parqr/presentation/widgets/status_badge.dart';
 
 // Operator Pages
-import '../../presentation/pages/operator/registration/operator_register_page.dart';
-import '../../presentation/pages/operator/dashboard/operator_dashboard_page.dart';
-import '../../presentation/pages/operator/scanner/qr_scanner_page.dart';
-import '../../presentation/pages/operator/vehicle_detail/scanned_vehicle_page.dart';
-import '../../presentation/pages/operator/lot_management/lot_management_page.dart';
-import '../../presentation/pages/operator/lot_management/add_edit_lot_page.dart';
+import 'package:parqr/presentation/pages/operator/registration/operator_register_page.dart';
+import 'package:parqr/presentation/pages/operator/dashboard/operator_dashboard_page.dart';
+import 'package:parqr/presentation/pages/operator/scanner/qr_scanner_page.dart';
+import 'package:parqr/presentation/pages/operator/vehicle_detail/scanned_vehicle_page.dart';
+import 'package:parqr/presentation/pages/operator/lot_management/lot_management_page.dart';
+import 'package:parqr/presentation/pages/operator/lot_management/add_edit_lot_page.dart';
 
 // Cubits
-import '../../presentation/blocs/operator/operator_dashboard_cubit.dart';
-import '../../presentation/blocs/admin/admin_approval_cubit.dart';
+import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart';
+import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
 
 // Admin Pages
-import '../../presentation/pages/admin/admin_dashboard_page.dart';
-import '../../presentation/pages/admin/approval_list_page.dart';
-import '../../presentation/pages/admin/approval_detail_page.dart';
+import 'package:parqr/presentation/pages/admin/admin_dashboard_page.dart';
+import 'package:parqr/presentation/pages/admin/approval_list_page.dart';
+import 'package:parqr/presentation/pages/admin/approval_detail_page.dart';
 
 class AppRouter {
   AppRouter._();
@@ -44,6 +48,45 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: RouteNames.splash,
     debugLogDiagnostics: true,
+    refreshListenable: GoRouterRefreshStream(sl<AuthBloc>().stream),
+    redirect: (context, state) {
+      final authState = sl<AuthBloc>().state;
+      final isLoggingIn = state.matchedLocation == RouteNames.login || 
+                          state.matchedLocation == RouteNames.register ||
+                          state.matchedLocation == RouteNames.forgotPassword ||
+                          state.matchedLocation == RouteNames.splash;
+      
+      if (authState is AuthInitial || authState is AuthLoading) {
+        return null; // Don't redirect while checking or loading
+      }
+
+      if (authState is AuthUnauthenticated) {
+        return isLoggingIn ? null : RouteNames.login;
+      }
+
+      if (authState is AuthAuthenticated) {
+        final role = authState.role;
+        
+        if (isLoggingIn) {
+          if (role == 'operator') return RouteNames.operatorDashboard;
+          if (role == 'admin') return RouteNames.adminDashboard;
+          return RouteNames.home;
+        }
+
+        // restrict routes based on role
+        if (role == 'user' && (state.matchedLocation.contains('operator') || state.matchedLocation.contains('admin'))) {
+          return RouteNames.home;
+        }
+        if (role == 'operator' && (state.matchedLocation.contains('user') || state.matchedLocation.contains('admin') || state.matchedLocation == RouteNames.home)) {
+          return RouteNames.operatorDashboard;
+        }
+        if (role == 'admin' && (state.matchedLocation.contains('user') || state.matchedLocation.contains('operator') || state.matchedLocation == RouteNames.home)) {
+          return RouteNames.adminDashboard;
+        }
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: RouteNames.splash,
@@ -85,27 +128,7 @@ class AppRouter {
         path: RouteNames.qrEntry,
         builder: (context, state) => const QrEntryPage(),
       ),
-      // Rute lain (operator, payment, admin, dll) akan didaftarkan seiring implementasi modul.
-      GoRoute(
-        path: RouteNames.history,
-        builder: (context, state) => const PlaceholderPage(
-          title: 'Riwayat',
-          message: 'Halaman riwayat sedang dalam pengembangan',
-        ),
-      ),
-      GoRoute(
-        path: RouteNames.profile,
-        builder: (context, state) => const PlaceholderPage(
-          title: 'Profil',
-          message: 'Halaman profil sedang dalam pengembangan',
-        ),
-      ),
-      GoRoute(
-        path: RouteNames.operatorRegister,
-        builder: (context, state) => const PlaceholderPage(
-          title: 'Daftarkan Lahan Parkirmu',
-          message: 'Halaman pendaftaran sedang dalam pengembangan',
-        ),
+
       GoRoute(
         path: RouteNames.activeParking,
         builder: (context, state) => const ActiveParkingPage(),
@@ -286,4 +309,21 @@ class AppRouter {
       ),
     ],
   );
+}
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+      (dynamic _) => notifyListeners(),
+    );
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
 }
