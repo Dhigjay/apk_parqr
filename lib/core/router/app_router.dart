@@ -18,6 +18,7 @@ import '../../presentation/pages/user/payment/qris_payment_page.dart';
 import '../../presentation/pages/user/payment/exit_qr_page.dart';
 import '../../presentation/pages/user/history/history_page.dart';
 import '../../presentation/pages/user/history/history_detail_page.dart';
+import '../../presentation/pages/user/profile/profile_page.dart';
 import '../../presentation/widgets/status_badge.dart';
 
 // Operator Pages
@@ -136,6 +137,10 @@ class AppRouter {
       GoRoute(
         path: RouteNames.history,
         builder: (context, state) => const HistoryPage(),
+      ),
+      GoRoute(
+        path: RouteNames.profile,
+        builder: (context, state) => const ProfilePage(),
       ),
       GoRoute(
         path: RouteNames.historyDetail,
