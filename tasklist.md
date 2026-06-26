@@ -64,8 +64,8 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
 
 ### Afif Abdilah
 
-- [x] Rapikan nama aplikasi di UI dari placeholder menjadi `ParQr`.
-- [x] Buat shared widget awal:
+- [ ] Rapikan nama aplikasi di UI dari placeholder menjadi `ParQr`.
+- [ ] Buat shared widget awal:
   - `AppButton`
   - `AppTextField`
   - `StatusBadge`
@@ -74,22 +74,22 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
   - `QrDisplayCard`
   - `VehicleCardWidget`
   - `AppBottomNav`
-- [x] Ubah halaman login dari tombol bypass menjadi layout form lengkap.
-- [x] Siapkan layout register dan forgot password.
-- [x] Tambahkan placeholder asset/logo ParQr di `assets/images`.
-- [x] Pastikan tema mengikuti PRD: dark background, card gelap, accent blue/purple, CTA gradient.
+- [ ] Ubah halaman login dari tombol bypass menjadi layout form lengkap.
+- [ ] Siapkan layout register dan forgot password.
+- [ ] Tambahkan placeholder asset/logo ParQr di `assets/images`.
+- [ ] Pastikan tema mengikuti PRD: dark background, card gelap, accent blue/purple, CTA gradient.
 
 ### Shandy Satria
 
-- [x] Betulkan semua import package agar konsisten dengan nama package `parqr`.
-- [x] Daftarkan route awal untuk register, forgot password, complete profile, add vehicle, home, history, profile.
-- [x] Tambahkan `BlocProvider` untuk `AuthBloc` pada level aplikasi atau route yang relevan.
-- [x] Buat route guard awal:
+- [ ] Betulkan semua import package agar konsisten dengan nama package `parqr`.
+- [ ] Daftarkan route awal untuk register, forgot password, complete profile, add vehicle, home, history, profile.
+- [ ] Tambahkan `BlocProvider` untuk `AuthBloc` pada level aplikasi atau route yang relevan.
+- [ ] Buat route guard awal:
   - user belum login diarahkan ke login
   - user login diarahkan sesuai role
   - role operator/admin tidak bisa masuk halaman user yang tidak sesuai
-- [x] Jalankan ulang `flutter analyze` setelah blocker import dibereskan.
-- [x] Dokumentasikan cara menjalankan app dengan `--dart-define` atau `--dart-define-from-file`.
+- [ ] Jalankan ulang `flutter analyze` setelah blocker import dibereskan.
+- [ ] Dokumentasikan cara menjalankan app dengan `--dart-define` atau `--dart-define-from-file`.
 
 ## Sprint 1 - Autentikasi, Profil, dan Kendaraan
 
@@ -102,8 +102,8 @@ Target: user bisa daftar, login, melengkapi profil, dan menambah kendaraan.
 - [x] Implementasikan Supabase table access untuk profil user.
 - [x] Implementasikan CRUD kendaraan.
 - [x] Buat upload foto kendaraan ke Supabase Storage.
-- [ ] Buat RLS policy agar user hanya bisa membaca/mengubah data miliknya.
-- [ ] Buat seed data minimal untuk role admin dan sample user bila diperlukan.
+- [x] Buat RLS policy agar user hanya bisa membaca/mengubah data miliknya.
+- [x] Buat seed data minimal untuk role admin dan sample user bila diperlukan.
 
 ### Afif Abdilah
 
@@ -132,9 +132,9 @@ Target: pengunjung bisa mencari lahan parkir, melihat detail, booking, dan menda
 - [x] Buat model/entity `ParkingLot`, `ParkingSlot`, dan `ParkingSession`.
 - [x] Buat repository parking lot untuk search, detail, slot tersedia, dan filter.
 - [x] Buat repository parking session untuk booking dan generate session.
-- [ ] Definisikan payload QR masuk berisi minimal: `session_id`, `type`, `issued_at`, `expires_at`, dan nonce/signature server-side.
-- [ ] Tambahkan validasi QR expired setelah 24 jam bila belum dipakai.
-- [ ] Buat RLS policy untuk sesi parkir user dan operator.
+- [x] Definisikan payload QR masuk berisi minimal: `session_id`, `type`, `issued_at`, `expires_at`, dan nonce/signature server-side.
+- [x] Tambahkan validasi QR expired setelah 24 jam bila belum dipakai.
+- [x] Buat RLS policy untuk sesi parkir user dan operator.
 
 ### Afif Abdilah
 
@@ -167,10 +167,10 @@ Target: stopwatch berjalan, user checkout, memilih cash/QRIS, dan mendapatkan QR
 - [x] Buat model/entity `Payment`.
 - [x] Buat repository payment untuk create payment, get status, verify cash, dan generate exit QR.
 - [x] Implementasikan kalkulasi tarif berdasarkan durasi dan tarif per jam.
-- [ ] Pastikan stopwatch/tarif hanya berhenti setelah payment verified.
-- [ ] Siapkan kontrak integrasi QRIS/payment gateway.
-- [ ] Buat Supabase Edge Function atau endpoint webhook untuk update status QRIS.
-- [ ] Buat log `operator_verifications` untuk cash payment.
+- [x] Pastikan stopwatch/tarif hanya berhenti setelah payment verified.
+- [x] Siapkan kontrak integrasi QRIS/payment gateway.
+- [x] Buat Supabase Edge Function atau endpoint webhook untuk update status QRIS.
+- [x] Buat log `operator_verifications` untuk cash payment.
 
 ### Afif Abdilah
 
@@ -197,12 +197,12 @@ Target: operator bisa daftar lahan, scan QR masuk/keluar, lihat dashboard, verif
 ### Maulana Dhigjay
 
 - [x] Buat model/entity `OperatorRegistration`.
-- [ ] Buat backend flow pengajuan operator.
+- [x] Buat backend flow pengajuan operator.
 - [x] Buat repository operator untuk dashboard, active vehicle list, scan check-in/check-out.
 - [ ] Buat CRUD parking lot, floor, slot, tariff.
-- [ ] Buat query statistik: kendaraan masuk hari ini, aktif, pendapatan hari ini.
-- [ ] Buat Supabase Realtime channel untuk active sessions per operator.
-- [ ] Buat RLS agar operator hanya akses lahan dan sesi miliknya.
+- [x] Buat query statistik: kendaraan masuk hari ini, aktif, pendapatan hari ini.
+- [x] Buat Supabase Realtime channel untuk active sessions per operator.
+- [x] Buat RLS agar operator hanya akses lahan dan sesi miliknya.
 
 ### Afif Abdilah
 
@@ -237,17 +237,17 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
   - buat akun operator
   - hubungkan operator dengan parking lot
   - kirim email kredensial atau reset link
-- [ ] Implementasikan reject operator dengan alasan wajib.
-- [ ] Buat query statistik global aplikasi.
-- [ ] Buat RLS/admin policy khusus untuk akses semua data.
+- [x] Implementasikan reject operator dengan alasan wajib.
+- [x] Buat query statistik global aplikasi.
+- [x] Buat RLS/admin policy khusus untuk akses semua data.
 
 ### Afif Abdilah
 
-- [ ] Buat admin dashboard page.
-- [ ] Buat approval list page dengan status Pending/Approved/Rejected.
-- [ ] Buat approval detail page dengan detail usaha, foto, alamat/map pin.
-- [ ] Buat form alasan reject.
-- [ ] Buat state empty/loading/error untuk list approval.
+- [x] Buat admin dashboard page.
+- [x] Buat approval list page dengan status Pending/Approved/Rejected.
+- [x] Buat approval detail page dengan detail usaha, foto, alamat/map pin.
+- [x] Buat form alasan reject.
+- [x] Buat state empty/loading/error untuk list approval.
 
 ### Shandy Satria
 
@@ -259,7 +259,7 @@ Target: admin bisa mengelola approval operator dan melihat statistik global.
 
 ## Sprint 6 - Polish, QA, dan Release
 
-Target: MVP siap di
+Target: MVP siap diuji sebagai APK internal.
 
 ### Maulana Dhigjay
 

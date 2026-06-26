@@ -7,7 +7,6 @@ import 'core/router/app_router.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/auth/auth_event.dart';
 import 'injection/injection_container.dart';
-import 'domain/repositories/i_auth_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +14,8 @@ void main() async {
   // Inisialisasi Supabase
   await Supabase.initialize(
     url: 'https://rtchxgkayaquwzuicuzy.supabase.co',
-    publishableKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Y2h4Z2theWFxdXd6dWljdXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDg4MzMsImV4cCI6MjA5NjU4NDgzM30.mSCi-u3KD55EQJgbiA1yu9cvbcAi_Sq6OeU1vfXsy_g',
+    publishableKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Y2h4Z2theWFxdXd6dWljdXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDg4MzMsImV4cCI6MjA5NjU4NDgzM30.mSCi-u3KD55EQJgbiA1yu9cvbcAi_Sq6OeU1vfXsy_g',
   );
 
   // Inisialisasi Dependency Injection
