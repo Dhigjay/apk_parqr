@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -57,18 +58,35 @@ class _PaymentViewState extends State<PaymentView> {
   late Duration _totalDuration;
   late double _totalTariff;
 
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
-    // Snapshot of current parking duration and calculation
+    _updateTime();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _updateTime();
+        });
+      }
+    });
+  }
+
+  void _updateTime() {
     _totalDuration = StopwatchManager.calculateDuration(widget.startTime);
     _totalTariff = StopwatchManager.calculateTariff(_totalDuration, widget.tariffPerHour);
     
-    // Ensure we don't have negative duration, and default if too short
     if (_totalDuration.isNegative) {
       _totalDuration = Duration.zero;
       _totalTariff = 0.0;
     }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   void _onPayPressed(BuildContext context) {
