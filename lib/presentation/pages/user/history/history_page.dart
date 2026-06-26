@@ -112,7 +112,7 @@ class HistoryPage extends StatelessWidget {
           if (index == 0) {
             context.go(RouteNames.home);
           } else if (index == 2) {
-            // Under construction or profile placeholder
+            context.go(RouteNames.profile);
           }
         },
       ),

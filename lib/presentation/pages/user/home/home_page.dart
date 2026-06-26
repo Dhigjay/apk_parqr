@@ -187,6 +187,8 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) {
           if (index == 1) {
             context.go(RouteNames.history);
+          } else if (index == 2) {
+            context.go(RouteNames.profile);
           }
         },
       ),
