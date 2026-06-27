@@ -1,5 +1,5 @@
-import '../../domain/repositories/i_auth_repository.dart';
-import '../datasources/remote/auth_remote_ds.dart';
+import 'package:parqr/domain/repositories/i_auth_repository.dart';
+import 'package:parqr/data/datasources/remote/auth_remote_ds.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {
   AuthRepositoryImpl({required AuthRemoteDataSource remoteDataSource})

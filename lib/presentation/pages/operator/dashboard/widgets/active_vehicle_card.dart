@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/constants/app_text_style.dart';
+import 'package:parqr/core/constants/app_colors.dart';
+import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:intl/intl.dart';
 
 class ActiveVehicleCard extends StatelessWidget {

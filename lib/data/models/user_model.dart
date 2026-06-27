@@ -1,4 +1,4 @@
-import '../../domain/entities/user_entity.dart';
+import 'package:parqr/domain/entities/user_entity.dart';
 
 class UserModel extends UserEntity {
   const UserModel({

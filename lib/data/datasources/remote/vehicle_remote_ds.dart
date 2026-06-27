@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../models/vehicle_model.dart';
+import 'package:parqr/data/models/vehicle_model.dart';
 
 class VehicleRemoteDataSource {
   VehicleRemoteDataSource({required SupabaseClient supabaseClient})

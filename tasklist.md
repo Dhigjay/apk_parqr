@@ -81,15 +81,15 @@ Target: project bisa dianalisis dan dijalankan tanpa error compile dasar.
 
 ### Shandy Satria
 
-- [ ] Betulkan semua import package agar konsisten dengan nama package `parqr`.
-- [ ] Daftarkan route awal untuk register, forgot password, complete profile, add vehicle, home, history, profile.
-- [ ] Tambahkan `BlocProvider` untuk `AuthBloc` pada level aplikasi atau route yang relevan.
-- [ ] Buat route guard awal:
+- [x] Betulkan semua import package agar konsisten dengan nama package `parqr`.
+- [x] Daftarkan route awal untuk register, forgot password, complete profile, add vehicle, home, history, profile.
+- [x] Tambahkan `BlocProvider` untuk `AuthBloc` pada level aplikasi atau route yang relevan.
+- [x] Buat route guard awal:
   - user belum login diarahkan ke login
   - user login diarahkan sesuai role
   - role operator/admin tidak bisa masuk halaman user yang tidak sesuai
-- [ ] Jalankan ulang `flutter analyze` setelah blocker import dibereskan.
-- [ ] Dokumentasikan cara menjalankan app dengan `--dart-define` atau `--dart-define-from-file`.
+- [x] Jalankan ulang `flutter analyze` setelah blocker import dibereskan.
+- [x] Dokumentasikan cara menjalankan app dengan `--dart-define` atau `--dart-define-from-file`.
 
 ## Sprint 1 - Autentikasi, Profil, dan Kendaraan
 

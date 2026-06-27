@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../entities/vehicle_entity.dart';
+import 'package:parqr/domain/entities/vehicle_entity.dart';
 
 abstract class IVehicleRepository {
   Future<List<VehicleEntity>> getMyVehicles();

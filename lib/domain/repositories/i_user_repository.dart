@@ -1,4 +1,4 @@
-import '../entities/user_entity.dart';
+import 'package:parqr/domain/entities/user_entity.dart';
 
 abstract class IUserRepository {
   Future<UserEntity?> getCurrentProfile();

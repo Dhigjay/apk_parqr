@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../models/operator_registration_model.dart';
-import '../../models/admin_stats_model.dart';
-import '../../../core/error/exceptions.dart';
+import 'package:parqr/data/models/operator_registration_model.dart';
+import 'package:parqr/data/models/admin_stats_model.dart';
+import 'package:parqr/core/error/exceptions.dart';
 
 abstract class AdminRemoteDataSource {
   Future<List<OperatorRegistrationModel>> getPendingRegistrations();

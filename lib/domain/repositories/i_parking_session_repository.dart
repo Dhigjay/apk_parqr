@@ -1,4 +1,4 @@
-import '../entities/parking_session_entity.dart';
+import 'package:parqr/domain/entities/parking_session_entity.dart';
 
 abstract class IParkingSessionRepository {
   Future<ParkingSessionEntity> bookParkingSlot({

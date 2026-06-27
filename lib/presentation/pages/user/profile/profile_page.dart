@@ -75,7 +75,7 @@ class _ProfileView extends StatelessWidget {
           const SizedBox(height: 28),
 
           // ── Kendaraan ────────────────────────────────────────
-          _SectionLabel(label: 'Kendaraan Terdaftar'),
+          const _SectionLabel(label: 'Kendaraan Terdaftar'),
           const SizedBox(height: 12),
           _VehicleCard(
             plate: 'B 1234 QR',
@@ -88,7 +88,7 @@ class _ProfileView extends StatelessWidget {
           const SizedBox(height: 28),
 
           // ── Pengaturan Akun ──────────────────────────────────
-          _SectionLabel(label: 'Pengaturan Akun'),
+          const _SectionLabel(label: 'Pengaturan Akun'),
           const SizedBox(height: 12),
           _SettingsTile(
             icon: Icons.person_outline_rounded,
@@ -108,7 +108,7 @@ class _ProfileView extends StatelessWidget {
           const SizedBox(height: 28),
 
           // ── Lainnya ──────────────────────────────────────────
-          _SectionLabel(label: 'Lainnya'),
+          const _SectionLabel(label: 'Lainnya'),
           const SizedBox(height: 12),
           _SettingsTile(
             icon: Icons.help_outline_rounded,
@@ -165,7 +165,7 @@ class _ProfileHeader extends StatelessWidget {
           Container(
             width: 72,
             height: 72,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: AppColors.primaryGradient,
             ),

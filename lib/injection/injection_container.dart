@@ -2,40 +2,40 @@ import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Data Sources Remote
-import '../data/datasources/remote/auth_remote_ds.dart';
-import '../data/datasources/remote/user_remote_ds.dart';
-import '../data/datasources/remote/vehicle_remote_ds.dart';
-import '../data/datasources/remote/admin_remote_ds.dart';
-import '../data/datasources/remote/payment_remote_ds.dart';
+import 'package:parqr/data/datasources/remote/auth_remote_ds.dart';
+import 'package:parqr/data/datasources/remote/user_remote_ds.dart';
+import 'package:parqr/data/datasources/remote/vehicle_remote_ds.dart';
+import 'package:parqr/data/datasources/remote/admin_remote_ds.dart';
+import 'package:parqr/data/datasources/remote/payment_remote_ds.dart';
 
 // Repositories Implementation
-import '../data/repositories/auth_repo_impl.dart';
-import '../data/repositories/user_repo_impl.dart';
-import '../data/repositories/vehicle_repo_impl.dart';
-import '../data/repositories/operator_repo_impl.dart';
-import '../data/repositories/admin_repo_impl.dart';
-import '../data/repositories/parking_lot_repo_impl.dart';
-import '../data/repositories/parking_session_repo_impl.dart';
-import '../data/repositories/payment_repo_impl.dart';
+import 'package:parqr/data/repositories/auth_repo_impl.dart';
+import 'package:parqr/data/repositories/user_repo_impl.dart';
+import 'package:parqr/data/repositories/vehicle_repo_impl.dart';
+import 'package:parqr/data/repositories/operator_repo_impl.dart';
+import 'package:parqr/data/repositories/admin_repo_impl.dart';
+import 'package:parqr/data/repositories/parking_lot_repo_impl.dart';
+import 'package:parqr/data/repositories/parking_session_repo_impl.dart';
+import 'package:parqr/data/repositories/payment_repo_impl.dart';
 
 // Repositories Interfaces
-import '../domain/repositories/i_auth_repository.dart';
-import '../domain/repositories/i_user_repository.dart';
-import '../domain/repositories/i_vehicle_repository.dart';
-import '../domain/repositories/i_operator_repository.dart';
-import '../domain/repositories/i_admin_repository.dart';
-import '../domain/repositories/i_parking_lot_repository.dart';
-import '../domain/repositories/i_parking_session_repository.dart';
-import '../domain/repositories/payment_repository.dart';
+import 'package:parqr/domain/repositories/i_auth_repository.dart';
+import 'package:parqr/domain/repositories/i_user_repository.dart';
+import 'package:parqr/domain/repositories/i_vehicle_repository.dart';
+import 'package:parqr/domain/repositories/i_operator_repository.dart';
+import 'package:parqr/domain/repositories/i_admin_repository.dart';
+import 'package:parqr/domain/repositories/i_parking_lot_repository.dart';
+import 'package:parqr/domain/repositories/i_parking_session_repository.dart';
+import 'package:parqr/domain/repositories/payment_repository.dart';
 
 // Blocs & Cubits
-import '../presentation/blocs/auth/auth_bloc.dart';
-import '../presentation/blocs/profile/profile_cubit.dart';
-import '../presentation/blocs/vehicle/vehicle_cubit.dart';
-import '../presentation/blocs/parking_session/active_session_cubit.dart';
-import '../presentation/blocs/payment/payment_cubit.dart';
-import '../presentation/blocs/operator/operator_dashboard_cubit.dart';
-import '../presentation/blocs/admin/admin_approval_cubit.dart';
+import 'package:parqr/presentation/blocs/auth/auth_bloc.dart';
+import 'package:parqr/presentation/blocs/profile/profile_cubit.dart';
+import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
+import 'package:parqr/presentation/blocs/parking_session/active_session_cubit.dart';
+import 'package:parqr/presentation/blocs/payment/payment_cubit.dart';
+import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart';
+import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
 
 final sl = GetIt.instance; // Deklarasi 'sl' cukup satu kali saja di sini
 

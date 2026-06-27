@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parqr/domain/repositories/i_admin_repository.dart';
-import 'admin_approval_state.dart';
+import 'package:parqr/presentation/blocs/admin/admin_approval_state.dart';
 
 class AdminApprovalCubit extends Cubit<AdminApprovalState> {
   final IAdminRepository adminRepository;

@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'vehicle_state.dart';
+import 'package:parqr/presentation/blocs/vehicle/vehicle_state.dart';
 
 class VehicleCubit extends Cubit<VehicleState> {
   VehicleCubit() : super(VehicleInitial());
