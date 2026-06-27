@@ -7,13 +7,19 @@ import 'package:parqr/presentation/blocs/auth/auth_state.dart';
 class MockAuthRepository implements IAuthRepository {
   bool shouldThrowError = false;
   bool _isLoggedIn = false;
-  final String _role = 'user';
+  String _role = 'user';
 
   @override
   bool get isLoggedIn => _isLoggedIn;
 
   @override
   String? get currentRole => _role;
+
+  @override
+  Future<String> refreshCurrentRole() async {
+    if (shouldThrowError) throw Exception('Refresh role failed');
+    return _role;
+  }
 
   @override
   Future<void> login(String email, String password) async {
@@ -97,6 +103,40 @@ void main() {
       expectLater(authBloc.stream, emitsInOrder(expectedStates));
 
       authBloc.add(const AuthRegisterRequested(email: 'test@test.com', password: 'password', name: 'Name', phone: '08123456789'));
+    });
+
+    test('emits [AuthLoading, AuthAuthenticated(role: admin)] when login succeeds with admin role', () async {
+      mockRepository._role = 'admin';
+      final expectedStates = [
+        isA<AuthLoading>(),
+        isA<AuthAuthenticated>().having((s) => s.role, 'role', 'admin'),
+      ];
+      expectLater(authBloc.stream, emitsInOrder(expectedStates));
+
+      authBloc.add(const AuthLoginRequested(email: 'admin@test.com', password: 'password'));
+    });
+
+    test('emits [AuthAuthenticated] with refreshed role when AuthCheckStatusRequested and logged in', () async {
+      mockRepository._isLoggedIn = true;
+      mockRepository._role = 'operator';
+
+      final expectedStates = [
+        isA<AuthAuthenticated>().having((s) => s.role, 'role', 'operator'),
+      ];
+      expectLater(authBloc.stream, emitsInOrder(expectedStates));
+
+      authBloc.add(AuthCheckStatusRequested());
+    });
+
+    test('emits [AuthUnauthenticated] when AuthCheckStatusRequested and not logged in', () async {
+      mockRepository._isLoggedIn = false;
+
+      final expectedStates = [
+        isA<AuthUnauthenticated>(),
+      ];
+      expectLater(authBloc.stream, emitsInOrder(expectedStates));
+
+      authBloc.add(AuthCheckStatusRequested());
     });
   });
 }
