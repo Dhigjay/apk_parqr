@@ -11,12 +11,8 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
-  final String role;
-
-  const AuthAuthenticated(this.role);
-
-  @override
-  List<Object?> get props => [role];
+  final String role; // 'visitor' | 'operator' | 'admin'
+  const AuthAuthenticated({required this.role});
 }
 
 class AuthUnauthenticated extends AuthState {}

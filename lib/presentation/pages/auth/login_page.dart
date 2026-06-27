@@ -43,12 +43,26 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  /// Arahkan user ke dashboard yang sesuai berdasarkan role.
+  void _redirectByRole(String role) {
+    switch (role) {
+      case 'admin':
+        context.go(RouteNames.adminDashboard);
+        break;
+      case 'operator':
+        context.go(RouteNames.operatorDashboard);
+        break;
+      default:
+        context.go(RouteNames.home);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          context.go(RouteNames.home);
+          _redirectByRole(state.role);
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),

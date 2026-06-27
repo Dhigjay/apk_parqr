@@ -14,6 +14,9 @@ class AuthRepositoryImpl implements IAuthRepository {
   String? get currentRole => _remoteDataSource.currentRole;
 
   @override
+  Future<String> refreshCurrentRole() => _remoteDataSource.refreshCurrentRole();
+
+  @override
   Future<void> login(String email, String password) {
     return _remoteDataSource.login(email, password);
   }

@@ -7,10 +7,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final IAuthRepository authRepository;
 
   AuthBloc({required this.authRepository}) : super(AuthInitial()) {
-    // Mengecek apakah user sudah login sebelumnya
-    on<AuthCheckStatusRequested>((event, emit) {
+    // Mengecek apakah user sudah login sebelumnya (dipanggil dari Splash)
+    on<AuthCheckStatusRequested>((event, emit) async {
       if (authRepository.isLoggedIn) {
-        emit(AuthAuthenticated(authRepository.currentRole ?? 'user'));
+        // currentRole adalah cache di memory — kosong lagi setiap app restart,
+        // jadi harus di-refresh dulu dari database sebelum dipakai.
+        final role = await authRepository.refreshCurrentRole();
+        emit(AuthAuthenticated(role: role));
       } else {
         emit(AuthUnauthenticated());
       }
@@ -21,7 +24,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoading());
       try {
         await authRepository.login(event.email, event.password);
-        emit(AuthAuthenticated(authRepository.currentRole ?? 'user'));
+        final role = authRepository.currentRole ?? 'visitor';
+        emit(AuthAuthenticated(role: role));
       } catch (e) {
         emit(AuthError(e.toString()));
       }
@@ -32,8 +36,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoading());
       try {
         await authRepository.register(event.email, event.password, event.name, event.phone);
-        // Bisa langsung dianggap login setelah register sukses
-        emit(AuthAuthenticated(authRepository.currentRole ?? 'user'));
+        final role = authRepository.currentRole ?? 'visitor';
+        emit(AuthAuthenticated(role: role));
       } catch (e) {
         emit(AuthError(e.toString()));
       }
