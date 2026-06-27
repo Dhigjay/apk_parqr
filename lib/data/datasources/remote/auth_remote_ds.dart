@@ -6,20 +6,44 @@ class AuthRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
 
+  // Cache role di memory supaya getter sync (currentRole) tetap bisa dipakai
+  // tanpa perlu await di tempat lain. Diisi ulang setiap login/cek status.
+  String? _cachedRole;
+
   User? get currentUser => _supabaseClient.auth.currentUser;
 
   bool get isLoggedIn => currentUser != null;
 
-  String? get currentRole {
+  /// Getter sync — dipakai oleh AuthBloc setelah _fetchAndCacheRole() dipanggil.
+  String? get currentRole => _cachedRole;
+
+  /// Ambil role dari tabel public.users (BUKAN dari auth metadata)
+  /// dan simpan ke cache. Harus dipanggil setiap kali:
+  /// - setelah login berhasil
+  /// - saat app dibuka & user sudah ada sesi sebelumnya (cek status)
+  Future<String> _fetchAndCacheRole() async {
     final user = currentUser;
     if (user == null) {
-      return null;
+      _cachedRole = null;
+      return 'visitor';
     }
 
-    final metadataRole = user.appMetadata['role'] ?? user.userMetadata?['role'];
-    return metadataRole is String && metadataRole.isNotEmpty
-        ? metadataRole
-        : 'user';
+    try {
+      final response = await _supabaseClient
+          .from('users')
+          .select('role')
+          .eq('auth_id', user.id)
+          .single();
+
+      final role = response['role'] as String?;
+      _cachedRole = (role != null && role.isNotEmpty) ? role : 'visitor';
+      return _cachedRole!;
+    } catch (e) {
+      // Kalau row belum ada di public.users (race condition trigger)
+      // atau ada error lain, fallback aman ke visitor.
+      _cachedRole = 'visitor';
+      return _cachedRole!;
+    }
   }
 
   Future<void> login(String email, String password) async {
@@ -27,7 +51,13 @@ class AuthRemoteDataSource {
       email: email.trim(),
       password: password,
     );
+    // Penting: ambil role dari DB segera setelah login sukses
+    await _fetchAndCacheRole();
   }
+
+  /// Dipanggil dari AuthBloc saat AuthCheckStatusRequested (splash screen)
+  /// untuk memastikan cache role terisi meski app baru dibuka ulang.
+  Future<String> refreshCurrentRole() => _fetchAndCacheRole();
 
   Future<void> register(String email, String password, String name, String phone) async {
     await _supabaseClient.auth.signUp(
@@ -36,9 +66,11 @@ class AuthRemoteDataSource {
       data: {
         'name': name.trim(),
         'phone': phone.trim(),
-        'role': 'user',
       },
     );
+    // Trigger on_auth_user_created akan otomatis membuat row di public.users
+    // dengan role default 'visitor'.
+    await _fetchAndCacheRole();
   }
 
   Future<void> forgotPassword(String email) async {
@@ -47,5 +79,6 @@ class AuthRemoteDataSource {
 
   Future<void> logout() async {
     await _supabaseClient.auth.signOut();
+    _cachedRole = null;
   }
 }

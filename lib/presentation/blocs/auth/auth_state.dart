@@ -10,7 +10,10 @@ class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
 
-class AuthAuthenticated extends AuthState {}
+class AuthAuthenticated extends AuthState {
+  final String role; // 'visitor' | 'operator' | 'admin'
+  const AuthAuthenticated({required this.role});
+}
 
 class AuthUnauthenticated extends AuthState {}
 
