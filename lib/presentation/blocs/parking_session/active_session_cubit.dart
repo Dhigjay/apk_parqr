@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'active_session_state.dart';
+import 'package:parqr/presentation/blocs/parking_session/active_session_state.dart';
 
 class ActiveSessionCubit extends Cubit<ActiveSessionState> {
   ActiveSessionCubit() : super(ActiveSessionInitial());

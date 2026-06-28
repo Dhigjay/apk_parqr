@@ -1,5 +1,5 @@
-import '../entities/operator_registration_entity.dart';
-import '../entities/admin_stats_entity.dart';
+import 'package:parqr/domain/entities/operator_registration_entity.dart';
+import 'package:parqr/domain/entities/admin_stats_entity.dart';
 
 abstract class IAdminRepository {
   Future<List<OperatorRegistrationEntity>> getPendingRegistrations();

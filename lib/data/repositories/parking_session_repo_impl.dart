@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
-import '../../domain/entities/parking_session_entity.dart';
-import '../../domain/repositories/i_parking_session_repository.dart';
-import '../models/parking_session_model.dart';
+import 'package:parqr/domain/entities/parking_session_entity.dart';
+import 'package:parqr/domain/repositories/i_parking_session_repository.dart';
+import 'package:parqr/data/models/parking_session_model.dart';
 
 class ParkingSessionRepoImpl implements IParkingSessionRepository {
   final SupabaseClient _supabaseClient;

@@ -1,8 +1,8 @@
-import '../../../core/error/exceptions.dart';
-import '../../../domain/entities/admin_stats_entity.dart';
-import '../../../domain/entities/operator_registration_entity.dart';
-import '../../../domain/repositories/i_admin_repository.dart';
-import '../datasources/remote/admin_remote_ds.dart';
+import 'package:parqr/core/error/exceptions.dart';
+import 'package:parqr/domain/entities/admin_stats_entity.dart';
+import 'package:parqr/domain/entities/operator_registration_entity.dart';
+import 'package:parqr/domain/repositories/i_admin_repository.dart';
+import 'package:parqr/data/datasources/remote/admin_remote_ds.dart';
 
 class AdminRepositoryImpl implements IAdminRepository {
   final AdminRemoteDataSource remoteDataSource;

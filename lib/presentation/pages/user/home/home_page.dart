@@ -109,27 +109,30 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.storefront_rounded, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    AppStrings.registerLot,
-                    style: AppTextStyles.body.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
+          GestureDetector(
+            onTap: () => context.push(RouteNames.operatorRegister),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.storefront_rounded, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppStrings.registerLot,
+                      style: AppTextStyles.body.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-                const Icon(Icons.arrow_forward_rounded, color: Colors.white),
-              ],
+                  const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 28),
@@ -186,6 +189,9 @@ class _HomePageState extends State<HomePage> {
         currentIndex: 0,
         onTap: (index) {
           if (index == 1) {
+            context.push(RouteNames.history);
+          } else if (index == 2) {
+            context.push(RouteNames.profile);
             context.go(RouteNames.history);
           } else if (index == 2) {
             context.go(RouteNames.profile);

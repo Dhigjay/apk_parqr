@@ -1,4 +1,4 @@
-import '../../domain/entities/parking_lot_entity.dart';
+import 'package:parqr/domain/entities/parking_lot_entity.dart';
 
 class ParkingLotModel extends ParkingLotEntity {
   const ParkingLotModel({

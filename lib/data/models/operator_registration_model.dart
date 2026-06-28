@@ -1,4 +1,4 @@
-import '../../domain/entities/operator_registration_entity.dart';
+import 'package:parqr/domain/entities/operator_registration_entity.dart';
 
 class OperatorRegistrationModel extends OperatorRegistrationEntity {
   const OperatorRegistrationModel({
