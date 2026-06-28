@@ -42,7 +42,12 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
   void _showRejectDialog() {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
+        // Penting: pakai `dialogContext` (parameter builder), BUKAN `context`
+        // dari _ApprovalDetailPageState. dialogContext ini yang benar-benar
+        // berada di bawah Navigator yang dibuat oleh showDialog, sehingga
+        // Navigator.pop(dialogContext) pasti menutup dialog ini secara aman,
+        // tanpa mengganggu Navigator milik halaman induk.
         return Dialog(
           backgroundColor: AppColors.bgElevated,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -83,7 +88,7 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(dialogContext),
                         child: const Text(
                           'Batal',
                           style: TextStyle(color: AppColors.textSecondary),
@@ -94,7 +99,7 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
                         onPressed: () {
                           if (_formKey.currentState?.validate() ?? false) {
                             final reason = _rejectReasonController.text;
-                            Navigator.pop(context);
+                            Navigator.pop(dialogContext);
                             _reject(reason);
                           }
                         },
@@ -136,6 +141,10 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
               backgroundColor: AppColors.success,
             ),
           );
+          // Reload list dilakukan di sini, SETELAH listener menangkap sukses,
+          // bukan otomatis di dalam cubit — supaya tidak menimpa state Success
+          // sebelum listener punya kesempatan merespon.
+          context.read<AdminApprovalCubit>().loadRegistrations();
           context.pop();
         } else if (state is AdminRejectSuccess && state.registrationId == widget.id) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -144,6 +153,7 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
               backgroundColor: AppColors.error,
             ),
           );
+          context.read<AdminApprovalCubit>().loadRegistrations();
           context.pop();
         } else if (state is AdminApprovalError) {
           ScaffoldMessenger.of(context).showSnackBar(
