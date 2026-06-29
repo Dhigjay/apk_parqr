@@ -31,7 +31,6 @@ class ApprovalDetailPage extends StatefulWidget {
 
 class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
   final _rejectReasonController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -40,6 +39,9 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
   }
 
   void _showRejectDialog() {
+    final formKey = GlobalKey<FormState>();
+    _rejectReasonController.clear();
+    
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -54,7 +56,7 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Form(
-              key: _formKey,
+              key: formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -97,7 +99,7 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
                       const SizedBox(width: 12),
                       ElevatedButton(
                         onPressed: () {
-                          if (_formKey.currentState?.validate() ?? false) {
+                          if (formKey.currentState?.validate() ?? false) {
                             final reason = _rejectReasonController.text;
                             Navigator.pop(dialogContext);
                             _reject(reason);
@@ -105,6 +107,7 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.error,
+                          minimumSize: const Size(0, 42),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
