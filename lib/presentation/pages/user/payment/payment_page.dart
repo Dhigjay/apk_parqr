@@ -94,11 +94,22 @@ class _PaymentViewState extends State<PaymentView> {
     if (_selectedMethod == 'QRIS') {
       // Go to QRIS page first
       context.push(
-        '${RouteNames.payment}/qris', // We will register it or sub-route
+        '${RouteNames.payment}/qris', 
         extra: {
           'sessionId': widget.sessionId,
           'totalTariff': _totalTariff,
           'totalDuration': _totalDuration.inSeconds,
+        },
+      );
+    } else if (_selectedMethod.startsWith('VA_')) {
+      final bank = _selectedMethod.split('_')[1];
+      context.push(
+        '${RouteNames.payment}/va',
+        extra: {
+          'sessionId': widget.sessionId,
+          'totalTariff': _totalTariff,
+          'totalDuration': _totalDuration.inSeconds,
+          'bank': bank,
         },
       );
     } else {
@@ -228,6 +239,26 @@ class _PaymentViewState extends State<PaymentView> {
                     ),
                     const SizedBox(height: 10),
                     _PaymentMethodTile(
+                      title: 'Virtual Account BCA',
+                      subtitle: 'Bayar via m-BCA atau ATM BCA',
+                      icon: Icons.account_balance_rounded,
+                      isSelected: _selectedMethod == 'VA_BCA',
+                      onTap: (isLoading || isAwaiting)
+                          ? null
+                          : () => setState(() => _selectedMethod = 'VA_BCA'),
+                    ),
+                    const SizedBox(height: 10),
+                    _PaymentMethodTile(
+                      title: 'Virtual Account BNI',
+                      subtitle: 'Bayar via BNI Mobile atau ATM BNI',
+                      icon: Icons.account_balance_rounded,
+                      isSelected: _selectedMethod == 'VA_BNI',
+                      onTap: (isLoading || isAwaiting)
+                          ? null
+                          : () => setState(() => _selectedMethod = 'VA_BNI'),
+                    ),
+                    const SizedBox(height: 10),
+                    _PaymentMethodTile(
                       title: 'Bayar Cash ke Operator',
                       subtitle: 'Lakukan pembayaran manual ke pos penjagaan',
                       icon: Icons.payments_rounded,
@@ -274,8 +305,8 @@ class _PaymentViewState extends State<PaymentView> {
                     ],
 
                     AppButton(
-                      label: _selectedMethod == 'QRIS' ? 'Bayar Sekarang' : 'Minta Verifikasi Operator',
-                      icon: _selectedMethod == 'QRIS' ? Icons.qr_code_rounded : Icons.person_search_rounded,
+                      label: _selectedMethod == 'Cash' ? 'Minta Verifikasi Operator' : 'Bayar Sekarang',
+                      icon: _selectedMethod == 'Cash' ? Icons.person_search_rounded : (_selectedMethod.startsWith('VA_') ? Icons.account_balance_rounded : Icons.qr_code_rounded),
                       isLoading: isLoading,
                       onPressed: isAwaiting ? null : () => _onPayPressed(context),
                     ),
