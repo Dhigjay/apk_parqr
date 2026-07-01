@@ -20,6 +20,27 @@ class PaymentProcessing extends PaymentState {
 
 class PaymentAwaitingVerification extends PaymentState {}
 
+class PaymentQrisGenerated extends PaymentState {
+  final String qrisUrl;
+  final String paymentId;
+
+  const PaymentQrisGenerated({required this.qrisUrl, required this.paymentId});
+
+  @override
+  List<Object?> get props => [qrisUrl, paymentId];
+}
+
+class PaymentVaGenerated extends PaymentState {
+  final String vaNumber;
+  final String bank;
+  final String paymentId;
+
+  const PaymentVaGenerated({required this.vaNumber, required this.bank, required this.paymentId});
+
+  @override
+  List<Object?> get props => [vaNumber, bank, paymentId];
+}
+
 class PaymentSuccess extends PaymentState {
   final String exitQrPayload;
 
