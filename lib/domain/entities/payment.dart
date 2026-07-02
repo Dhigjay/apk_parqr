@@ -6,6 +6,10 @@ class Payment {
   final String status; // 'PENDING', 'PAID', 'FAILED'
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? midtransTransactionId;
+  final String? qrisUrl;
+  final String? vaNumber;
+  final String? bankName;
 
   Payment({
     required this.id,
@@ -15,5 +19,9 @@ class Payment {
     required this.status,
     required this.createdAt,
     required this.updatedAt,
+    this.midtransTransactionId,
+    this.qrisUrl,
+    this.vaNumber,
+    this.bankName,
   });
 }

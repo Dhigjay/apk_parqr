@@ -16,11 +16,36 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
   @override
   Future<PaymentModel> createPayment(String sessionId, double amount, String paymentMethod) async {
     final response = await supabaseClient.from('payments').insert({
-      'session_id': sessionId,
+      'parking_session_id': sessionId,
       'amount': amount,
-      'payment_method': paymentMethod,
+      'method': paymentMethod,
       'status': 'PENDING',
     }).select().single();
+
+    if (paymentMethod == 'QRIS') {
+      try {
+        final res = await supabaseClient.functions.invoke(
+          'midtrans_qris',
+          body: {
+            'payment_id': response['id'],
+            'amount': amount,
+          },
+        );
+        
+        // The edge function updates the DB, so we re-fetch to get the updated payment with qris_url
+        if (res.status == 200) {
+          final updatedResponse = await supabaseClient
+            .from('payments')
+            .select()
+            .eq('id', response['id'])
+            .single();
+          return PaymentModel.fromJson(updatedResponse);
+        }
+      } catch (e) {
+        // If edge function fails, we might still return the created payment, but UI needs to handle error
+        print('Error invoking edge function: $e');
+      }
+    }
 
     return PaymentModel.fromJson(response);
   }

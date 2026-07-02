@@ -38,7 +38,7 @@ void main() {
 
       expectLater(paymentCubit.stream, emitsInOrder(expectedStates));
 
-      paymentCubit.processQrisPayment();
+      paymentCubit.processQrisPayment('dummy_session_id', 10000.0);
     });
 
     test('cancelPayment reverts to PaymentInitial', () async {
@@ -49,7 +49,7 @@ void main() {
 
       expectLater(paymentCubit.stream, emitsInOrder(expectedStates));
 
-      paymentCubit.processQrisPayment();
+      paymentCubit.processQrisPayment('dummy_session_id', 10000.0);
       
       // Adding a small delay to ensure Processing is emitted first
       await Future.delayed(const Duration(milliseconds: 100));

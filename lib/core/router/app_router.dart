@@ -19,6 +19,7 @@ import 'package:parqr/presentation/pages/user/parking_detail/parking_detail_page
 import 'package:parqr/presentation/pages/user/active_parking/active_parking_page.dart';
 import 'package:parqr/presentation/pages/user/payment/payment_page.dart';
 import 'package:parqr/presentation/pages/user/payment/qris_payment_page.dart';
+import 'package:parqr/presentation/pages/user/payment/va_payment_page.dart';
 import 'package:parqr/presentation/pages/user/payment/exit_qr_page.dart';
 import 'package:parqr/presentation/pages/user/history/history_page.dart';
 import 'package:parqr/presentation/pages/user/history/history_detail_page.dart';
@@ -159,6 +160,22 @@ class AppRouter {
             sessionId: sessionId,
             totalTariff: totalTariff,
             totalDuration: totalDuration,
+          );
+        },
+      ),
+      GoRoute(
+        path: '${RouteNames.payment}/va',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final sessionId = extra?['sessionId'] as String? ?? 'demo-session-001';
+          final totalTariff = extra?['totalTariff'] as double? ?? 5000.0;
+          final totalDuration = extra?['totalDuration'] as int? ?? 3600;
+          final bank = extra?['bank'] as String? ?? 'bca';
+          return VaPaymentPage(
+            sessionId: sessionId,
+            totalTariff: totalTariff,
+            totalDuration: totalDuration,
+            bank: bank,
           );
         },
       ),
