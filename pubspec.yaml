@@ -56,3 +56,8 @@ flutter:
     - assets/images/
     - assets/animations/
 
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/logo.png"
+  min_sdk_version: 21
