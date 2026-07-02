@@ -96,27 +96,27 @@ class PaymentCubit extends Cubit<PaymentState> {
   }
 
   void _listenToPayment(SupabaseClient supabase, String paymentId) {
-    supabase.channel('public:payments')
-      .onPostgresChanges(
-        event: PostgresChangeEvent.update,
-          schema: 'public',
-          table: 'payments',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'id',
-            value: paymentId,
-          ),
-          callback: (payload) {
-            final status = payload.newRecord['status'];
-            if (status == 'PAID') {
-              // Get exit QR payload (mocking for MVP, or could call Edge function)
-              emit(PaymentSuccess(exitQrPayload: '{"type":"EXIT", "payment_id":"$paymentId"}'));
-            } else if (status == 'FAILED') {
-              emit(const PaymentFailed('Pembayaran dibatalkan atau kedaluwarsa'));
+    try {
+      supabase.channel('public:payments')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+            schema: 'public',
+            table: 'payments',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'id',
+              value: paymentId,
+            ),
+            callback: (payload) {
+              final status = payload.newRecord['status'];
+              if (status == 'PAID') {
+                // Get exit QR payload (mocking for MVP, or could call Edge function)
+                emit(PaymentSuccess(exitQrPayload: '{"type":"EXIT", "payment_id":"$paymentId"}'));
+              } else if (status == 'FAILED') {
+                emit(const PaymentFailed('Pembayaran dibatalkan atau kedaluwarsa'));
+              }
             }
-          }
-        ).subscribe();
-
+          ).subscribe();
     } catch (e) {
       emit(PaymentFailed('Terjadi kesalahan: $e'));
     }
