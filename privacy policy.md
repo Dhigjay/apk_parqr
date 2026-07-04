@@ -1,102 +1,87 @@
 # Kebijakan Privasi ParQr
 
-**Terakhir diperbarui:** 29 Juni 2026
+**Terakhir diperbarui:** 4 Juli 2026
 
-Kebijakan Privasi ini menjelaskan bagaimana ParQr ("kami") mengumpulkan, menggunakan, menyimpan, dan melindungi data pribadi Anda saat menggunakan aplikasi ParQr ("Aplikasi"). Dengan menggunakan Aplikasi ini, Anda menyetujui praktik yang dijelaskan dalam kebijakan ini.
+Kebijakan Privasi ini menjelaskan bagaimana ParQr ("kami") mengumpulkan, menggunakan, menyimpan, dan melindungi data Anda saat menggunakan aplikasi pencatatan dan utilitas parkir ParQr ("Aplikasi"). Dengan menggunakan Aplikasi ini, Anda menyetujui praktik yang dijelaskan dalam kebijakan ini.
 
 ---
 
 ## 1. Informasi yang Kami Kumpulkan
 
 ### 1.1 Informasi yang Anda Berikan Langsung
-- **Data akun**: nama lengkap, alamat email, nomor telepon, dan kata sandi saat Anda mendaftar.
-- **Data profil**: alamat tempat tinggal (opsional).
-- **Data kendaraan**: nomor polisi, merek, model, jenis kendaraan, dan foto kendaraan.
-- **Data pendaftaran operator**: nama usaha, alamat lahan parkir, titik lokasi (latitude/longitude), luas lahan, jumlah lantai, kapasitas parkir, tarif per jam, dan foto lokasi lahan parkir.
+- **Data Akun**: Nama lengkap, alamat email, nomor telepon, dan kata sandi saat Anda mendaftar.
+- **Data Kendaraan**: Nomor polisi, merek, model, jenis kendaraan, dan foto kendaraan (opsional) untuk memudahkan identifikasi saat parkir.
 
 ### 1.2 Informasi yang Dikumpulkan Otomatis
-- **Data transaksi**: riwayat sesi parkir, waktu masuk dan keluar, durasi parkir, dan riwayat pembayaran.
-- **Data lokasi**: lokasi kendaraan yang Anda simpan secara manual di dalam Aplikasi (fitur "Simpan Lokasi Kendaraan"), serta titik lokasi lahan parkir yang ditampilkan melalui integrasi peta.
-- **Data perangkat**: jenis perangkat, sistem operasi, dan pengenal perangkat untuk keperluan keamanan dan dukungan teknis.
+- **Data Aktivitas Parkir**: Waktu masuk dan keluar, durasi parkir, serta riwayat pencatatan tagihan.
+- **Data Lokasi**: Lokasi kendaraan yang Anda simpan secara manual di dalam Aplikasi (fitur "Simpan Lokasi Kendaraan"), serta titik lokasi area parkir yang ditampilkan melalui integrasi peta untuk membantu navigasi Anda.
+- **Data Perangkat**: Jenis perangkat, sistem operasi, dan pengenal perangkat standar untuk keperluan pemecahan masalah (troubleshooting) dan keamanan.
 
 ---
 
 ## 2. Bagaimana Kami Menggunakan Informasi Anda
 
-Kami menggunakan data yang dikumpulkan untuk:
-
-- Membuat dan mengelola akun Anda.
-- Memproses pemesanan slot parkir dan transaksi pembayaran.
-- Menampilkan lokasi lahan parkir terdekat melalui peta.
-- Memverifikasi kendaraan masuk dan keluar melalui kode QR.
-- Memproses pengajuan pendaftaran sebagai operator lahan parkir.
-- Mengirimkan notifikasi terkait status pemesanan, pembayaran, dan persetujuan pendaftaran.
-- Meningkatkan kualitas layanan dan keamanan Aplikasi.
+Kami menggunakan data yang dikumpulkan semata-mata untuk fungsionalitas Aplikasi, yaitu:
+- Membuat dan mengelola akun pengguna Anda.
+- Menghitung durasi parkir dan menampilkan estimasi biaya.
+- Membantu Anda menemukan kembali lokasi kendaraan yang diparkir melalui fitur peta.
+- Memverifikasi riwayat kendaraan masuk dan keluar melalui pemindaian kode QR.
+- Meningkatkan keamanan, stabilitas, dan kualitas layanan Aplikasi.
 
 ---
 
 ## 3. Pembagian Data dengan Pihak Ketiga
 
-Kami dapat membagikan sebagian data Anda kepada pihak ketiga tepercaya yang membantu kami menjalankan layanan ini. Pihak ketiga tersebut hanya menerima data yang relevan dengan fungsi layanan yang mereka berikan, dan terikat untuk menjaga kerahasiaan data Anda.
+Kami tidak menjual atau menyewakan data pribadi Anda. Kami hanya membagikan sebagian data kepada layanan pihak ketiga tepercaya yang sangat penting untuk menjalankan fungsionalitas inti Aplikasi:
 
 | Pihak Ketiga | Tujuan Penggunaan | Data yang Dibagikan |
 |---|---|---|
-| **Midtrans** | Memproses pembayaran QRIS | Jumlah transaksi, ID sesi parkir, status pembayaran |
-| **Google Maps** | Menampilkan lokasi lahan parkir dan rute | Titik lokasi (latitude/longitude), alamat lahan parkir |
-| **Supabase** | Penyimpanan basis data dan autentikasi akun | Seluruh data yang Anda berikan ke Aplikasi (disimpan secara terenkripsi) |
-
-Kami **tidak menjual** data pribadi Anda kepada pihak mana pun untuk tujuan pemasaran.
+| **Google Maps** | Menampilkan peta dan fitur penyimpanan lokasi kendaraan | Titik koordinat (latitude/longitude) |
+| **Payment Gateway** | Memfasilitasi pemrosesan pembayaran digital mandiri | ID Sesi Parkir, jumlah tagihan, status transaksi |
+| **Supabase** | Penyimpanan basis data cloud dan sistem autentikasi akun | Data akun dan riwayat aktivitas (disimpan secara aman dan terenkripsi) |
 
 ---
 
 ## 4. Penyimpanan dan Keamanan Data
 
-- Data Anda disimpan di server Supabase dengan mekanisme **Row Level Security (RLS)**, yang memastikan hanya Anda dan pihak yang berwenang (seperti operator lahan parkir terkait atau admin) yang dapat mengakses data Anda.
-- Kata sandi disimpan dalam bentuk terenkripsi dan tidak dapat dibaca oleh siapa pun, termasuk oleh kami.
-- Foto kendaraan dan foto lahan parkir disimpan di Supabase Storage dengan akses yang dibatasi sesuai kebutuhan fungsi Aplikasi.
-- Kami menerapkan langkah-langkah teknis dan organisasi yang wajar untuk melindungi data Anda dari akses tidak sah, kehilangan, atau penyalahgunaan. Namun, tidak ada sistem yang sepenuhnya bebas dari risiko keamanan.
+- **Infrastruktur Cloud**: Data Anda disimpan di server pihak ketiga yang aman (Supabase) dengan protokol keamanan standar industri.
+- **Enkripsi**: Kata sandi Anda disimpan dalam bentuk terenkripsi satu arah (hash) dan tidak dapat dibaca oleh pihak mana pun, termasuk kami.
+- Kami menerapkan langkah-langkah keamanan teknis yang wajar untuk melindungi data dari akses tidak sah. Namun, perlu dipahami bahwa tidak ada transmisi internet yang 100% bebas dari risiko.
 
 ---
 
 ## 5. Hak Anda Terhadap Data Pribadi
 
-Sesuai dengan Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP), Anda memiliki hak untuk:
-
-- Mengakses dan memperoleh salinan data pribadi Anda.
-- Memperbarui atau mengoreksi data pribadi yang tidak akurat.
-- Meminta penghapusan data pribadi Anda, kecuali jika data tersebut diperlukan untuk kepentingan hukum atau penyelesaian transaksi yang masih berlangsung.
-- Menarik persetujuan Anda atas pemrosesan data pribadi.
-- Mengajukan keberatan atas pemrosesan data pribadi Anda dalam kondisi tertentu.
-
-Untuk menggunakan hak-hak di atas, Anda dapat menghubungi kami melalui kontak yang tercantum di Bagian 9.
+Anda memiliki kendali penuh atas data Anda. Anda berhak untuk:
+- Mengakses atau memperbarui informasi profil dan data kendaraan Anda langsung dari dalam menu Aplikasi.
+- Meminta penghapusan akun beserta seluruh data yang terkait secara permanen. Permintaan penghapusan dapat dilakukan melalui menu di dalam Aplikasi atau dengan menghubungi kami.
 
 ---
 
 ## 6. Penyimpanan Data
 
-Kami menyimpan data pribadi Anda selama akun Anda masih aktif, atau selama diperlukan untuk memenuhi tujuan yang dijelaskan dalam kebijakan ini, termasuk kewajiban hukum, akuntansi, atau pelaporan. Data riwayat transaksi dapat disimpan lebih lama untuk keperluan audit dan penyelesaian perselisihan.
+Kami menyimpan data Anda selama akun Anda aktif untuk memberikan layanan utilitas parkir. Jika Anda menghapus akun, seluruh data identifikasi pribadi akan dihapus, kecuali data riwayat transaksi anonim yang mungkin tetap dipertahankan untuk keperluan analisis statistik internal.
 
 ---
 
 ## 7. Data Anak
 
-Aplikasi ini tidak ditujukan untuk anak di bawah usia 17 tahun. Kami tidak secara sengaja mengumpulkan data pribadi dari anak-anak. Jika Anda mengetahui bahwa seorang anak telah memberikan data pribadinya kepada kami, silakan hubungi kami agar dapat segera kami hapus.
+Aplikasi ParQr dirancang untuk pengguna yang sudah memiliki izin mengemudi (usia 17 tahun ke atas). Kami tidak secara sengaja mengumpulkan data dari anak-anak di bawah umur. Jika ada indikasi pengumpulan data anak di bawah umur, informasi tersebut akan segera kami hapus.
 
 ---
 
 ## 8. Perubahan Kebijakan Privasi
 
-Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu untuk mencerminkan perubahan pada praktik kami atau untuk alasan operasional, hukum, atau peraturan lainnya. Perubahan akan diberitahukan melalui Aplikasi atau melalui email, dan tanggal "Terakhir diperbarui" di bagian atas dokumen ini akan disesuaikan.
+Kami dapat memperbarui kebijakan ini jika terdapat perubahan fitur atau standar keamanan. Pembaruan akan tercermin pada tanggal "Terakhir diperbarui" di bagian atas dokumen ini.
 
 ---
 
-## 9. Kontak Kami
+## 9. Hubungi Kami
 
-Jika Anda memiliki pertanyaan, keluhan, atau permintaan terkait data pribadi Anda, silakan hubungi kami melalui:
+Jika Anda memiliki pertanyaan, keluhan, atau permintaan terkait penghapusan data, silakan hubungi kami melalui:
 
-**Email:** support@parqr.app
-**Aplikasi:** ParQr — Menu Bantuan & Dukungan
+**Email:** support@parqr.app  
+**Aplikasi:** ParQr — Menu Bantuan & Dukungan  
 
 ---
-
 *Dengan menggunakan Aplikasi ParQr, Anda menyatakan telah membaca, memahami, dan menyetujui Kebijakan Privasi ini.*
