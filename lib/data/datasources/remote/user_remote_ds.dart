@@ -52,7 +52,7 @@ class UserRemoteDataSource {
       'id': user.id,
       'email': user.email ?? '',
       'role': 'user',
-      if (fullName != null) 'full_name': fullName.trim(),
+      if (fullName != null) 'name': fullName.trim(),
       if (phone != null) 'phone': _blankToNull(phone),
       if (address != null) 'address': _blankToNull(address),
       if (profileCompleted != null) 'profile_completed': profileCompleted,

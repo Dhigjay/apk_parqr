@@ -17,7 +17,7 @@ class UserModel extends UserEntity {
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String? ?? '',
-      fullName: json['full_name'] as String?,
+      fullName: json['name'] as String?,
       phone: json['phone'] as String?,
       address: json['address'] as String?,
       role: json['role'] as String? ?? 'user',
@@ -45,7 +45,7 @@ class UserModel extends UserEntity {
     return {
       'id': id,
       'email': email,
-      'full_name': fullName,
+      'name': fullName,
       'phone': phone,
       'address': address,
       'role': role,
@@ -59,7 +59,7 @@ class UserModel extends UserEntity {
     return {
       'id': id,
       'email': email,
-      'full_name': fullName,
+      'name': fullName,
       'phone': phone,
       'address': address,
       'role': role,
