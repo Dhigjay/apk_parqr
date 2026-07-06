@@ -42,8 +42,8 @@ class ParkingHistoryModel extends ParkingHistoryEntity {
       entryTime: entry,
       exitTime: exit,
       status: statusStr,
-      vehicleName: vehicle['name'] as String? ?? '-',
-      vehicleLicensePlate: vehicle['license_plate'] as String? ?? '-',
+      vehicleName: '${vehicle['brand'] ?? ''} ${vehicle['model'] ?? ''}'.trim(),
+      vehicleLicensePlate: vehicle['plate_number'] as String? ?? '-',
       totalFare: fare,
       isOngoing: statusStr == 'active' || statusStr == 'booked',
     );

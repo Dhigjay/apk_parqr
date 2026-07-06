@@ -91,7 +91,7 @@ class ParkingSessionRepoImpl implements IParkingSessionRepository {
           .select('''
             *,
             parking_lots ( name, address ),
-            vehicles ( license_plate, name ),
+            vehicles ( plate_number, brand, model ),
             payments ( amount )
           ''')
           .eq('user_id', userId)
