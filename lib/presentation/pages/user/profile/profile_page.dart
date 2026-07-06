@@ -8,6 +8,7 @@ import 'package:parqr/presentation/blocs/profile/profile_cubit.dart';
 import 'package:parqr/presentation/widgets/app_bottom_nav.dart';
 
 import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/presentation/blocs/profile/profile_state.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -81,7 +82,7 @@ class _ProfileView extends StatelessWidget {
                   email: state.email,
                 );
               }
-              return _ProfileHeader(name: 'Memuat...', email: '');
+              return const _ProfileHeader(name: 'Memuat...', email: '');
             },
           ),
           const SizedBox(height: 28),
@@ -188,7 +189,7 @@ class _ProfileHeader extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: AppColors.primaryGradient,
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 name.isNotEmpty ? name[0].toUpperCase() : 'U',
                 style: TextStyle(
