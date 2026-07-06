@@ -7,13 +7,16 @@ import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/blocs/profile/profile_cubit.dart';
 import 'package:parqr/presentation/widgets/app_bottom_nav.dart';
 
+import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/presentation/blocs/profile/profile_state.dart';
+
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ProfileCubit(),
+      create: (_) => sl<ProfileCubit>()..fetchProfile(),
       child: const _ProfileView(),
     );
   }
@@ -71,7 +74,17 @@ class _ProfileView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         children: [
           // ── Avatar & Name ────────────────────────────────────
-          _ProfileHeader(),
+          BlocBuilder<ProfileCubit, ProfileState>(
+            builder: (context, state) {
+              if (state is ProfileLoaded) {
+                return _ProfileHeader(
+                  name: state.name.isNotEmpty ? state.name : 'Pengguna',
+                  email: state.email,
+                );
+              }
+              return const _ProfileHeader(name: 'Memuat...', email: '');
+            },
+          ),
           const SizedBox(height: 28),
 
           // ── Kendaraan ────────────────────────────────────────
@@ -93,7 +106,9 @@ class _ProfileView extends StatelessWidget {
           _SettingsTile(
             icon: Icons.person_outline_rounded,
             label: 'Edit Profil',
-            onTap: () {},
+            onTap: () {
+              context.push(RouteNames.editProfile);
+            },
           ),
           _SettingsTile(
             icon: Icons.lock_outline_rounded,
@@ -150,6 +165,11 @@ class _ProfileView extends StatelessWidget {
 // ── Sub-Widgets ──────────────────────────────────────────────────────────────
 
 class _ProfileHeader extends StatelessWidget {
+  final String name;
+  final String email;
+
+  const _ProfileHeader({required this.name, required this.email});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -169,9 +189,9 @@ class _ProfileHeader extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: AppColors.primaryGradient,
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'AF',
+                name.isNotEmpty ? name[0].toUpperCase() : 'U',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 26,
@@ -187,12 +207,12 @@ class _ProfileHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Afif Hidayatullah',
+                  name,
                   style: AppTextStyles.h3.copyWith(fontSize: 18),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'afif@example.com',
+                  email,
                   style: AppTextStyles.bodySecondary.copyWith(fontSize: 13),
                 ),
                 const SizedBox(height: 8),
@@ -218,7 +238,9 @@ class _ProfileHeader extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit_outlined,
                 color: AppColors.textSecondary, size: 20),
-            onPressed: () {},
+            onPressed: () {
+              context.push(RouteNames.editProfile);
+            },
             tooltip: 'Edit Profil',
           ),
         ],

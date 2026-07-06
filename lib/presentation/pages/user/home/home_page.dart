@@ -6,8 +6,13 @@ import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/pages/user/home/widgets/parking_card_widget.dart';
 import 'package:parqr/presentation/widgets/app_bottom_nav.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:parqr/presentation/widgets/empty_state_widget.dart';
 import 'package:parqr/presentation/widgets/status_badge.dart';
+import 'package:parqr/presentation/blocs/parking_lot/parking_lot_bloc.dart';
+import 'package:parqr/presentation/blocs/parking_lot/parking_lot_state.dart';
+import 'package:parqr/presentation/blocs/parking_lot/parking_lot_event.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,34 +24,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _searchController = TextEditingController();
   String _query = '';
-  bool _isLoading = false;
 
-  static const _parkingLots = [
-    _ParkingLotViewData(
-      name: 'ParQr Sudirman Hub',
-      address: 'Jl. Jend. Sudirman No. 12, Jakarta Pusat',
-      distance: '350 m',
-      pricePerHour: 'Rp5.000/jam',
-      availableSlots: 24,
-      totalSlots: 80,
-    ),
-    _ParkingLotViewData(
-      name: 'Mall Atrium Parking',
-      address: 'Jl. Senen Raya No. 135, Jakarta Pusat',
-      distance: '1.2 km',
-      pricePerHour: 'Rp7.000/jam',
-      availableSlots: 7,
-      totalSlots: 120,
-    ),
-    _ParkingLotViewData(
-      name: 'Kemang Night Park',
-      address: 'Jl. Kemang Selatan VIII, Jakarta Selatan',
-      distance: '2.8 km',
-      pricePerHour: 'Rp6.000/jam',
-      availableSlots: 18,
-      totalSlots: 64,
-    ),
-  ];
+  // Remove dummy static const _parkingLots
 
   @override
   void dispose() {
@@ -57,23 +36,17 @@ class _HomePageState extends State<HomePage> {
   void _onSearchChanged(String value) {
     setState(() {
       _query = value;
-      _isLoading = true;
     });
 
-    Future<void>.delayed(const Duration(milliseconds: 350), () {
-      if (mounted) setState(() => _isLoading = false);
+    Future<void>.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        context.read<ParkingLotBloc>().add(SearchParkingLotsRequested(value));
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredLots = _parkingLots
-        .where(
-          (lot) =>
-              lot.name.toLowerCase().contains(_query.toLowerCase()) ||
-              lot.address.toLowerCase().contains(_query.toLowerCase()),
-        )
-        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -148,41 +121,63 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 14),
-          if (_isLoading)
-            ...List.generate(
-              3,
-              (index) => const Padding(
-                padding: EdgeInsets.only(bottom: 14),
-                child: ParkingCardSkeleton(),
-              ),
-            )
-          else if (filteredLots.isEmpty)
-            EmptyStateWidget(
-              title: 'Parkir tidak ditemukan',
-              message:
-                  'Coba cari nama tempat atau area lain untuk melihat hasil parkir.',
-              icon: Icons.search_off_rounded,
-              actionLabel: 'Reset Pencarian',
-              onAction: () {
-                _searchController.clear();
-                _onSearchChanged('');
-              },
-            )
-          else
-            ...filteredLots.map(
-              (lot) => Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: ParkingCardWidget(
-                  name: lot.name,
-                  address: lot.address,
-                  distance: lot.distance,
-                  pricePerHour: lot.pricePerHour,
-                  availableSlots: lot.availableSlots,
-                  totalSlots: lot.totalSlots,
-                  onTap: () => context.push(RouteNames.parkingDetail),
-                ),
-              ),
-            ),
+          BlocBuilder<ParkingLotBloc, ParkingLotState>(
+            builder: (context, state) {
+              if (state is ParkingLotLoading || state is ParkingLotInitial) {
+                return Column(
+                  children: List.generate(
+                    3,
+                    (index) => const Padding(
+                      padding: EdgeInsets.only(bottom: 14),
+                      child: ParkingCardSkeleton(),
+                    ),
+                  ),
+                );
+              } else if (state is ParkingLotLoaded) {
+                final lots = state.parkingLots;
+                if (lots.isEmpty) {
+                  return EmptyStateWidget(
+                    title: 'Parkir tidak ditemukan',
+                    message:
+                        'Coba cari nama tempat atau area lain untuk melihat hasil parkir.',
+                    icon: Icons.search_off_rounded,
+                    actionLabel: 'Reset Pencarian',
+                    onAction: () {
+                      _searchController.clear();
+                      _onSearchChanged('');
+                    },
+                  );
+                }
+
+                return Column(
+                  children: lots.map(
+                    (lot) {
+                      final formatCurrency = NumberFormat.currency(
+                        locale: 'id_ID',
+                        symbol: 'Rp',
+                        decimalDigits: 0,
+                      );
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: ParkingCardWidget(
+                          name: lot.name,
+                          address: lot.address,
+                          distance: state.distances[lot.id] ?? 'TBD',
+                          pricePerHour: '${formatCurrency.format(lot.pricePerHour)}/jam',
+                          availableSlots: lot.totalCapacity, // Temporary use totalCapacity as available
+                          totalSlots: lot.totalCapacity,
+                          onTap: () => context.push(RouteNames.parkingDetail),
+                        ),
+                      );
+                    }
+                  ).toList(),
+                );
+              } else if (state is ParkingLotError) {
+                return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+              }
+              return const SizedBox();
+            },
+          ),
         ],
       ),
       bottomNavigationBar: AppBottomNav(
@@ -202,20 +197,4 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _ParkingLotViewData {
-  const _ParkingLotViewData({
-    required this.name,
-    required this.address,
-    required this.distance,
-    required this.pricePerHour,
-    required this.availableSlots,
-    required this.totalSlots,
-  });
-
-  final String name;
-  final String address;
-  final String distance;
-  final String pricePerHour;
-  final int availableSlots;
-  final int totalSlots;
-}
+// Removed _ParkingLotViewData

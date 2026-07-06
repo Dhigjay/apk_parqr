@@ -24,6 +24,7 @@ import 'package:parqr/presentation/pages/user/payment/exit_qr_page.dart';
 import 'package:parqr/presentation/pages/user/history/history_page.dart';
 import 'package:parqr/presentation/pages/user/history/history_detail_page.dart';
 import 'package:parqr/presentation/pages/user/profile/profile_page.dart';
+import 'package:parqr/presentation/pages/user/profile/edit_profile_page.dart';
 import 'package:parqr/presentation/widgets/status_badge.dart';
 
 // Operator Pages
@@ -37,6 +38,8 @@ import 'package:parqr/presentation/pages/operator/lot_management/add_edit_lot_pa
 // Cubits
 import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart';
 import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
+import 'package:parqr/presentation/blocs/parking_lot/parking_lot_bloc.dart';
+import 'package:parqr/presentation/blocs/parking_lot/parking_lot_event.dart';
 
 // Admin Pages
 import 'package:parqr/presentation/pages/admin/admin_dashboard_page.dart';
@@ -115,7 +118,10 @@ class AppRouter {
       ),
       GoRoute(
         path: RouteNames.home,
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => BlocProvider<ParkingLotBloc>(
+          create: (context) => sl<ParkingLotBloc>()..add(const SearchParkingLotsRequested('')),
+          child: const HomePage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.parkingDetail,
@@ -202,6 +208,10 @@ class AppRouter {
       GoRoute(
         path: RouteNames.profile,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: RouteNames.editProfile,
+        builder: (context, state) => const EditProfilePage(),
       ),
       GoRoute(
         path: RouteNames.historyDetail,
