@@ -36,6 +36,7 @@ import 'package:parqr/presentation/blocs/parking_session/active_session_cubit.da
 import 'package:parqr/presentation/blocs/payment/payment_cubit.dart';
 import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart';
 import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
+import 'package:parqr/presentation/blocs/history/history_cubit.dart';
 
 final sl = GetIt.instance; // Deklarasi 'sl' cukup satu kali saja di sini
 
@@ -108,5 +109,8 @@ Future<void> initInjection() async {
   );
   sl.registerFactory<AdminApprovalCubit>(
     () => AdminApprovalCubit(adminRepository: sl()),
+  );
+  sl.registerFactory<HistoryCubit>(
+    () => HistoryCubit(sessionRepository: sl(), supabaseClient: sl()),
   );
 }
