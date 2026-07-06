@@ -93,7 +93,7 @@ Future<void> initInjection() async {
     () => AuthBloc(authRepository: sl()),
   );
   sl.registerFactory<ProfileCubit>(
-    () => ProfileCubit(),
+    () => ProfileCubit(userRepository: sl()),
   );
   sl.registerFactory<VehicleCubit>(
     () => VehicleCubit(),
