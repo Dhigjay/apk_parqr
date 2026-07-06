@@ -17,31 +17,33 @@ class ParkingLotModel extends ParkingLotEntity {
 
   factory ParkingLotModel.fromJson(Map<String, dynamic> json) {
     return ParkingLotModel(
-      id: json['id'] as String,
-      operatorId: json['operator_id'] as String,
-      name: json['name'] as String,
-      address: json['address'] as String,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-      totalCapacity: json['total_capacity'] as int,
-      totalFloors: json['total_floors'] as int,
-      pricePerHour: (json['price_per_hour'] as num).toDouble(),
+      id: json['id'] as String? ?? '',
+      operatorId: (json['owner_id'] ?? json['operator_id']) as String? ?? '',
+      name: json['name'] as String? ?? '',
+      address: json['address'] as String? ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      totalCapacity: json['total_capacity'] as int? ?? 0,
+      totalFloors: (json['floors'] ?? json['total_floors']) as int? ?? 0,
+      pricePerHour: ((json['hourly_rate'] ?? json['price_per_hour']) as num?)?.toDouble() ?? 0.0,
       photoUrl: json['photo_url'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null 
+          ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'operator_id': operatorId,
+      'owner_id': operatorId,
       'name': name,
       'address': address,
       'latitude': latitude,
       'longitude': longitude,
       'total_capacity': totalCapacity,
-      'total_floors': totalFloors,
-      'price_per_hour': pricePerHour,
+      'floors': totalFloors,
+      'hourly_rate': pricePerHour,
       'photo_url': photoUrl,
       'created_at': createdAt.toIso8601String(),
     };

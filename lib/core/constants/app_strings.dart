@@ -27,7 +27,7 @@ class AppStrings {
   // Home
   static const String searchParking    = 'Cari tempat parkir...';
   static const String nearbyParking    = 'Parkir Terdekat';
-  static const String registerLot      = 'Daftarkan lahan parkirmu!';
+  static const String registerLot      = 'Daftarkan parkirmu!';
 
   // Parking
   static const String bookParking      = 'Pesan Parkir';

@@ -37,6 +37,8 @@ import 'package:parqr/presentation/pages/operator/lot_management/add_edit_lot_pa
 // Cubits
 import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart';
 import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
+import 'package:parqr/presentation/blocs/parking_lot/parking_lot_bloc.dart';
+import 'package:parqr/presentation/blocs/parking_lot/parking_lot_event.dart';
 
 // Admin Pages
 import 'package:parqr/presentation/pages/admin/admin_dashboard_page.dart';
@@ -115,7 +117,10 @@ class AppRouter {
       ),
       GoRoute(
         path: RouteNames.home,
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => BlocProvider<ParkingLotBloc>(
+          create: (context) => sl<ParkingLotBloc>()..add(const SearchParkingLotsRequested('')),
+          child: const HomePage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.parkingDetail,
