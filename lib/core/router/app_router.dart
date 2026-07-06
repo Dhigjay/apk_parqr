@@ -24,6 +24,7 @@ import 'package:parqr/presentation/pages/user/payment/exit_qr_page.dart';
 import 'package:parqr/presentation/pages/user/history/history_page.dart';
 import 'package:parqr/presentation/pages/user/history/history_detail_page.dart';
 import 'package:parqr/presentation/pages/user/profile/profile_page.dart';
+import 'package:parqr/presentation/pages/user/profile/edit_profile_page.dart';
 import 'package:parqr/presentation/widgets/status_badge.dart';
 
 // Operator Pages
@@ -207,6 +208,10 @@ class AppRouter {
       GoRoute(
         path: RouteNames.profile,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: RouteNames.editProfile,
+        builder: (context, state) => const EditProfilePage(),
       ),
       GoRoute(
         path: RouteNames.historyDetail,

@@ -14,11 +14,18 @@ class ProfileLoading extends ProfileState {}
 class ProfileLoaded extends ProfileState {
   final String name;
   final String address;
+  final String phone;
+  final String email;
   
-  const ProfileLoaded({required this.name, required this.address});
+  const ProfileLoaded({
+    required this.name, 
+    required this.address,
+    this.phone = '',
+    this.email = '',
+  });
 
   @override
-  List<Object?> get props => [name, address];
+  List<Object?> get props => [name, address, phone, email];
 }
 
 class ProfileError extends ProfileState {

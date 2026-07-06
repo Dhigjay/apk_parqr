@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:parqr/domain/entities/parking_session_entity.dart';
+import 'package:parqr/domain/entities/parking_history_entity.dart';
 import 'package:parqr/domain/repositories/i_parking_session_repository.dart';
 import 'package:parqr/data/models/parking_session_model.dart';
+import 'package:parqr/data/models/parking_history_model.dart';
 
 class ParkingSessionRepoImpl implements IParkingSessionRepository {
   final SupabaseClient _supabaseClient;
@@ -78,6 +80,29 @@ class ParkingSessionRepoImpl implements IParkingSessionRepository {
       return now.isBefore(expiresAt);
     } catch (e) {
       return false; // Invalid payload format
+    }
+  }
+
+  @override
+  Future<List<ParkingHistoryEntity>> getUserHistory(String userId) async {
+    try {
+      final response = await _supabaseClient
+          .from('parking_sessions')
+          .select('''
+            *,
+            parking_lots ( name, address ),
+            vehicles ( plate_number, brand, model ),
+            payments ( amount )
+          ''')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data
+          .map((json) => ParkingHistoryModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch user parking history: $e');
     }
   }
 }
