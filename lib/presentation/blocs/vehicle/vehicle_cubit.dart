@@ -1,8 +1,23 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:parqr/domain/repositories/i_vehicle_repository.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_state.dart';
 
 class VehicleCubit extends Cubit<VehicleState> {
-  VehicleCubit() : super(VehicleInitial());
+  final IVehicleRepository _vehicleRepository;
+
+  VehicleCubit({required IVehicleRepository vehicleRepository})
+      : _vehicleRepository = vehicleRepository,
+        super(VehicleInitial());
+
+  Future<void> fetchVehicles() async {
+    emit(VehicleLoading());
+    try {
+      final vehicles = await _vehicleRepository.getMyVehicles();
+      emit(VehicleLoaded(vehicles: vehicles));
+    } catch (e) {
+      emit(VehicleError(e.toString()));
+    }
+  }
 
   Future<void> addVehicle({
     required String brand,
@@ -13,11 +28,35 @@ class VehicleCubit extends Cubit<VehicleState> {
   }) async {
     emit(VehicleLoading());
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      await _vehicleRepository.addVehicle(
+        brand: brand,
+        model: model,
+        vehicleType: type,
+        plateNumber: licensePlate,
+        photoUrl: photoPath,
+      );
       emit(VehicleAddedSuccess());
-      // Re-fetch vehicles
-      emit(const VehicleLoaded(vehicles: []));
+      await fetchVehicles();
+    } catch (e) {
+      emit(VehicleError(e.toString()));
+    }
+  }
+
+  Future<void> deleteVehicle(String id) async {
+    emit(VehicleLoading());
+    try {
+      await _vehicleRepository.deleteVehicle(id);
+      await fetchVehicles();
+    } catch (e) {
+      emit(VehicleError(e.toString()));
+    }
+  }
+
+  Future<void> setPrimaryVehicle(String id) async {
+    emit(VehicleLoading());
+    try {
+      await _vehicleRepository.setPrimaryVehicle(id);
+      await fetchVehicles();
     } catch (e) {
       emit(VehicleError(e.toString()));
     }

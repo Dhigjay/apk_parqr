@@ -97,7 +97,7 @@ Future<void> initInjection() async {
     () => ProfileCubit(userRepository: sl()),
   );
   sl.registerFactory<VehicleCubit>(
-    () => VehicleCubit(),
+    () => VehicleCubit(vehicleRepository: sl()),
   );
   sl.registerFactory<ActiveSessionCubit>(
     () => ActiveSessionCubit(),

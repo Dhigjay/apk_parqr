@@ -40,6 +40,7 @@ import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart'
 import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
 import 'package:parqr/presentation/blocs/parking_lot/parking_lot_bloc.dart';
 import 'package:parqr/presentation/blocs/parking_lot/parking_lot_event.dart';
+import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 
 // Admin Pages
 import 'package:parqr/presentation/pages/admin/admin_dashboard_page.dart';
@@ -114,7 +115,10 @@ class AppRouter {
       ),
       GoRoute(
         path: RouteNames.addVehicle,
-        builder: (context, state) => const AddVehiclePage(),
+        builder: (context, state) => BlocProvider<VehicleCubit>(
+          create: (context) => sl<VehicleCubit>(),
+          child: const AddVehiclePage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.home,
