@@ -21,15 +21,81 @@ class PaymentCubit extends Cubit<PaymentState> {
     });
   }
 
+  Future<String> _resolveSessionId(SupabaseClient supabase, String sessionId) async {
+    final uuidRegex = RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    );
+    if (uuidRegex.hasMatch(sessionId)) {
+      return sessionId;
+    }
+
+    // It's a dummy session ID (like 'demo-session-001'). Resolve/create dynamically.
+    final currentUser = supabase.auth.currentUser;
+    if (currentUser == null) {
+      throw Exception('Autentikasi gagal. Harap login kembali.');
+    }
+
+    // 1. Get or create vehicle for the current user
+    String vehicleId;
+    final vehicleQuery = await supabase
+        .from('vehicles')
+        .select('id')
+        .eq('user_id', currentUser.id)
+        .limit(1)
+        .maybeSingle();
+
+    if (vehicleQuery == null) {
+      final insertedVehicle = await supabase.from('vehicles').insert({
+        'user_id': currentUser.id,
+        'brand': 'Mock Toyota',
+        'model': 'Avanza',
+        'vehicle_type': 'mobil',
+        'plate_number': 'B 1234 DEMO',
+        'is_primary': true,
+      }).select('id').single();
+      vehicleId = insertedVehicle['id'] as String;
+    } else {
+      vehicleId = vehicleQuery['id'] as String;
+    }
+
+    // 2. Find any active parking lot in database
+    final lotQuery = await supabase
+        .from('parking_lots')
+        .select('id')
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+    if (lotQuery == null) {
+      throw Exception('Tidak ada area parkir aktif di database. Silakan daftarkan operator/area parkir terlebih dahulu.');
+    }
+    final lotId = lotQuery['id'] as String;
+
+    // 3. Create a real parking session in the database
+    final now = DateTime.now();
+    final insertedSession = await supabase.from('parking_sessions').insert({
+      'user_id': currentUser.id,
+      'vehicle_id': vehicleId,
+      'lot_id': lotId,
+      'status': 'active',
+      'entry_qr_token': 'mock-entry-${now.millisecondsSinceEpoch}',
+      'entry_qr_expires_at': now.add(const Duration(days: 1)).toIso8601String(),
+      'entered_at': now.toIso8601String(),
+    }).select('id').single();
+
+    return insertedSession['id'] as String;
+  }
+
   void processQrisPayment(String sessionId, double amount) async {
     emit(const PaymentProcessing(method: 'QRIS'));
 
     try {
       final supabase = Supabase.instance.client;
+      final resolvedSessionId = await _resolveSessionId(supabase, sessionId);
 
       // 1. Insert payment record with correct column name and lowercase values
       final response = await supabase.from('payments').insert({
-        'session_id': sessionId,       // ← fixed: was 'parking_session_id'
+        'session_id': resolvedSessionId,       // ← fixed: was 'parking_session_id'
         'amount': amount,
         'method': 'qris',              // ← fixed: was 'QRIS' (uppercase)
         'status': 'pending',           // ← fixed: was 'PENDING' (uppercase)
@@ -70,10 +136,11 @@ class PaymentCubit extends Cubit<PaymentState> {
 
     try {
       final supabase = Supabase.instance.client;
+      final resolvedSessionId = await _resolveSessionId(supabase, sessionId);
 
       // 1. Insert payment record with correct column name and lowercase values
       final response = await supabase.from('payments').insert({
-        'session_id': sessionId,           // ← fixed: was 'parking_session_id'
+        'session_id': resolvedSessionId,           // ← fixed: was 'parking_session_id'
         'amount': amount,
         'method': 'va_${bank.toLowerCase()}',  // ← fixed: was 'VA_$bank'
         'status': 'pending',               // ← fixed: was 'PENDING'
