@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:parqr/core/constants/app_colors.dart';
@@ -94,6 +95,17 @@ class _QrisPaymentViewState extends State<QrisPaymentView> {
     return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
   }
 
+  void _copyToClipboard(BuildContext context, String text, String label) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label disalin!'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final formattedTariff = widget.totalTariff.toInt().toString().replaceAllMapped(
@@ -157,31 +169,170 @@ class _QrisPaymentViewState extends State<QrisPaymentView> {
               ),
               const SizedBox(height: 24),
 
-              // Qr Code Display Card
+              // QR Code + Link Section
               BlocBuilder<PaymentCubit, PaymentState>(
                 builder: (context, state) {
                   if (state is PaymentProcessing) {
                     return const Center(
                       child: Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: CircularProgressIndicator(),
+                        padding: EdgeInsets.all(40.0),
+                        child: Column(
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('Membuat QRIS dari Midtrans...'),
+                          ],
+                        ),
                       ),
                     );
                   } else if (state is PaymentQrisGenerated) {
-                    return QrDisplayCard(
-                      data: state.qrisUrl.isNotEmpty 
-                          ? state.qrisUrl 
-                          : 'https://qris.id/pay?session=${widget.sessionId}&amount=${widget.totalTariff}',
-                      title: 'ParQr Sudirman Hub',
-                      subtitle: 'Total Tagihan: Rp$formattedTariff',
-                      size: 200,
+                    final hasQrisUrl = state.qrisUrl.isNotEmpty;
+
+                    return Column(
+                      children: [
+                        // QR Code card
+                        QrDisplayCard(
+                          data: hasQrisUrl
+                              ? state.qrisUrl
+                              : 'https://qris.placeholder/${widget.sessionId}',
+                          title: 'ParQr',
+                          subtitle: 'Total Tagihan: Rp$formattedTariff',
+                          size: 200,
+                        ),
+
+                        // QRIS URL section (for sandbox simulation)
+                        if (hasQrisUrl) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppColors.bgCard,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.accentBlue.withValues(alpha: 0.4)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.link_rounded,
+                                      color: AppColors.accentBlue,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Link QRIS (untuk simulasi sandbox)',
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: AppColors.accentBlue,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.bgElevated,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          state.qrisUrl,
+                                          style: AppTextStyles.caption.copyWith(
+                                            color: AppColors.textSecondary,
+                                            fontFamily: 'monospace',
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.copy_rounded,
+                                          color: AppColors.accentBlue,
+                                          size: 18,
+                                        ),
+                                        onPressed: () => _copyToClipboard(
+                                          context,
+                                          state.qrisUrl,
+                                          'Link QRIS',
+                                        ),
+                                        tooltip: 'Salin link',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                // Sandbox simulation hint
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warning.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: AppColors.warning.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.science_rounded,
+                                        color: AppColors.warning,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Mode Sandbox: Salin link di atas → buka di browser untuk melihat QR → lalu simulasikan pembayaran di Midtrans Dashboard.',
+                                          style: AppTextStyles.caption.copyWith(
+                                            color: AppColors.warning,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
                     );
                   } else if (state is PaymentFailed) {
-                    return Center(
-                      child: Text(state.message, style: const TextStyle(color: Colors.red)),
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.red),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              state.message,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   }
-                  
+
                   return const SizedBox(height: 200);
                 },
               ),
@@ -199,7 +350,8 @@ class _QrisPaymentViewState extends State<QrisPaymentView> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.info_outline_rounded, color: AppColors.accentBlue, size: 20),
+                        const Icon(Icons.info_outline_rounded,
+                            color: AppColors.accentBlue, size: 20),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -211,9 +363,15 @@ class _QrisPaymentViewState extends State<QrisPaymentView> {
                     ),
                     const SizedBox(height: 12),
                     const _StepRow(step: '1', text: 'Screenshot QR code di atas.'),
-                    const _StepRow(step: '2', text: 'Buka aplikasi e-wallet (Gopay, OVO, Dana, LinkAja) atau m-banking Anda.'),
-                    const _StepRow(step: '3', text: 'Pilih opsi Scan / Bayar, lalu unggah gambar QR dari galeri Anda.'),
-                    const _StepRow(step: '4', text: 'Selesaikan transaksi. Halaman ini akan otomatis diperbarui.'),
+                    const _StepRow(
+                        step: '2',
+                        text: 'Buka aplikasi e-wallet (Gopay, OVO, Dana, LinkAja) atau m-banking.'),
+                    const _StepRow(
+                        step: '3',
+                        text: 'Pilih Scan / Bayar, lalu unggah gambar QR dari galeri.'),
+                    const _StepRow(
+                        step: '4',
+                        text: 'Selesaikan transaksi. Halaman ini akan otomatis diperbarui.'),
                   ],
                 ),
               ),
@@ -238,7 +396,7 @@ class _QrisPaymentViewState extends State<QrisPaymentView> {
                       color: AppColors.accentBlue,
                       fontWeight: FontWeight.w600,
                     ),
-                  )
+                  ),
                 ],
               ),
             ],
@@ -250,11 +408,7 @@ class _QrisPaymentViewState extends State<QrisPaymentView> {
 }
 
 class _StepRow extends StatelessWidget {
-  const _StepRow({
-    required this.step,
-    required this.text,
-  });
-
+  const _StepRow({required this.step, required this.text});
   final String step;
   final String text;
 
