@@ -3,11 +3,22 @@
 -- Date: 2026-07-08
 -- ============================================================
 
--- 1. Add is_primary column if not exists
+-- 1. Create set_updated_at helper function if it does not exist
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  new.updated_at = now();
+  RETURN new;
+END;
+$$;
+
+-- 2. Add is_primary column if not exists
 ALTER TABLE public.vehicles
   ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT false;
 
--- 2. Add updated_at column if not exists
+-- 3. Add updated_at column if not exists
 ALTER TABLE public.vehicles
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
