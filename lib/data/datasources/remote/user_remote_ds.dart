@@ -48,23 +48,81 @@ class UserRemoteDataSource {
     bool? profileCompleted,
   }) async {
     final user = _currentAuthUser;
-    final payload = <String, dynamic>{
-      'id': user.id,
-      'email': user.email ?? '',
-      'role': 'user',
-      if (fullName != null) 'full_name': fullName.trim(),
-      if (phone != null) 'phone': _blankToNull(phone),
-      if (address != null) 'address': _blankToNull(address),
-      if (profileCompleted != null) 'profile_completed': profileCompleted,
-    };
-
-    final data = await _supabaseClient
+    
+    // Check if user already exists first
+    final existing = await _supabaseClient
         .from('users')
-        .upsert(payload, onConflict: 'id')
-        .select()
-        .single();
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+    
+    if (existing != null) {
+      // User exists - do UPDATE only (don't send id or email)
+      final updatePayload = <String, dynamic>{};
+      
+      if (fullName != null && fullName.trim().isNotEmpty) {
+        updatePayload['name'] = fullName.trim();
+        updatePayload['full_name'] = fullName.trim();
+      }
+      
+      if (phone != null && phone.trim().isNotEmpty) {
+        updatePayload['phone_number'] = phone.trim();
+        updatePayload['phone'] = phone.trim();
+      }
+      
+      if (address != null && address.trim().isNotEmpty) {
+        updatePayload['address'] = address.trim();
+      }
+      
+      if (profileCompleted != null) {
+        updatePayload['profile_completed'] = profileCompleted;
+      }
 
-    return UserModel.fromJson(Map<String, dynamic>.from(data));
+      print('🔍 Updating existing user: $updatePayload');
+
+      final data = await _supabaseClient
+          .from('users')
+          .update(updatePayload)
+          .eq('id', user.id)
+          .select()
+          .single();
+
+      return UserModel.fromJson(Map<String, dynamic>.from(data));
+    } else {
+      // User doesn't exist - do INSERT
+      final insertPayload = <String, dynamic>{
+        'id': user.id,
+        'email': user.email ?? '',
+      };
+      
+      if (fullName != null && fullName.trim().isNotEmpty) {
+        insertPayload['name'] = fullName.trim();
+        insertPayload['full_name'] = fullName.trim();
+      }
+      
+      if (phone != null && phone.trim().isNotEmpty) {
+        insertPayload['phone_number'] = phone.trim();
+        insertPayload['phone'] = phone.trim();
+      }
+      
+      if (address != null && address.trim().isNotEmpty) {
+        insertPayload['address'] = address.trim();
+      }
+      
+      if (profileCompleted != null) {
+        insertPayload['profile_completed'] = profileCompleted;
+      }
+
+      print('🔍 Inserting new user: $insertPayload');
+
+      final data = await _supabaseClient
+          .from('users')
+          .insert(insertPayload)
+          .select()
+          .single();
+
+      return UserModel.fromJson(Map<String, dynamic>.from(data));
+    }
   }
 
   Future<UserModel> completeProfile({

@@ -31,7 +31,8 @@ class ProfileCubit extends Cubit<ProfileState> {
     emit(ProfileLoading());
     try {
       final user = await _userRepository.completeProfile(fullName: name, address: address);
-      emit(ProfileLoaded(
+      // Emit ProfileCompleted instead of ProfileLoaded for onboarding flow
+      emit(ProfileCompleted(
         name: user.fullName ?? '', 
         address: user.address ?? '',
         phone: user.phone ?? '',

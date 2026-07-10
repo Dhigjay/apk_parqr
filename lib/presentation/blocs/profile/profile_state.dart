@@ -28,6 +28,16 @@ class ProfileLoaded extends ProfileState {
   List<Object?> get props => [name, address, phone, email];
 }
 
+// New state specifically for onboarding complete profile success
+class ProfileCompleted extends ProfileLoaded {
+  const ProfileCompleted({
+    required super.name,
+    required super.address,
+    super.phone,
+    super.email,
+  });
+}
+
 class ProfileError extends ProfileState {
   final String message;
 

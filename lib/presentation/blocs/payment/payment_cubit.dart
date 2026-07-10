@@ -45,6 +45,17 @@ class PaymentCubit extends Cubit<PaymentState> {
         .maybeSingle();
 
     if (vehicleQuery == null) {
+      // Verify user exists in users table before inserting vehicle
+      final userCheck = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+      
+      if (userCheck == null) {
+        throw Exception('User profile belum lengkap. Silakan lengkapi profil terlebih dahulu.');
+      }
+
       final insertedVehicle = await supabase.from('vehicles').insert({
         'user_id': currentUser.id,
         'brand': 'Mock Toyota',
@@ -113,11 +124,38 @@ class PaymentCubit extends Cubit<PaymentState> {
         },
       );
 
+      // Enhanced error handling and logging
+      print('🔍 Midtrans Charge Response:');
+      print('   Status: ${res.status}');
+      print('   Data: ${res.data}');
+
       String qrisUrl = '';
-      if (res.status == 200 && res.data != null && res.data['data'] != null) {
-        qrisUrl = res.data['data']['qris_url'] ?? '';
+      if (res.status == 200 && res.data != null) {
+        if (res.data['data'] != null && res.data['data']['qris_url'] != null) {
+          qrisUrl = res.data['data']['qris_url'] ?? '';
+          print('✅ QRIS URL berhasil didapat: $qrisUrl');
+        } else {
+          print('⚠️ Response 200 tapi data kosong: ${res.data}');
+          emit(const PaymentFailed('Midtrans tidak mengembalikan QRIS URL. Cek konfigurasi MIDTRANS_SERVER_KEY di Supabase.'));
+          return;
+        }
       } else if (res.data != null && res.data['error'] != null) {
-        emit(PaymentFailed('Gagal membuat QRIS: ${res.data['error']}'));
+        final errorMsg = res.data['error'].toString();
+        print('❌ Error dari Midtrans: $errorMsg');
+        
+        // Check for common configuration errors
+        if (errorMsg.contains('MIDTRANS_SERVER_KEY')) {
+          emit(const PaymentFailed(
+            'Konfigurasi Midtrans belum lengkap.\n\n'
+            'Admin: Set MIDTRANS_SERVER_KEY di Supabase Dashboard → Settings → Edge Functions → Secrets'
+          ));
+        } else {
+          emit(PaymentFailed('Gagal membuat QRIS: $errorMsg'));
+        }
+        return;
+      } else {
+        print('❌ Response status tidak 200: ${res.status}');
+        emit(PaymentFailed('Gagal membuat QRIS (status ${res.status}). Cek logs Supabase Edge Function.'));
         return;
       }
 
@@ -159,11 +197,38 @@ class PaymentCubit extends Cubit<PaymentState> {
         },
       );
 
+      // Enhanced error handling and logging
+      print('🔍 Midtrans VA Response:');
+      print('   Status: ${res.status}');
+      print('   Data: ${res.data}');
+
       String vaNumber = '';
-      if (res.status == 200 && res.data != null && res.data['data'] != null) {
-        vaNumber = res.data['data']['va_number'] ?? '';
+      if (res.status == 200 && res.data != null) {
+        if (res.data['data'] != null && res.data['data']['va_number'] != null) {
+          vaNumber = res.data['data']['va_number'] ?? '';
+          print('✅ VA Number berhasil didapat: $vaNumber');
+        } else {
+          print('⚠️ Response 200 tapi data kosong: ${res.data}');
+          emit(const PaymentFailed('Midtrans tidak mengembalikan nomor VA. Cek konfigurasi MIDTRANS_SERVER_KEY di Supabase.'));
+          return;
+        }
       } else if (res.data != null && res.data['error'] != null) {
-        emit(PaymentFailed('Gagal membuat Virtual Account: ${res.data['error']}'));
+        final errorMsg = res.data['error'].toString();
+        print('❌ Error dari Midtrans: $errorMsg');
+        
+        // Check for common configuration errors
+        if (errorMsg.contains('MIDTRANS_SERVER_KEY')) {
+          emit(const PaymentFailed(
+            'Konfigurasi Midtrans belum lengkap.\n\n'
+            'Admin: Set MIDTRANS_SERVER_KEY di Supabase Dashboard → Settings → Edge Functions → Secrets'
+          ));
+        } else {
+          emit(PaymentFailed('Gagal membuat Virtual Account: $errorMsg'));
+        }
+        return;
+      } else {
+        print('❌ Response status tidak 200: ${res.status}');
+        emit(PaymentFailed('Gagal membuat VA (status ${res.status}). Cek logs Supabase Edge Function.'));
         return;
       }
 
