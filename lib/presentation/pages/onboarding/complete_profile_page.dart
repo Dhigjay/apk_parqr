@@ -11,8 +11,6 @@ import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/app_text_field.dart';
 import 'package:parqr/presentation/widgets/form_feedback_banner.dart';
 
-enum _FormStatus { idle, loading, error, success }
-
 class CompleteProfilePage extends StatelessWidget {
   const CompleteProfilePage({super.key});
 
@@ -36,8 +34,6 @@ class _CompleteProfileViewState extends State<_CompleteProfileView> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _addressController = TextEditingController();
-  _FormStatus _status = _FormStatus.idle;
-  String? _feedbackMessage;
 
   @override
   void dispose() {
@@ -49,14 +45,9 @@ class _CompleteProfileViewState extends State<_CompleteProfileView> {
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) {
-      setState(() {
-        _status = _FormStatus.error;
-        _feedbackMessage = 'Nama lengkap dan alamat wajib diisi.';
-      });
       return;
     }
 
-    // Panggil ProfileCubit untuk benar-benar menyimpan ke Supabase
     context.read<ProfileCubit>().completeProfile(
           name: _fullNameController.text.trim(),
           address: _addressController.text.trim(),
@@ -65,31 +56,38 @@ class _CompleteProfileViewState extends State<_CompleteProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.completeProfile)),
-      body: SafeArea(
-        child: BlocConsumer<ProfileCubit, ProfileState>(
-          listener: (context, state) {
-            if (state is ProfileLoading) {
-              setState(() {
-                _status = _FormStatus.loading;
-                _feedbackMessage = null;
-              });
-            } else if (state is ProfileLoaded) {
-              setState(() {
-                _status = _FormStatus.success;
-                _feedbackMessage =
-                    'Profil tersimpan. Lanjut tambahkan kendaraan.';
-              });
-            } else if (state is ProfileError) {
-              setState(() {
-                _status = _FormStatus.error;
-                _feedbackMessage = state.message;
-              });
-            }
-          },
-          builder: (context, state) {
-            return SingleChildScrollView(
+    return BlocConsumer<ProfileCubit, ProfileState>(
+      listener: (context, state) {
+        if (state is ProfileCompleted) {
+          // Profil tersimpan, langsung navigasi ke halaman tambah kendaraan
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Profil berhasil disimpan! Silakan tambahkan kendaraan.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.go(RouteNames.addVehicle);
+        } else if (state is ProfileError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
+        final isLoading = state is ProfileLoading;
+        final errorMessage = state is ProfileError ? state.message : null;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text(AppStrings.completeProfile),
+            automaticallyImplyLeading: false,
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
               child: Form(
                 key: _formKey,
@@ -109,6 +107,7 @@ class _CompleteProfileViewState extends State<_CompleteProfileView> {
                       hintText: 'Nama sesuai identitas',
                       prefixIcon: Icons.badge_outlined,
                       textInputAction: TextInputAction.next,
+                      enabled: !isLoading,
                       validator: (value) => (value ?? '').trim().isEmpty
                           ? 'Nama lengkap wajib diisi'
                           : null,
@@ -119,45 +118,34 @@ class _CompleteProfileViewState extends State<_CompleteProfileView> {
                       controller: _addressController,
                       hintText: 'Alamat rumah',
                       prefixIcon: Icons.home_outlined,
-                      textInputAction: TextInputAction.newline,
+                      textInputAction: TextInputAction.done,
                       maxLines: 4,
+                      enabled: !isLoading,
                       validator: (value) => (value ?? '').trim().isEmpty
                           ? 'Alamat wajib diisi'
                           : null,
                     ),
                     const SizedBox(height: 28),
-                    if (_feedbackMessage != null) ...[
+                    if (errorMessage != null) ...[
                       FormFeedbackBanner(
-                        message: _feedbackMessage!,
-                        type: _status == _FormStatus.success
-                            ? FormFeedbackType.success
-                            : FormFeedbackType.error,
+                        message: errorMessage,
+                        type: FormFeedbackType.error,
                       ),
                       const SizedBox(height: 18),
                     ],
                     AppButton(
-                      label: AppStrings.save,
-                      icon: Icons.save_outlined,
-                      isLoading: _status == _FormStatus.loading,
-                      onPressed:
-                          _status == _FormStatus.loading ? null : _submit,
-                    ),
-                    const SizedBox(height: 14),
-                    AppButton(
-                      label: 'Lanjut Tambah Kendaraan',
-                      icon: Icons.directions_car_filled_outlined,
-                      variant: AppButtonVariant.secondary,
-                      onPressed: _status == _FormStatus.success
-                          ? () => context.go(RouteNames.addVehicle)
-                          : null,
+                      label: 'Simpan & Lanjut Tambah Kendaraan',
+                      icon: Icons.arrow_forward_rounded,
+                      isLoading: isLoading,
+                      onPressed: isLoading ? null : _submit,
                     ),
                   ],
                 ),
               ),
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

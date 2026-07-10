@@ -32,7 +32,8 @@ class ProfileCubit extends Cubit<ProfileState> {
     try {
       final user = await _userRepository.completeProfile(
           fullName: name, address: address);
-      emit(ProfileLoaded(
+      // Emit ProfileCompleted so onboarding pages dapat auto-navigate
+      emit(ProfileCompleted(
         name: user.fullName ?? '',
         address: user.address ?? '',
         phone: user.phone ?? '',

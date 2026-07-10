@@ -22,8 +22,8 @@ class VehicleCubit extends Cubit<VehicleState> {
   Future<void> addVehicle({
     required String brand,
     required String model,
-    required String type,
-    required String licensePlate,
+    required String vehicleType,
+    required String plateNumber,
     String? photoPath,
   }) async {
     emit(VehicleLoading());
@@ -31,14 +31,15 @@ class VehicleCubit extends Cubit<VehicleState> {
       await _vehicleRepository.addVehicle(
         brand: brand,
         model: model,
-        vehicleType: type,
-        plateNumber: licensePlate,
+        vehicleType: vehicleType,
+        plateNumber: plateNumber,
+        isPrimary: true,
         photoUrl: photoPath,
       );
       emit(VehicleAddedSuccess());
       await fetchVehicles();
     } catch (e) {
-      emit(VehicleError(e.toString()));
+      emit(VehicleError('Gagal menambahkan kendaraan: ${e.toString()}'));
     }
   }
 

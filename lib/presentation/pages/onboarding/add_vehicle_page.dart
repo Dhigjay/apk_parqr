@@ -5,30 +5,39 @@ import 'package:parqr/core/constants/app_colors.dart';
 import 'package:parqr/core/constants/app_strings.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
+import 'package:parqr/injection/injection_container.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_state.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/app_text_field.dart';
 import 'package:parqr/presentation/widgets/form_feedback_banner.dart';
 
-enum _FormStatus { idle, loading, error, success }
-
-class AddVehiclePage extends StatefulWidget {
+class AddVehiclePage extends StatelessWidget {
   const AddVehiclePage({super.key});
 
   @override
-  State<AddVehiclePage> createState() => _AddVehiclePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<VehicleCubit>(),
+      child: const _AddVehicleView(),
+    );
+  }
 }
 
-class _AddVehiclePageState extends State<AddVehiclePage> {
+class _AddVehicleView extends StatefulWidget {
+  const _AddVehicleView();
+
+  @override
+  State<_AddVehicleView> createState() => _AddVehicleViewState();
+}
+
+class _AddVehicleViewState extends State<_AddVehicleView> {
   final _formKey = GlobalKey<FormState>();
   final _brandController = TextEditingController();
   final _modelController = TextEditingController();
   final _plateController = TextEditingController();
   String? _vehicleType;
   bool _hasPhoto = false;
-  _FormStatus _status = _FormStatus.idle;
-  String? _feedbackMessage;
 
   @override
   void dispose() {
@@ -41,178 +50,180 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false) || _vehicleType == null) {
-      setState(() {
-        _status = _FormStatus.error;
-        _feedbackMessage =
-            'Lengkapi merk, model, jenis, dan nomor polisi kendaraan.';
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Lengkapi merk, model, jenis, dan nomor polisi kendaraan.'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
     context.read<VehicleCubit>().addVehicle(
-          brand: _brandController.text,
-          model: _modelController.text,
-          type: _vehicleType!,
-          licensePlate: _plateController.text,
+          brand: _brandController.text.trim(),
+          model: _modelController.text.trim(),
+          vehicleType: _vehicleType!,
+          plateNumber: _plateController.text.trim(),
           photoPath: _hasPhoto ? 'https://placeholder.com/vehicle.jpg' : null,
         );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.addVehicle)),
-      body: SafeArea(
-        child: BlocListener<VehicleCubit, VehicleState>(
-          listener: (context, state) {
-            if (state is VehicleLoading) {
-              setState(() {
-                _status = _FormStatus.loading;
-                _feedbackMessage = null;
-              });
-            } else if (state is VehicleAddedSuccess) {
-              setState(() {
-                _status = _FormStatus.success;
-                _feedbackMessage = 'Kendaraan tersimpan. Kamu bisa melanjutkan.';
-              });
-              // Auto-pop if we came from another page
-              final router = GoRouter.of(context);
-              Future.delayed(const Duration(milliseconds: 1500), () {
-                if (mounted && router.canPop()) {
-                  router.pop();
-                }
-              });
-            } else if (state is VehicleError) {
-              setState(() {
-                _status = _FormStatus.error;
-                _feedbackMessage = state.message;
-              });
-            }
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text('Tambahkan kendaraan', style: AppTextStyles.h2),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Kendaraan ini akan dipakai saat booking parkir dan validasi QR.',
-                    style: AppTextStyles.bodySecondary,
-                  ),
-                  const SizedBox(height: 28),
-                  AppTextField(
-                    label: AppStrings.brand,
-                    controller: _brandController,
-                    hintText: 'Contoh: Honda',
-                    prefixIcon: Icons.directions_car_outlined,
-                    textInputAction: TextInputAction.next,
-                    validator: (value) => (value ?? '').trim().isEmpty
-                        ? 'Merk kendaraan wajib diisi'
-                        : null,
-                  ),
-                  const SizedBox(height: 18),
-                  AppTextField(
-                    label: AppStrings.model,
-                    controller: _modelController,
-                    hintText: 'Contoh: Vario 125',
-                    prefixIcon: Icons.two_wheeler_outlined,
-                    textInputAction: TextInputAction.next,
-                    validator: (value) => (value ?? '').trim().isEmpty
-                        ? 'Model kendaraan wajib diisi'
-                        : null,
-                  ),
-                  const SizedBox(height: 18),
-                  Text('Jenis Kendaraan',
-                      style: AppTextStyles.caption
-                          .copyWith(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(
-                        value: 'motor',
-                        icon: Icon(Icons.two_wheeler_rounded),
-                        label: Text('Motor'),
-                      ),
-                      ButtonSegment(
-                        value: 'mobil',
-                        icon: Icon(Icons.directions_car_rounded),
-                        label: Text('Mobil'),
-                      ),
-                    ],
-                    selected: _vehicleType == null ? <String>{} : {_vehicleType!},
-                    emptySelectionAllowed: true,
-                    onSelectionChanged: (values) {
-                      setState(() =>
-                          _vehicleType = values.isEmpty ? null : values.first);
-                    },
-                  ),
-                  if (_status == _FormStatus.error && _vehicleType == null) ...[
+    return BlocConsumer<VehicleCubit, VehicleState>(
+      listener: (context, state) {
+        if (state is VehicleAddedSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Kendaraan berhasil ditambahkan! Selamat datang di ParQr.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Navigasi ke home setelah berhasil
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go(RouteNames.home);
+          }
+        } else if (state is VehicleError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
+        final isLoading = state is VehicleLoading;
+        final errorMessage = state is VehicleError ? state.message : null;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text(AppStrings.addVehicle),
+            automaticallyImplyLeading: false,
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('Tambahkan kendaraan', style: AppTextStyles.h2),
                     const SizedBox(height: 8),
                     Text(
-                      'Jenis kendaraan wajib dipilih',
-                      style:
-                          AppTextStyles.caption.copyWith(color: AppColors.error),
+                      'Kendaraan ini akan dipakai saat booking parkir dan validasi QR.',
+                      style: AppTextStyles.bodySecondary,
                     ),
-                  ],
-                  const SizedBox(height: 18),
-                  AppTextField(
-                    label: AppStrings.plateNumber,
-                    controller: _plateController,
-                    hintText: 'Contoh: B 1234 QR',
-                    prefixIcon: Icons.pin_outlined,
-                    textInputAction: TextInputAction.done,
-                    validator: (value) {
-                      final text = (value ?? '').trim();
-                      if (text.isEmpty) return 'Nomor polisi wajib diisi';
-                      if (text.length < 4) return 'Nomor polisi belum valid';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 18),
-                  _VehiclePhotoPicker(
-                    hasPhoto: _hasPhoto,
-                    onTap: () => setState(() => _hasPhoto = true),
-                  ),
-                  const SizedBox(height: 28),
-                  if (_feedbackMessage != null) ...[
-                    FormFeedbackBanner(
-                      message: _feedbackMessage!,
-                      type: _status == _FormStatus.success
-                          ? FormFeedbackType.success
-                          : FormFeedbackType.error,
+                    const SizedBox(height: 28),
+                    AppTextField(
+                      label: AppStrings.brand,
+                      controller: _brandController,
+                      hintText: 'Contoh: Honda',
+                      prefixIcon: Icons.directions_car_outlined,
+                      textInputAction: TextInputAction.next,
+                      enabled: !isLoading,
+                      validator: (value) => (value ?? '').trim().isEmpty
+                          ? 'Merk kendaraan wajib diisi'
+                          : null,
                     ),
                     const SizedBox(height: 18),
+                    AppTextField(
+                      label: AppStrings.model,
+                      controller: _modelController,
+                      hintText: 'Contoh: Vario 125',
+                      prefixIcon: Icons.two_wheeler_outlined,
+                      textInputAction: TextInputAction.next,
+                      enabled: !isLoading,
+                      validator: (value) => (value ?? '').trim().isEmpty
+                          ? 'Model kendaraan wajib diisi'
+                          : null,
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Jenis Kendaraan',
+                      style: AppTextStyles.caption
+                          .copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'motor',
+                          icon: Icon(Icons.two_wheeler_rounded),
+                          label: Text('Motor'),
+                        ),
+                        ButtonSegment(
+                          value: 'mobil',
+                          icon: Icon(Icons.directions_car_rounded),
+                          label: Text('Mobil'),
+                        ),
+                      ],
+                      selected:
+                          _vehicleType == null ? <String>{} : {_vehicleType!},
+                      emptySelectionAllowed: true,
+                      onSelectionChanged: isLoading
+                          ? null
+                          : (values) {
+                              setState(() => _vehicleType =
+                                  values.isEmpty ? null : values.first);
+                            },
+                    ),
+                    if (_vehicleType == null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Jenis kendaraan wajib dipilih',
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.error),
+                      ),
+                    ],
+                    const SizedBox(height: 18),
+                    AppTextField(
+                      label: AppStrings.plateNumber,
+                      controller: _plateController,
+                      hintText: 'Contoh: B 1234 QR',
+                      prefixIcon: Icons.pin_outlined,
+                      textInputAction: TextInputAction.done,
+                      enabled: !isLoading,
+                      validator: (value) {
+                        final text = (value ?? '').trim();
+                        if (text.isEmpty) return 'Nomor polisi wajib diisi';
+                        if (text.length < 4) return 'Nomor polisi belum valid';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 18),
+                    _VehiclePhotoPicker(
+                      hasPhoto: _hasPhoto,
+                      onTap: isLoading
+                          ? null
+                          : () => setState(() => _hasPhoto = true),
+                    ),
+                    const SizedBox(height: 28),
+                    if (errorMessage != null) ...[
+                      FormFeedbackBanner(
+                        message: errorMessage,
+                        type: FormFeedbackType.error,
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+                    AppButton(
+                      label: 'Simpan & Masuk ke Home',
+                      icon: Icons.arrow_forward_rounded,
+                      isLoading: isLoading,
+                      onPressed: isLoading ? null : _submit,
+                    ),
                   ],
-                  AppButton(
-                    label: AppStrings.save,
-                    icon: Icons.save_outlined,
-                    isLoading: _status == _FormStatus.loading,
-                    onPressed: _status == _FormStatus.loading ? null : _submit,
-                  ),
-                  const SizedBox(height: 14),
-                  AppButton(
-                    label: context.canPop() ? 'Kembali ke Profil' : 'Masuk ke Home',
-                    icon: context.canPop() ? Icons.arrow_back_rounded : Icons.home_rounded,
-                    variant: AppButtonVariant.secondary,
-                    onPressed: _status == _FormStatus.success
-                        ? () {
-                            if (context.canPop()) {
-                              context.pop();
-                            } else {
-                              context.go(RouteNames.home);
-                            }
-                          }
-                        : null,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -224,7 +235,7 @@ class _VehiclePhotoPicker extends StatelessWidget {
   });
 
   final bool hasPhoto;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
