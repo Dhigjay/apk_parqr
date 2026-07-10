@@ -17,8 +17,10 @@ class UserModel extends UserEntity {
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String? ?? '',
-      fullName: json['name'] as String?,
-      phone: json['phone'] as String?,
+      // Try full_name first, fallback to name for backward compatibility
+      fullName: (json['full_name'] as String?) ?? (json['name'] as String?),
+      // Try phone_number first, fallback to phone for backward compatibility
+      phone: (json['phone_number'] as String?) ?? (json['phone'] as String?),
       address: json['address'] as String?,
       role: json['role'] as String? ?? 'user',
       profileCompleted: json['profile_completed'] as bool? ?? false,

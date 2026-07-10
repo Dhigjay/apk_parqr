@@ -2,10 +2,9 @@ class Payment {
   final String id;
   final String sessionId;
   final double amount;
-  final String paymentMethod; // 'CASH' or 'QRIS'
-  final String status; // 'PENDING', 'PAID', 'FAILED'
+  final String paymentMethod; // 'cash', 'qris', 'va_bca', 'va_bni', 'va_bri'
+  final String status; // 'pending', 'paid', 'failed', 'expired', 'cancelled'
   final DateTime createdAt;
-  final DateTime updatedAt;
   final String? midtransTransactionId;
   final String? qrisUrl;
   final String? vaNumber;
@@ -18,7 +17,6 @@ class Payment {
     required this.paymentMethod,
     required this.status,
     required this.createdAt,
-    required this.updatedAt,
     this.midtransTransactionId,
     this.qrisUrl,
     this.vaNumber,

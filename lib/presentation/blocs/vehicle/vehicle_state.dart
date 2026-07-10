@@ -30,3 +30,6 @@ class VehicleError extends VehicleState {
 }
 
 class VehicleAddedSuccess extends VehicleState {}
+
+// Alias for consistency with complete_profile_page usage
+class VehicleAdded extends VehicleAddedSuccess {}
