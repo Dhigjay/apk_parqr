@@ -48,11 +48,19 @@ class UserRemoteDataSource {
     bool? profileCompleted,
   }) async {
     final user = _currentAuthUser;
+
+    // Validasi: full_name tidak boleh berupa string kosong jika dikirim
+    final sanitizedName = fullName?.trim();
+    if (sanitizedName != null && sanitizedName.isEmpty) {
+      throw ArgumentError('Nama lengkap tidak boleh kosong.');
+    }
+
     final payload = <String, dynamic>{
       'id': user.id,
       'email': user.email ?? '',
-      'role': 'user',
-      if (fullName != null) 'full_name': fullName.trim(),
+      // Jangan kirim 'role' saat update — biarkan nilai di DB tetap,
+      // agar operator/admin tidak terdegradasi ke 'user'.
+      if (sanitizedName != null) 'full_name': sanitizedName,
       if (phone != null) 'phone': _blankToNull(phone),
       if (address != null) 'address': _blankToNull(address),
       if (profileCompleted != null) 'profile_completed': profileCompleted,
