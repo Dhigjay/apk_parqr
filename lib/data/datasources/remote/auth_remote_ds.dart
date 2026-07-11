@@ -34,7 +34,7 @@ class AuthRemoteDataSource {
           .from('users')
           .select('role')
           .eq('id', user.id)
-          .maybeSingle();
+          .single();
 
       final role = response?['role'] as String?;
       _cachedRole = (role != null && role.isNotEmpty) ? role : 'user';
@@ -70,8 +70,32 @@ class AuthRemoteDataSource {
         'phone': phone.trim(),
       },
     );
-    // Trigger on_auth_user_created akan otomatis membuat row di public.users
-    // dengan role default 'visitor'.
+
+    // Fallback: jika trigger gagal/tidak ada, buat row public.users dari app
+    final user = currentUser;
+    if (user != null) {
+      try {
+        final existing = await _supabaseClient
+            .from('users')
+            .select('id')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (existing == null) {
+          await _supabaseClient.from('users').insert({
+            'id': user.id,
+            'email': email.trim(),
+            'full_name': name.trim(),
+            'phone': phone.trim(),
+            'role': 'user',
+            'profile_completed': false,
+          });
+        }
+      } catch (e) {
+        // Row mungkin sudah dibuat oleh trigger — abaikan error
+      }
+    }
+
     await _fetchAndCacheRole();
   }
 
