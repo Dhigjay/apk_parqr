@@ -2,7 +2,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:parqr/data/models/payment_model.dart';
 
 abstract class IPaymentRemoteDataSource {
-  Future<PaymentModel> createPayment(String sessionId, double amount, String paymentMethod);
+  Future<PaymentModel> createPayment(
+      String sessionId, double amount, String paymentMethod);
   Future<PaymentModel> getPaymentStatus(String paymentId);
   Future<bool> verifyCashPayment(String paymentId, String operatorId);
   Future<String> generateExitQr(String paymentId);
@@ -14,13 +15,19 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
   PaymentRemoteDataSourceImpl({required this.supabaseClient});
 
   @override
-  Future<PaymentModel> createPayment(String sessionId, double amount, String paymentMethod) async {
-    final response = await supabaseClient.from('payments').insert({
-      'parking_session_id': sessionId,
-      'amount': amount,
-      'method': paymentMethod,
-      'status': 'PENDING',
-    }).select().single();
+  Future<PaymentModel> createPayment(
+      String sessionId, double amount, String paymentMethod) async {
+    final response = await supabaseClient
+        .from('payments')
+        .insert({
+          'session_id': sessionId, // ✅ bukan 'parking_session_id'
+          'amount': amount,
+          'method':
+              paymentMethod.toLowerCase(), // ✅ lowercase: 'cash', 'qris', dll
+          'status': 'pending', // ✅ lowercase
+        })
+        .select()
+        .single();
 
     if (paymentMethod == 'QRIS') {
       try {
@@ -31,14 +38,14 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
             'amount': amount,
           },
         );
-        
+
         // The edge function updates the DB, so we re-fetch to get the updated payment with qris_url
         if (res.status == 200) {
           final updatedResponse = await supabaseClient
-            .from('payments')
-            .select()
-            .eq('id', response['id'])
-            .single();
+              .from('payments')
+              .select()
+              .eq('id', response['id'])
+              .single();
           return PaymentModel.fromJson(updatedResponse);
         }
       } catch (e) {
@@ -67,18 +74,19 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
     await supabaseClient.from('operator_verifications').insert({
       'payment_id': paymentId,
       'operator_id': operatorId,
-      'status': 'VERIFIED',
+      'amount': 0, // required NOT NULL sesuai schema
+      'notes': 'Cash verified',
     });
 
-    // Update payment status
+    // Update payment status — lowercase sesuai constraint
     final response = await supabaseClient
         .from('payments')
-        .update({'status': 'PAID'})
+        .update({'status': 'paid'}) // ✅ lowercase
         .eq('id', paymentId)
         .select()
         .single();
 
-    return response['status'] == 'PAID';
+    return response['status'] == 'paid';
   }
 
   @override
@@ -86,10 +94,11 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
     // Typically we'd call an Edge Function or format a payload string securely.
     // For now, generating a basic JSON payload.
     final payment = await getPaymentStatus(paymentId);
-    if (payment.status != 'PAID') {
+    if (payment.status != 'paid') {
+      // ✅ lowercase
       throw Exception('Payment not paid. Cannot generate exit QR.');
     }
-    
+
     // Return a JSON formatted string or token for QR
     return '{"type":"EXIT", "payment_id":"$paymentId", "session_id":"${payment.sessionId}"}';
   }

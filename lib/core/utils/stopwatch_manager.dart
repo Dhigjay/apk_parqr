@@ -8,15 +8,13 @@ class StopwatchManager {
   /// Calculates the tariff based on the duration.
   /// Example: Tariff applies per hour or fraction thereof.
   static double calculateTariff(Duration duration, double tariffPerHour) {
-    if (duration.inMinutes == 0) return 0.0;
-    
-    // Calculate full hours (rounded up)
+    // Handle edge cases
+    if (duration.isNegative || duration.inSeconds == 0) return 0.0;
+
+    // Rounded up per jam, minimum 1 jam
     int hours = (duration.inMinutes / 60).ceil();
-    // Ensure minimum 1 hour charge if it's started
-    if (hours == 0 && duration.inSeconds > 0) {
-      hours = 1;
-    }
-    
+    if (hours == 0) hours = 1;
+
     return hours * tariffPerHour;
   }
 
