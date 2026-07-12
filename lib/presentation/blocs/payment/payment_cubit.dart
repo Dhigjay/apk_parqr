@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parqr/presentation/blocs/payment/payment_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PaymentCubit extends Cubit<PaymentState> {
   PaymentCubit() : super(PaymentInitial());
@@ -9,14 +10,26 @@ class PaymentCubit extends Cubit<PaymentState> {
   Timer? _pollingTimer;
   RealtimeChannel? _paymentChannel;
 
-  void processCashPayment() async {
-    emit(const PaymentProcessing(method: 'cash'));
-    await Future.delayed(const Duration(seconds: 1));
-    emit(PaymentAwaitingVerification());
+  Future<String> _getInternalUserId(SupabaseClient supabase) async {
+    final authUser = supabase.auth.currentUser;
+    if (authUser == null) throw Exception('Autentikasi gagal. Harap login kembali.');
 
-    _pollingTimer = Timer(const Duration(seconds: 3), () {
-      emit(const PaymentSuccess(exitQrPayload: 'EXIT-QR-PAYLOAD-123'));
-    });
+    final userRow = await supabase
+        .from('users')
+        .select('id, is_profile_complete')
+        .eq('auth_id', authUser.id)
+        .maybeSingle();
+
+    if (userRow == null) {
+      throw Exception('Profil user tidak ditemukan. Silakan lengkapi profil terlebih dahulu.');
+    }
+
+    final isComplete = userRow['is_profile_complete'] as bool? ?? false;
+    if (!isComplete) {
+      throw Exception('Profil belum lengkap. Silakan isi nama dan alamat terlebih dahulu.');
+    }
+
+    return userRow['id'] as String;
   }
 
   Future<String> _resolveSessionId(SupabaseClient supabase, String sessionId) async {
@@ -24,33 +37,10 @@ class PaymentCubit extends Cubit<PaymentState> {
       r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
     );
 
-    // Kalau sudah UUID valid, langsung return
-    if (uuidRegex.hasMatch(sessionId)) {
-      return sessionId;
-    }
+    if (uuidRegex.hasMatch(sessionId)) return sessionId;
 
-    // Session dummy — resolve ke session nyata
-    final currentUser = supabase.auth.currentUser;
-    if (currentUser == null) {
-      throw Exception('Autentikasi gagal. Harap login kembali.');
-    }
+    final userId = await _getInternalUserId(supabase);
 
-    // ✅ FIX 1: Cari user pakai auth_id, bukan id
-    final userCheck = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_id', currentUser.id)
-        .maybeSingle();
-
-    if (userCheck == null) {
-      throw Exception('Profil user tidak ditemukan. Silakan lengkapi profil terlebih dahulu.');
-    }
-
-    // ✅ Ambil internal UUID dari tabel users (bukan auth UUID)
-    final userId = userCheck['id'] as String;
-
-    // ✅ FIX 2: Cari kendaraan pakai userId (internal), bukan currentUser.id
-    String vehicleId;
     final vehicleQuery = await supabase
         .from('vehicles')
         .select('id')
@@ -59,20 +49,9 @@ class PaymentCubit extends Cubit<PaymentState> {
         .maybeSingle();
 
     if (vehicleQuery == null) {
-      // Buat kendaraan dummy jika belum ada
-      final insertedVehicle = await supabase.from('vehicles').insert({
-        'user_id': userId,           // ✅ pakai internal userId
-        'brand': 'Mock Toyota',
-        'model': 'Avanza',
-        'vehicle_type': 'mobil',
-        'plate_number': 'B 1234 DEMO',
-      }).select('id').single();
-      vehicleId = insertedVehicle['id'] as String;
-    } else {
-      vehicleId = vehicleQuery['id'] as String;
+      throw Exception('Belum ada kendaraan terdaftar. Silakan tambahkan kendaraan terlebih dahulu.');
     }
 
-    // Cari parking lot aktif
     final lotQuery = await supabase
         .from('parking_lots')
         .select('id')
@@ -80,152 +59,39 @@ class PaymentCubit extends Cubit<PaymentState> {
         .limit(1)
         .maybeSingle();
 
-    if (lotQuery == null) {
-      throw Exception('Tidak ada area parkir aktif. Silakan daftarkan operator terlebih dahulu.');
-    }
-    final lotId = lotQuery['id'] as String;
+    if (lotQuery == null) throw Exception('Tidak ada area parkir aktif.');
 
-    // ✅ FIX 3: Buat parking session dengan nama kolom yang benar sesuai schema
     final now = DateTime.now();
     final insertedSession = await supabase.from('parking_sessions').insert({
-      'user_id': userId,                                          // ✅ internal userId
-      'vehicle_id': vehicleId,
-      'parking_lot_id': lotId,                                   // ✅ fix: bukan 'lot_id'
+      'user_id': userId,
+      'vehicle_id': vehicleQuery['id'] as String,
+      'parking_lot_id': lotQuery['id'] as String,
       'status': 'active',
-      'check_in_time': now.toIso8601String(),                    // ✅ fix: bukan 'entered_at'
-      'entry_qr_code': 'mock-entry-${now.millisecondsSinceEpoch}', // ✅ fix: bukan 'entry_qr_token'
+      'check_in_time': now.toIso8601String(),
+      'entry_qr_code': 'mock-entry-${now.millisecondsSinceEpoch}',
     }).select('id').single();
 
     return insertedSession['id'] as String;
   }
 
-  void processQrisPayment(String sessionId, double amount) async {
-    emit(const PaymentProcessing(method: 'QRIS'));
-
-    try {
-      final supabase = Supabase.instance.client;
-      final resolvedSessionId = await _resolveSessionId(supabase, sessionId);
-
-      final response = await supabase.from('payments').insert({
-        'session_id': resolvedSessionId,
-        'amount': amount,
-        'method': 'qris',
-        'status': 'pending',
-      }).select().single();
-
-      final paymentId = response['id'] as String;
-
-      final res = await supabase.functions.invoke(
-        'midtrans_charge',
-        body: {
-          'payment_id': paymentId,
-          'amount': amount.toInt(),
-          'method': 'QRIS',
-        },
-      );
-
-      print('🔍 Midtrans Charge Response:');
-      print('   Status: ${res.status}');
-      print('   Data: ${res.data}');
-
-      if (res.status == 200 && res.data != null) {
-        final qrisUrl = res.data['data']?['qris_url'] as String?;
-        if (qrisUrl != null && qrisUrl.isNotEmpty) {
-          print('✅ QRIS URL berhasil didapat: $qrisUrl');
-          emit(PaymentQrisGenerated(qrisUrl: qrisUrl, paymentId: paymentId));
-          _listenToPayment(supabase, paymentId);
-        } else {
-          print('⚠️ Response 200 tapi qris_url kosong: ${res.data}');
-          emit(const PaymentFailed(
-            'Midtrans tidak mengembalikan QRIS URL. '
-            'Cek konfigurasi MIDTRANS_SERVER_KEY di Supabase.',
-          ));
-        }
-      } else {
-        final errorMsg = res.data?['error']?.toString() ?? 'Unknown error';
-        print('❌ Error dari Midtrans: $errorMsg (status ${res.status})');
-
-        if (errorMsg.contains('MIDTRANS_SERVER_KEY')) {
-          emit(const PaymentFailed(
-            'Konfigurasi Midtrans belum lengkap.\n\n'
-            'Admin: Set MIDTRANS_SERVER_KEY di Supabase Dashboard → '
-            'Settings → Edge Functions → Secrets',
-          ));
-        } else {
-          emit(PaymentFailed('Gagal membuat QRIS: $errorMsg'));
-        }
-      }
-    } catch (e) {
-      emit(PaymentFailed('Terjadi kesalahan: $e'));
-    }
-  }
-
-  void processVaPayment(String sessionId, double amount, String bank) async {
-    emit(PaymentProcessing(method: 'VA_$bank'));
-
-    try {
-      final supabase = Supabase.instance.client;
-      final resolvedSessionId = await _resolveSessionId(supabase, sessionId);
-
-      final response = await supabase.from('payments').insert({
-        'session_id': resolvedSessionId,
-        'amount': amount,
-        'method': 'va_${bank.toLowerCase()}',
-        'status': 'pending',
-      }).select().single();
-
-      final paymentId = response['id'] as String;
-
-      final res = await supabase.functions.invoke(
-        'midtrans_charge',
-        body: {
-          'payment_id': paymentId,
-          'amount': amount.toInt(),
-          'method': 'VA',
-          'bank': bank.toLowerCase(),
-        },
-      );
-
-      print('🔍 Midtrans VA Response:');
-      print('   Status: ${res.status}');
-      print('   Data: ${res.data}');
-
-      if (res.status == 200 && res.data != null) {
-        final vaNumber = res.data['data']?['va_number'] as String?;
-        if (vaNumber != null && vaNumber.isNotEmpty) {
-          print('✅ VA Number berhasil didapat: $vaNumber');
-          emit(PaymentVaGenerated(vaNumber: vaNumber, bank: bank, paymentId: paymentId));
-          _listenToPayment(supabase, paymentId);
-        } else {
-          print('⚠️ Response 200 tapi va_number kosong: ${res.data}');
-          emit(const PaymentFailed(
-            'Midtrans tidak mengembalikan nomor VA. '
-            'Cek konfigurasi MIDTRANS_SERVER_KEY di Supabase.',
-          ));
-        }
-      } else {
-        final errorMsg = res.data?['error']?.toString() ?? 'Unknown error';
-        print('❌ Error dari Midtrans: $errorMsg (status ${res.status})');
-
-        if (errorMsg.contains('MIDTRANS_SERVER_KEY')) {
-          emit(const PaymentFailed(
-            'Konfigurasi Midtrans belum lengkap.\n\n'
-            'Admin: Set MIDTRANS_SERVER_KEY di Supabase Dashboard → '
-            'Settings → Edge Functions → Secrets',
-          ));
-        } else {
-          emit(PaymentFailed('Gagal membuat Virtual Account: $errorMsg'));
-        }
-      }
-    } catch (e) {
-      emit(PaymentFailed('Terjadi kesalahan: $e'));
-    }
+  Future<String> _createPaymentRecord(
+    SupabaseClient supabase,
+    String sessionId,
+    double amount,
+    String method,
+  ) async {
+    final response = await supabase.from('payments').insert({
+      'session_id': sessionId,
+      'amount': amount,
+      'method': method,
+      'status': 'pending',
+    }).select('id').single();
+    return response['id'] as String;
   }
 
   void _listenToPayment(SupabaseClient supabase, String paymentId) {
     try {
       _paymentChannel?.unsubscribe();
-
       _paymentChannel = supabase
           .channel('payment-status-$paymentId')
           .onPostgresChanges(
@@ -243,9 +109,7 @@ class PaymentCubit extends Cubit<PaymentState> {
                 emit(PaymentSuccess(
                   exitQrPayload: '{"type":"EXIT","payment_id":"$paymentId"}',
                 ));
-              } else if (status == 'failed' ||
-                  status == 'expired' ||
-                  status == 'cancelled') {
+              } else if (status == 'failed' || status == 'expired' || status == 'cancelled') {
                 emit(const PaymentFailed('Pembayaran dibatalkan atau kedaluwarsa.'));
               }
             },
@@ -254,6 +118,71 @@ class PaymentCubit extends Cubit<PaymentState> {
     } catch (e) {
       emit(PaymentFailed('Terjadi kesalahan mendeteksi pembayaran: $e'));
     }
+  }
+
+  void processCashPayment() async {
+    emit(const PaymentProcessing(method: 'cash'));
+    await Future.delayed(const Duration(seconds: 1));
+    emit(PaymentAwaitingVerification());
+  }
+
+  void processSnapPayment(String sessionId, double amount, String method) async {
+    emit(PaymentProcessing(method: method));
+
+    try {
+      final supabase = Supabase.instance.client;
+      final resolvedSessionId = await _resolveSessionId(supabase, sessionId);
+      final paymentId = await _createPaymentRecord(
+        supabase, resolvedSessionId, amount, method.toLowerCase(),
+      );
+
+      final res = await supabase.functions.invoke(
+        'midtrans_snap',
+        body: {
+          'payment_id': paymentId,
+          'amount': amount.toInt(),
+        },
+      );
+
+      print('Snap Response: status=${res.status}, data=${res.data}');
+
+      if (res.status == 200 && res.data != null) {
+        final snapUrl = res.data['data']?['snap_url'] as String?;
+        final snapToken = res.data['data']?['snap_token'] as String?;
+
+        if (snapUrl != null && snapUrl.isNotEmpty) {
+          final uri = Uri.parse(snapUrl);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+            emit(PaymentSnapOpened(
+              snapUrl: snapUrl,
+              snapToken: snapToken ?? '',
+              paymentId: paymentId,
+            ));
+            _listenToPayment(supabase, paymentId);
+          } else {
+            emit(const PaymentFailed('Tidak bisa membuka halaman pembayaran.'));
+          }
+        } else {
+          emit(const PaymentFailed('Gagal mendapatkan link pembayaran. Coba lagi.'));
+        }
+      } else {
+        final errorMsg = res.data?['error']?.toString() ?? 'Error tidak diketahui';
+        emit(PaymentFailed('Gagal membuat pembayaran: $errorMsg'));
+      }
+    } on FunctionException catch (e) {
+      emit(PaymentFailed('Error Edge Function: ${e.details}'));
+    } catch (e) {
+      emit(PaymentFailed('Terjadi kesalahan: $e'));
+    }
+  }
+
+  void processQrisPayment(String sessionId, double amount) {
+    processSnapPayment(sessionId, amount, 'qris');
+  }
+
+  void processVaPayment(String sessionId, double amount, String bank) {
+    processSnapPayment(sessionId, amount, 'va_${bank.toLowerCase()}');
   }
 
   void cancelPayment() {

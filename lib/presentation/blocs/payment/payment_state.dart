@@ -10,8 +10,8 @@ abstract class PaymentState extends Equatable {
 class PaymentInitial extends PaymentState {}
 
 class PaymentProcessing extends PaymentState {
-  final String method; // 'Cash' or 'QRIS'
-  
+  final String method;
+
   const PaymentProcessing({required this.method});
 
   @override
@@ -19,6 +19,23 @@ class PaymentProcessing extends PaymentState {
 }
 
 class PaymentAwaitingVerification extends PaymentState {}
+
+/// State saat Snap URL berhasil didapat dan halaman Midtrans sudah dibuka
+/// di browser. App menunggu webhook/realtime update status pembayaran.
+class PaymentSnapOpened extends PaymentState {
+  final String snapUrl;
+  final String snapToken;
+  final String paymentId;
+
+  const PaymentSnapOpened({
+    required this.snapUrl,
+    required this.snapToken,
+    required this.paymentId,
+  });
+
+  @override
+  List<Object?> get props => [snapUrl, snapToken, paymentId];
+}
 
 class PaymentQrisGenerated extends PaymentState {
   final String qrisUrl;
@@ -35,7 +52,11 @@ class PaymentVaGenerated extends PaymentState {
   final String bank;
   final String paymentId;
 
-  const PaymentVaGenerated({required this.vaNumber, required this.bank, required this.paymentId});
+  const PaymentVaGenerated({
+    required this.vaNumber,
+    required this.bank,
+    required this.paymentId,
+  });
 
   @override
   List<Object?> get props => [vaNumber, bank, paymentId];
