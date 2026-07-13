@@ -54,6 +54,18 @@ class _BookingViewState extends State<_BookingView> {
   }
 
   Future<void> _loadParkingLot() async {
+    // Coba baca dari route extra dulu (dikirim ParkingDetailPage)
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+    if (extra != null && extra['lotId'] != null) {
+      setState(() {
+        _parkingLotId = extra['lotId'] as String;
+        _parkingLotName = extra['lotName'] as String? ?? 'Parkir';
+        _tariffPerHour = extra['pricePerHour'] as double? ?? 5000.0;
+      });
+      return;
+    }
+
+    // Fallback: ambil dari Supabase jika tidak ada extra
     try {
       final supabase = Supabase.instance.client;
       final lot = await supabase

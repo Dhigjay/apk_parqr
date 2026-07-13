@@ -5,14 +5,92 @@ import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/status_badge.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ParkingDetailPage extends StatelessWidget {
+class ParkingDetailPage extends StatefulWidget {
   const ParkingDetailPage({super.key});
+
+  @override
+  State<ParkingDetailPage> createState() => _ParkingDetailPageState();
+}
+
+class _ParkingDetailPageState extends State<ParkingDetailPage> {
+  // Data dari route extra (dikirim oleh HomePage)
+  late String _lotId;
+  late String _name;
+  late String _address;
+  late int _totalCapacity;
+  late int _totalFloors;
+  late double _pricePerHour;
+  late String _distance;
+
+  // Data dari Supabase (slot per lantai)
+  Map<int, int> _availablePerFloor = {}; // floor_number -> available count
+  int _totalAvailable = 0;
+  bool _loadingSlots = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+
+    _lotId = extra?['id'] as String? ?? '';
+    _name = extra?['name'] as String? ?? 'Detail Parkir';
+    _address = extra?['address'] as String? ?? '-';
+    _totalCapacity = extra?['totalCapacity'] as int? ?? 0;
+    _totalFloors = extra?['totalFloors'] as int? ?? 1;
+    _pricePerHour = extra?['pricePerHour'] as double? ?? 0.0;
+    _distance = extra?['distance'] as String? ?? '';
+
+    if (_lotId.isNotEmpty) {
+      _loadSlotData();
+    }
+  }
+
+  Future<void> _loadSlotData() async {
+    try {
+      final response = await Supabase.instance.client
+          .from('parking_slots')
+          .select('floor_number, status')
+          .eq('lot_id', _lotId);
+
+      final slots = response as List<dynamic>;
+      final Map<int, int> available = {};
+      int totalAvail = 0;
+
+      for (final slot in slots) {
+        final floor = slot['floor_number'] as int? ?? 1;
+        final status = slot['status'] as String? ?? 'occupied';
+        available.putIfAbsent(floor, () => 0);
+        if (status == 'available') {
+          available[floor] = available[floor]! + 1;
+          totalAvail++;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _availablePerFloor = available;
+          _totalAvailable = totalAvail;
+          _loadingSlots = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loadingSlots = false);
+    }
+  }
+
+  String _formatPrice(double price) {
+    final p = price.toInt();
+    final s = p.toString().replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+    return 'Rp$s/jam';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Detail Parkir')),
+      appBar: AppBar(title: Text(_name)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -26,84 +104,116 @@ class ParkingDetailPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('ParQr Sudirman Hub', style: AppTextStyles.h2),
+                      Text(_name, style: AppTextStyles.h2),
                       const SizedBox(height: 8),
-                      Text(
-                        'Jl. Jend. Sudirman No. 12, Jakarta Pusat',
-                        style: AppTextStyles.bodySecondary,
-                      ),
+                      Text(_address, style: AppTextStyles.bodySecondary),
                     ],
                   ),
                 ),
-                const StatusBadge(
-                  label: 'Tersedia',
-                  type: StatusBadgeType.active,
+                StatusBadge(
+                  label: _totalAvailable > 0 ? 'Tersedia' : 'Penuh',
+                  type: _totalAvailable > 0
+                      ? StatusBadgeType.active
+                      : StatusBadgeType.expired,
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            const Row(
+
+            // Metrik
+            Row(
               children: [
                 Expanded(
                   child: _MetricCard(
                     icon: Icons.event_seat_outlined,
                     label: 'Kapasitas',
-                    value: '24/80',
+                    value: _loadingSlots
+                        ? '...'
+                        : '$_totalAvailable/$_totalCapacity',
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _MetricCard(
                     icon: Icons.payments_outlined,
                     label: 'Tarif',
-                    value: 'Rp5.000/jam',
+                    value: _formatPrice(_pricePerHour),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            const Row(
+            Row(
               children: [
                 Expanded(
                   child: _MetricCard(
                     icon: Icons.layers_outlined,
                     label: 'Lantai',
-                    value: '3 lantai',
+                    value: '$_totalFloors lantai',
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _MetricCard(
                     icon: Icons.near_me_outlined,
                     label: 'Jarak',
-                    value: '350 m',
+                    value: _distance.isNotEmpty ? _distance : 'N/A',
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
+
+            // Info lantai dari DB
             Text('Info Lantai', style: AppTextStyles.h3),
             const SizedBox(height: 12),
-            const _FloorAvailabilityTile(
-              floor: 'Lantai 1',
-              slots: '8 slot tersedia',
-              type: StatusBadgeType.pending,
-            ),
-            const _FloorAvailabilityTile(
-              floor: 'Lantai 2',
-              slots: '10 slot tersedia',
-              type: StatusBadgeType.active,
-            ),
-            const _FloorAvailabilityTile(
-              floor: 'Basement',
-              slots: '6 slot tersedia',
-              type: StatusBadgeType.active,
-            ),
+            if (_loadingSlots)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_availablePerFloor.isEmpty)
+              // Jika tidak ada data slot, tampilkan lantai dari field floors DB
+              ...List.generate(_totalFloors, (i) {
+                final floor = i + 1;
+                return _FloorAvailabilityTile(
+                  floor: 'Lantai $floor',
+                  slots: 'Data slot belum tersedia',
+                  type: StatusBadgeType.neutral,
+                );
+              })
+            else
+              ...(_availablePerFloor.entries.toList()
+                    ..sort((a, b) => a.key.compareTo(b.key)))
+                  .map((entry) {
+                final floor = entry.key;
+                final avail = entry.value;
+                return _FloorAvailabilityTile(
+                  floor: 'Lantai $floor',
+                  slots: avail > 0 ? '$avail slot tersedia' : 'Penuh',
+                  type: avail > 0
+                      ? StatusBadgeType.active
+                      : StatusBadgeType.expired,
+                );
+              }),
+
             const SizedBox(height: 28),
             AppButton(
               label: 'Pesan Parkir',
               icon: Icons.qr_code_2_rounded,
-              onPressed: () => context.push(RouteNames.booking),
+              onPressed: _totalAvailable > 0 || _availablePerFloor.isEmpty
+                  ? () => context.push(
+                        RouteNames.booking,
+                        extra: {
+                          'lotId': _lotId,
+                          'lotName': _name,
+                          'pricePerHour': _pricePerHour,
+                          'totalFloors': _totalFloors,
+                        },
+                      )
+                  : null,
             ),
           ],
         ),
@@ -127,16 +237,10 @@ class _MapThumbnail extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: CustomPaint(
-              painter: _MapPatternPainter(),
-            ),
+            child: CustomPaint(painter: _MapPatternPainter()),
           ),
           const Center(
-            child: Icon(
-              Icons.location_pin,
-              color: AppColors.error,
-              size: 44,
-            ),
+            child: Icon(Icons.location_pin, color: AppColors.error, size: 44),
           ),
           Positioned(
             left: 14,
@@ -148,7 +252,7 @@ class _MapThumbnail extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Text('Dark map thumbnail', style: AppTextStyles.caption),
+              child: Text('Peta lokasi', style: AppTextStyles.caption),
             ),
           ),
         ],
@@ -229,7 +333,14 @@ class _FloorAvailabilityTile extends StatelessWidget {
               ],
             ),
           ),
-          StatusBadge(label: 'Open', type: type),
+          StatusBadge(
+            label: type == StatusBadgeType.active
+                ? 'Open'
+                : type == StatusBadgeType.expired
+                    ? 'Full'
+                    : '-',
+            type: type,
+          ),
         ],
       ),
     );
