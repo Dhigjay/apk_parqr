@@ -30,24 +30,23 @@ serve(async (req) => {
 
     const authHeader = 'Basic ' + btoa(serverKey + ':')
 
-    // order_id max 50 karakter — ambil 16 char dari UUID tanpa dash
+    // order_id max 50 karakter
     const shortId = payment_id.replace(/-/g, '').substring(0, 16)
     const orderId = `PARQR-${shortId}-${Date.now()}`
-    console.log(`QRIS order_id: ${orderId} (${orderId.length} chars)`)
+    console.log(`Snap order_id: ${orderId} (${orderId.length} chars)`)
 
-    const chargeBody = {
-      payment_type: 'qris',
+    const snapBody = {
       transaction_details: {
         order_id: orderId,
         gross_amount: Math.round(amount),
       },
-      qris: {
-        acquirer: 'gopay',
+      credit_card: {
+        secure: true,
       },
     }
 
-    const chargeRes = await fetch(
-      'https://api.sandbox.midtrans.com/v2/charge',
+    const snapRes = await fetch(
+      'https://app.sandbox.midtrans.com/snap/v1/transactions',
       {
         method: 'POST',
         headers: {
@@ -55,39 +54,34 @@ serve(async (req) => {
           'Authorization': authHeader,
           'Accept': 'application/json',
         },
-        body: JSON.stringify(chargeBody),
+        body: JSON.stringify(snapBody),
       }
     )
 
-    const chargeData = await chargeRes.json()
-    console.log('Midtrans QRIS response:', JSON.stringify(chargeData))
+    const snapData = await snapRes.json()
+    console.log('Midtrans Snap response:', JSON.stringify(snapData))
 
-    if (!chargeRes.ok || chargeData.status_code === '500') {
+    if (!snapRes.ok || !snapData.token) {
       return new Response(
         JSON.stringify({
-          error: chargeData.status_message ?? 'Gagal membuat QRIS',
-          detail: chargeData,
+          error: snapData.error_messages?.[0] ?? snapData.status_message ?? 'Gagal membuat Snap token',
+          detail: snapData,
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Ambil QRIS URL dari actions
-    const qrisUrl = chargeData.actions?.find(
-      (a: { name: string; url: string }) => a.name === 'generate-qr-code'
-    )?.url ?? null
-
     return new Response(
       JSON.stringify({
         data: {
-          qris_url: qrisUrl,
+          snap_token: snapData.token,
+          snap_url: snapData.redirect_url,
           order_id: orderId,
-          transaction_id: chargeData.transaction_id,
-          status: chargeData.transaction_status,
         },
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
+
   } catch (err) {
     console.error('Edge function error:', err)
     return new Response(
