@@ -18,16 +18,17 @@ class ParkingLotModel extends ParkingLotEntity {
   factory ParkingLotModel.fromJson(Map<String, dynamic> json) {
     return ParkingLotModel(
       id: json['id'] as String? ?? '',
-      operatorId: json['operator_id'] as String? ?? '', // ✅ sesuai schema
+      operatorId: (json['owner_id'] ?? json['operator_id']) as String? ?? '',
       name: json['name'] as String? ?? '',
       address: json['address'] as String? ?? '',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-      totalCapacity: json['total_capacity'] as int? ?? 0,
-      totalFloors:
-          json['floors'] as int? ?? 1, // ✅ kolom 'floors' sesuai schema
-      pricePerHour: (json['price_per_hour'] as num?)?.toDouble() ??
-          0.0, // ✅ sesuai schema
+      totalCapacity: (json['total_capacity'] ?? json['capacity']) as int? ?? 0,
+      totalFloors: json['floors'] as int? ?? 1,
+      pricePerHour:
+          ((json['price_per_hour'] ?? json['hourly_rate']) as num?)
+                  ?.toDouble() ??
+              0.0,
       photoUrl: json['photo_url'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
@@ -37,14 +38,15 @@ class ParkingLotModel extends ParkingLotEntity {
 
   Map<String, dynamic> toJson() {
     return {
-      'operator_id': operatorId,
+      'owner_id': operatorId,
       'name': name,
       'address': address,
       'latitude': latitude,
       'longitude': longitude,
       'total_capacity': totalCapacity,
       'floors': totalFloors,
-      'price_per_hour': pricePerHour,
+      'hourly_rate': pricePerHour,
+      'status': 'active',
       'photo_url': photoUrl,
     };
   }

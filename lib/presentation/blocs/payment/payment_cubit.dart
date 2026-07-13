@@ -60,11 +60,17 @@ class PaymentCubit extends Cubit<PaymentState> {
     }
     final vehicleId = vehicleQuery['id'] as String;
 
-    // Cari parking lot aktif — field 'is_active' sesuai schema
-    final lotQuery = await supabase
+    // Cari parking lot aktif.
+    var lotQuery = await supabase
         .from('parking_lots')
         .select('id')
-        .eq('is_active', true)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+    lotQuery ??= await supabase
+        .from('parking_lots')
+        .select('id')
         .limit(1)
         .maybeSingle();
 

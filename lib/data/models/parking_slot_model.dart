@@ -12,19 +12,20 @@ class ParkingSlotModel extends ParkingSlotEntity {
   factory ParkingSlotModel.fromJson(Map<String, dynamic> json) {
     return ParkingSlotModel(
       id: json['id'] as String,
-      lotId: json['lot_id'] as String, // ✅ bukan 'parking_lot_id'
+      lotId: (json['lot_id'] ?? json['parking_lot_id']) as String,
       code: json['code'] as String,
-      floorNumber: json['floor_number'] as int? ?? 1, // ✅ integer
+      floorNumber: json['floor_number'] as int? ??
+          int.tryParse(json['floor']?.toString() ?? '') ??
+          1,
       status: json['status'] as String? ?? 'available',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'lot_id': lotId,
+      'parking_lot_id': lotId,
       'code': code,
-      'floor_number': floorNumber,
+      'floor': floorNumber.toString(),
       'status': status,
     };
   }

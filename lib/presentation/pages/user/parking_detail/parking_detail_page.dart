@@ -49,6 +49,45 @@ class _ParkingDetailPageState extends State<ParkingDetailPage> {
 
   Future<void> _loadSlotData() async {
     try {
+      var response = await Supabase.instance.client
+          .from('parking_slots')
+          .select('floor, status')
+          .eq('parking_lot_id', _lotId);
+
+      final slots = response as List<dynamic>;
+      final Map<int, int> available = {};
+      int totalAvail = 0;
+
+      for (final slot in slots) {
+        final floor = int.tryParse(slot['floor']?.toString() ?? '') ?? 1;
+        final status = slot['status'] as String? ?? 'occupied';
+        available.putIfAbsent(floor, () => 0);
+        if (status == 'available') {
+          available[floor] = available[floor]! + 1;
+          totalAvail++;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _availablePerFloor = available;
+          _totalAvailable = totalAvail;
+          _loadingSlots = false;
+        });
+      }
+    } on PostgrestException catch (e) {
+      if (e.code == '42703') {
+        await _loadLegacySlotData();
+        return;
+      }
+      if (mounted) setState(() => _loadingSlots = false);
+    } catch (_) {
+      if (mounted) setState(() => _loadingSlots = false);
+    }
+  }
+
+  Future<void> _loadLegacySlotData() async {
+    try {
       final response = await Supabase.instance.client
           .from('parking_slots')
           .select('floor_number, status')

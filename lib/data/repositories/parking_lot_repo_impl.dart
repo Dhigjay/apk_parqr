@@ -13,28 +13,40 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
   @override
   Future<List<ParkingLotEntity>> searchParkingLots(String query) async {
     try {
-      List<dynamic> response;
-      if (query.isEmpty) {
-        response = await _supabaseClient
-            .from('parking_lots')
-            .select()
-            .eq('is_active', true)
-            .order('created_at', ascending: false);
-      } else {
-        response = await _supabaseClient
-            .from('parking_lots')
-            .select()
-            .eq('is_active', true)
-            .ilike('name', '%$query%')
-            .order('created_at', ascending: false);
-      }
+      final response = await _searchParkingLots(query, filterByStatus: true);
 
       return response
           .map((json) => ParkingLotModel.fromJson(json as Map<String, dynamic>))
           .toList();
+    } on PostgrestException catch (e) {
+      if (e.code == '42703') {
+        final response = await _searchParkingLots(query, filterByStatus: false);
+        return response
+            .map(
+                (json) => ParkingLotModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
+      throw Exception('Gagal mencari parkir: $e');
     } catch (e) {
       throw Exception('Gagal mencari parkir: $e');
     }
+  }
+
+  Future<List<dynamic>> _searchParkingLots(
+    String query, {
+    required bool filterByStatus,
+  }) async {
+    var request = _supabaseClient.from('parking_lots').select();
+
+    if (filterByStatus) {
+      request = request.eq('status', 'active');
+    }
+
+    if (query.isNotEmpty) {
+      request = request.ilike('name', '%$query%');
+    }
+
+    return request.order('created_at', ascending: false);
   }
 
   @override
@@ -58,15 +70,31 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
       final response = await _supabaseClient
           .from('parking_slots')
           .select()
-          .eq('lot_id', lotId)
+          .eq('parking_lot_id', lotId)
           .eq('status', 'available')
-          .order('floor_number')
+          .order('floor')
           .order('code');
 
       return (response as List)
           .map(
               (json) => ParkingSlotModel.fromJson(json as Map<String, dynamic>))
           .toList();
+    } on PostgrestException catch (e) {
+      if (e.code == '42703') {
+        final response = await _supabaseClient
+            .from('parking_slots')
+            .select()
+            .eq('lot_id', lotId)
+            .eq('status', 'available')
+            .order('floor_number')
+            .order('code');
+
+        return (response as List)
+            .map((json) =>
+                ParkingSlotModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
+      throw Exception('Gagal memuat slot parkir: $e');
     } catch (e) {
       throw Exception('Gagal memuat slot parkir: $e');
     }

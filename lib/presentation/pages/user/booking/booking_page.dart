@@ -60,7 +60,7 @@ class _BookingViewState extends State<_BookingView> {
       setState(() {
         _parkingLotId = extra['lotId'] as String;
         _parkingLotName = extra['lotName'] as String? ?? 'Parkir';
-        _tariffPerHour = extra['pricePerHour'] as double? ?? 5000.0;
+        _tariffPerHour = _toDouble(extra['pricePerHour']) ?? 5000.0;
       });
       return;
     }
@@ -68,18 +68,24 @@ class _BookingViewState extends State<_BookingView> {
     // Fallback: ambil dari Supabase jika tidak ada extra
     try {
       final supabase = Supabase.instance.client;
-      final lot = await supabase
+      var lot = await supabase
           .from('parking_lots')
-          .select('id, name, price_per_hour')
-          .eq('is_active', true)
+          .select()
+          .eq('status', 'active')
           .limit(1)
           .maybeSingle();
 
+      lot ??= await supabase.from('parking_lots').select().limit(1).maybeSingle();
+
       if (lot != null && mounted) {
+        final selectedLot = lot;
         setState(() {
-          _parkingLotId = lot['id'] as String;
-          _parkingLotName = lot['name'] as String;
-          _tariffPerHour = (lot['price_per_hour'] as num).toDouble();
+          _parkingLotId = selectedLot['id']?.toString();
+          _parkingLotName = selectedLot['name']?.toString() ?? 'Parkir';
+          _tariffPerHour = _toDouble(
+                selectedLot['hourly_rate'] ?? selectedLot['price_per_hour'],
+              ) ??
+              5000.0;
         });
       }
     } catch (_) {
@@ -121,16 +127,13 @@ class _BookingViewState extends State<_BookingView> {
         'nonce': const Uuid().v4(),
       });
 
-      await supabase.from('parking_sessions').insert({
-        'id': sessionId,
-        'user_id': currentUser.id,
-        'vehicle_id': _selectedVehicleId,
-        'lot_id': _parkingLotId,
-        'status': 'booked',
-        'entry_qr_token': entryQrPayload,
-        'entry_qr_expires_at': expiresAt.toIso8601String(),
-        'amount_due': 0,
-      });
+      await _insertParkingSession(
+        supabase: supabase,
+        sessionId: sessionId,
+        userId: currentUser.id,
+        entryQrPayload: entryQrPayload,
+        expiresAt: expiresAt,
+      );
 
       if (!mounted) return;
       context.go(
@@ -152,6 +155,55 @@ class _BookingViewState extends State<_BookingView> {
         _errorMessage = 'Gagal membuat booking: $e';
       });
     }
+  }
+
+  double? _toDouble(Object? value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
+
+  Future<void> _insertParkingSession({
+    required SupabaseClient supabase,
+    required String sessionId,
+    required String userId,
+    required String entryQrPayload,
+    required DateTime expiresAt,
+  }) async {
+    final sprint0Payload = {
+      'id': sessionId,
+      'user_id': userId,
+      'vehicle_id': _selectedVehicleId,
+      'parking_lot_id': _parkingLotId,
+      'status': 'booked',
+      'entry_qr': entryQrPayload,
+    };
+
+    final initialSchemaPayload = {
+      'id': sessionId,
+      'user_id': userId,
+      'vehicle_id': _selectedVehicleId,
+      'lot_id': _parkingLotId,
+      'status': 'booked',
+      'entry_qr_token': entryQrPayload,
+      'entry_qr_expires_at': expiresAt.toIso8601String(),
+      'amount_due': 0,
+    };
+
+    try {
+      await supabase.from('parking_sessions').insert(sprint0Payload);
+    } on PostgrestException catch (e) {
+      if (!_isSchemaMismatch(e)) rethrow;
+      await supabase.from('parking_sessions').insert(initialSchemaPayload);
+    }
+  }
+
+  bool _isSchemaMismatch(PostgrestException e) {
+    return e.code == '42703' ||
+        e.code == '23502' ||
+        e.code == 'PGRST204' ||
+        e.message.toLowerCase().contains('schema cache') ||
+        e.message.toLowerCase().contains('column');
   }
 
   @override
