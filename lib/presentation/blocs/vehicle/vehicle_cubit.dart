@@ -9,6 +9,16 @@ class VehicleCubit extends Cubit<VehicleState> {
       : _vehicleRepository = vehicleRepository,
         super(VehicleInitial());
 
+  Future<void> fetchVehicles() async {
+    emit(VehicleLoading());
+    try {
+      final vehicles = await _vehicleRepository.getMyVehicles();
+      emit(VehicleLoaded(vehicles: vehicles));
+    } catch (e) {
+      emit(VehicleError(e.toString()));
+    }
+  }
+
   Future<void> addVehicle({
     required String brand,
     required String model,
@@ -18,27 +28,36 @@ class VehicleCubit extends Cubit<VehicleState> {
   }) async {
     emit(VehicleLoading());
     try {
-      // Add vehicle to database via repository
       await _vehicleRepository.addVehicle(
         brand: brand,
         model: model,
         vehicleType: vehicleType,
         plateNumber: plateNumber,
-        isPrimary: true, // First vehicle is primary
+        isPrimary: true,
         photoUrl: photoPath,
       );
-      
-      emit(VehicleAdded());
+      emit(VehicleAddedSuccess());
+      await fetchVehicles();
     } catch (e) {
       emit(VehicleError('Gagal menambahkan kendaraan: ${e.toString()}'));
     }
   }
 
-  Future<void> fetchVehicles() async {
+  Future<void> deleteVehicle(String id) async {
     emit(VehicleLoading());
     try {
-      final vehicles = await _vehicleRepository.getMyVehicles();
-      emit(VehicleLoaded(vehicles: vehicles));
+      await _vehicleRepository.deleteVehicle(id);
+      await fetchVehicles();
+    } catch (e) {
+      emit(VehicleError(e.toString()));
+    }
+  }
+
+  Future<void> setPrimaryVehicle(String id) async {
+    emit(VehicleLoading());
+    try {
+      await _vehicleRepository.setPrimaryVehicle(id);
+      await fetchVehicles();
     } catch (e) {
       emit(VehicleError(e.toString()));
     }
