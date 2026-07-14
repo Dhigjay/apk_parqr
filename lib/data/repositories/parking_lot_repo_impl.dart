@@ -13,40 +13,17 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
   @override
   Future<List<ParkingLotEntity>> searchParkingLots(String query) async {
     try {
-      final response = await _searchParkingLots(query, filterByStatus: true);
+      final response = await _supabaseClient
+          .from('parking_lots')
+          .select()
+          .ilike('name', '%$query%');
 
-      return response
-          .map((json) => ParkingLotModel.fromJson(json as Map<String, dynamic>))
+      return (response as List)
+          .map((json) => ParkingLotModel.fromJson(json))
           .toList();
-    } on PostgrestException catch (e) {
-      if (e.code == '42703') {
-        final response = await _searchParkingLots(query, filterByStatus: false);
-        return response
-            .map(
-                (json) => ParkingLotModel.fromJson(json as Map<String, dynamic>))
-            .toList();
-      }
-      throw Exception('Gagal mencari parkir: $e');
     } catch (e) {
-      throw Exception('Gagal mencari parkir: $e');
+      throw Exception('Failed to search parking lots: $e');
     }
-  }
-
-  Future<List<dynamic>> _searchParkingLots(
-    String query, {
-    required bool filterByStatus,
-  }) async {
-    var request = _supabaseClient.from('parking_lots').select();
-
-    if (filterByStatus) {
-      request = request.eq('status', 'active');
-    }
-
-    if (query.isNotEmpty) {
-      request = request.ilike('name', '%$query%');
-    }
-
-    return request.order('created_at', ascending: false);
   }
 
   @override
@@ -58,45 +35,26 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
           .eq('id', id)
           .single();
 
-      return ParkingLotModel.fromJson(response as Map<String, dynamic>);
+      return ParkingLotModel.fromJson(response);
     } catch (e) {
-      throw Exception('Gagal memuat detail parkir: $e');
+      throw Exception('Failed to get parking lot detail: $e');
     }
   }
 
   @override
-  Future<List<ParkingSlotEntity>> getAvailableSlots(String lotId) async {
+  Future<List<ParkingSlotEntity>> getAvailableSlots(String parkingLotId) async {
     try {
       final response = await _supabaseClient
           .from('parking_slots')
           .select()
-          .eq('parking_lot_id', lotId)
-          .eq('status', 'available')
-          .order('floor')
-          .order('code');
+          .eq('parking_lot_id', parkingLotId)
+          .eq('is_available', true);
 
       return (response as List)
-          .map(
-              (json) => ParkingSlotModel.fromJson(json as Map<String, dynamic>))
+          .map((json) => ParkingSlotModel.fromJson(json))
           .toList();
-    } on PostgrestException catch (e) {
-      if (e.code == '42703') {
-        final response = await _supabaseClient
-            .from('parking_slots')
-            .select()
-            .eq('lot_id', lotId)
-            .eq('status', 'available')
-            .order('floor_number')
-            .order('code');
-
-        return (response as List)
-            .map((json) =>
-                ParkingSlotModel.fromJson(json as Map<String, dynamic>))
-            .toList();
-      }
-      throw Exception('Gagal memuat slot parkir: $e');
     } catch (e) {
-      throw Exception('Gagal memuat slot parkir: $e');
+      throw Exception('Failed to get available slots: $e');
     }
   }
 
@@ -116,9 +74,10 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
         photoUrl: lot.photoUrl,
         createdAt: lot.createdAt,
       );
+
       await _supabaseClient.from('parking_lots').insert(model.toJson());
     } catch (e) {
-      throw Exception('Gagal membuat lahan parkir: $e');
+      throw Exception('Failed to create parking lot: $e');
     }
   }
 
@@ -138,12 +97,13 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
         photoUrl: lot.photoUrl,
         createdAt: lot.createdAt,
       );
+
       await _supabaseClient
           .from('parking_lots')
           .update(model.toJson())
           .eq('id', lot.id);
     } catch (e) {
-      throw Exception('Gagal mengupdate lahan parkir: $e');
+      throw Exception('Failed to update parking lot: $e');
     }
   }
 
@@ -152,14 +112,15 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
     try {
       final model = ParkingSlotModel(
         id: slot.id,
-        lotId: slot.lotId,
+        parkingLotId: slot.parkingLotId,
         code: slot.code,
-        floorNumber: slot.floorNumber,
-        status: slot.status,
+        floor: slot.floor,
+        isAvailable: slot.isAvailable,
       );
+
       await _supabaseClient.from('parking_slots').insert(model.toJson());
     } catch (e) {
-      throw Exception('Gagal menambah slot parkir: $e');
+      throw Exception('Failed to add parking slot: $e');
     }
   }
 
@@ -168,17 +129,15 @@ class ParkingLotRepoImpl implements IParkingLotRepository {
     try {
       final model = ParkingSlotModel(
         id: slot.id,
-        lotId: slot.lotId,
+        parkingLotId: slot.parkingLotId,
         code: slot.code,
-        floorNumber: slot.floorNumber,
-        status: slot.status,
+        floor: slot.floor,
+        isAvailable: slot.isAvailable,
       );
-      await _supabaseClient
-          .from('parking_slots')
-          .update(model.toJson())
-          .eq('id', slot.id);
+
+      await _supabaseClient.from('parking_slots').update(model.toJson()).eq('id', slot.id);
     } catch (e) {
-      throw Exception('Gagal mengupdate slot parkir: $e');
+      throw Exception('Failed to update parking slot: $e');
     }
   }
 }

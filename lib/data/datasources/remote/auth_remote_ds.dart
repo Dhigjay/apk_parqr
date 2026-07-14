@@ -29,20 +29,19 @@ class AuthRemoteDataSource {
     }
 
     try {
-      // Kolom primary key di public.users adalah 'id', bukan 'auth_id'
       final response = await _supabaseClient
           .from('users')
           .select('role')
           .eq('id', user.id)
           .single();
 
-      final role = response?['role'] as String?;
-      _cachedRole = (role != null && role.isNotEmpty) ? role : 'user';
+      final role = response['role'] as String?;
+      _cachedRole = (role != null && role.isNotEmpty) ? role : 'visitor';
       return _cachedRole!;
     } catch (e) {
       // Kalau row belum ada di public.users (race condition trigger)
-      // atau ada error lain, fallback aman ke 'user'.
-      _cachedRole = 'user';
+      // atau ada error lain, fallback aman ke visitor.
+      _cachedRole = 'visitor';
       return _cachedRole!;
     }
   }
@@ -60,8 +59,7 @@ class AuthRemoteDataSource {
   /// untuk memastikan cache role terisi meski app baru dibuka ulang.
   Future<String> refreshCurrentRole() => _fetchAndCacheRole();
 
-  Future<void> register(
-      String email, String password, String name, String phone) async {
+  Future<void> register(String email, String password, String name, String phone) async {
     await _supabaseClient.auth.signUp(
       email: email.trim(),
       password: password,

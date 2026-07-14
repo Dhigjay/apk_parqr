@@ -13,40 +13,7 @@ class QrEntryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Terima data dari BookingPage via route extra
-    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
-
-    final sessionId = extra?['sessionId'] as String? ?? '';
-    final entryQrPayload = extra?['entryQrPayload'] as String? ?? sessionId;
-    final parkingLotName =
-        extra?['parkingLotName'] as String? ?? 'ParQr Parking';
-    final vehiclePlate = extra?['vehiclePlate'] as String? ?? '-';
-    final vehicleName = extra?['vehicleName'] as String? ?? '-';
-    final slot = extra?['slot'] as String? ?? '-';
-    final tariffPerHour = extra?['tariffPerHour'] as double? ?? 5000.0;
-    final bookedAtStr = extra?['bookedAt'] as String?;
-    final bookedAt =
-        bookedAtStr != null ? DateTime.tryParse(bookedAtStr) : DateTime.now();
-
-    String _formatDateTime(DateTime? dt) {
-      if (dt == null) return '-';
-      final monthNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'Mei',
-        'Jun',
-        'Jul',
-        'Agu',
-        'Sep',
-        'Okt',
-        'Nov',
-        'Des'
-      ];
-      return '${dt.day} ${monthNames[dt.month - 1]} ${dt.year}, '
-          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    }
+    final issuedAt = DateTime(2026, 6, 19, 9, 30);
 
     return Scaffold(
       appBar: AppBar(title: const Text('QR Masuk')),
@@ -60,8 +27,9 @@ class QrEntryPage extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             QrDisplayCard(
-              data: entryQrPayload,
-              title: parkingLotName,
+              data:
+                  'parqr://entry?session_id=demo-session-001&type=entry&issued_at=${issuedAt.toIso8601String()}',
+              title: 'ParQr Sudirman Hub',
               subtitle: 'Tunjukkan QR ini ke operator saat masuk area parkir.',
               size: 230,
             ),
@@ -73,18 +41,11 @@ class QrEntryPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Column(
+              child: const Column(
                 children: [
-                  _InfoRow(
-                      label: 'Waktu Booking', value: _formatDateTime(bookedAt)),
-                  _InfoRow(
-                      label: 'Kendaraan',
-                      value: '$vehiclePlate ($vehicleName)'),
-                  _InfoRow(label: 'Slot', value: slot),
-                  _InfoRow(
-                    label: 'Tarif',
-                    value: 'Rp${tariffPerHour.toInt()}/jam',
-                  ),
+                  _InfoRow(label: 'Waktu Booking', value: '19 Jun 2026, 09:30'),
+                  _InfoRow(label: 'Kendaraan', value: 'B 1234 QR'),
+                  _InfoRow(label: 'Slot', value: 'L2-B12'),
                 ],
               ),
             ),
@@ -95,30 +56,17 @@ class QrEntryPage extends StatelessWidget {
               onPressed: () {},
             ),
             const SizedBox(height: 10),
-            // Tombol simulasi: di production ini digantikan oleh scan operator
             AppButton(
               label: 'Simulasi Scan Masuk (Operator)',
               icon: Icons.login_rounded,
               variant: AppButtonVariant.secondary,
               onPressed: () {
-                context.go(
-                  RouteNames.activeParking,
-                  extra: {
-                    'sessionId': sessionId,
-                    'parkingLotName': parkingLotName,
-                    'vehiclePlate': vehiclePlate,
-                    'vehicleName': vehicleName,
-                    'slot': slot,
-                    'tariffPerHour': tariffPerHour,
-                    // startTime diisi saat scan operator — simulasi pakai now
-                    'startTime': DateTime.now().toIso8601String(),
-                  },
-                );
+                context.go(RouteNames.activeParking);
               },
             ),
             const SizedBox(height: 12),
             Text(
-              'QR berlaku 24 jam. Stopwatch tarif mulai setelah operator scan QR masuk.',
+              'QR berlaku 24 jam selama belum dipakai. Stopwatch tarif mulai setelah operator berhasil scan QR masuk.',
               style: AppTextStyles.caption,
               textAlign: TextAlign.center,
             ),
@@ -130,7 +78,11 @@ class QrEntryPage extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
+  const _InfoRow({
+    required this.label,
+    required this.value,
+  });
+
   final String label;
   final String value;
 

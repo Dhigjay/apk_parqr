@@ -2,21 +2,25 @@ import 'package:equatable/equatable.dart';
 
 class ParkingSlotEntity extends Equatable {
   final String id;
-  final String lotId; // ✅ 'lot_id' sesuai schema
+  final String parkingLotId;
   final String code;
-  final int floorNumber; // ✅ integer sesuai schema
-  final String status; // 'available' | 'reserved' | 'occupied' | 'maintenance'
+  final String floor;
+  final bool isAvailable;
 
   const ParkingSlotEntity({
     required this.id,
-    required this.lotId,
+    required this.parkingLotId,
     required this.code,
-    required this.floorNumber,
-    required this.status,
+    required this.floor,
+    required this.isAvailable,
   });
 
-  bool get isAvailable => status == 'available';
-
   @override
-  List<Object?> get props => [id, lotId, code, floorNumber, status];
+  List<Object?> get props => [
+        id,
+        parkingLotId,
+        code,
+        floor,
+        isAvailable,
+      ];
 }

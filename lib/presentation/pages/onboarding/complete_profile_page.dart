@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:parqr/core/constants/app_strings.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
-import 'package:parqr/injection/injection_container.dart';
 import 'package:parqr/presentation/blocs/profile/profile_cubit.dart';
 import 'package:parqr/presentation/blocs/profile/profile_state.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/app_text_field.dart';
 import 'package:parqr/presentation/widgets/form_feedback_banner.dart';
+import 'package:parqr/injection/injection_container.dart';
 
 class CompleteProfilePage extends StatelessWidget {
   const CompleteProfilePage({super.key});
@@ -17,20 +17,20 @@ class CompleteProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<ProfileCubit>(),
-      child: const _CompleteProfileView(),
+      create: (context) => sl<ProfileCubit>(),
+      child: const CompleteProfileView(),
     );
   }
 }
 
-class _CompleteProfileView extends StatefulWidget {
-  const _CompleteProfileView();
+class CompleteProfileView extends StatefulWidget {
+  const CompleteProfileView({super.key});
 
   @override
-  State<_CompleteProfileView> createState() => _CompleteProfileViewState();
+  State<CompleteProfileView> createState() => _CompleteProfileViewState();
 }
 
-class _CompleteProfileViewState extends State<_CompleteProfileView> {
+class _CompleteProfileViewState extends State<CompleteProfileView> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _addressController = TextEditingController();
@@ -48,10 +48,11 @@ class _CompleteProfileViewState extends State<_CompleteProfileView> {
       return;
     }
 
+    // Call ProfileCubit to save profile to database
     context.read<ProfileCubit>().completeProfile(
-          name: _fullNameController.text.trim(),
-          address: _addressController.text.trim(),
-        );
+      name: _fullNameController.text.trim(),
+      address: _addressController.text.trim(),
+    );
   }
 
   @override
@@ -59,14 +60,14 @@ class _CompleteProfileViewState extends State<_CompleteProfileView> {
     return BlocConsumer<ProfileCubit, ProfileState>(
       listener: (context, state) {
         if (state is ProfileCompleted) {
-          // Profil tersimpan, langsung navigasi ke halaman tambah kendaraan
+          // Profile saved successfully, go to add vehicle
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text(
-                  'Profil berhasil disimpan! Silakan tambahkan kendaraan.'),
+              content: Text('Profil berhasil disimpan! Silakan tambahkan kendaraan.'),
               backgroundColor: Colors.green,
             ),
           );
+          // Navigate to add vehicle page
           context.go(RouteNames.addVehicle);
         } else if (state is ProfileError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -84,7 +85,7 @@ class _CompleteProfileViewState extends State<_CompleteProfileView> {
         return Scaffold(
           appBar: AppBar(
             title: const Text(AppStrings.completeProfile),
-            automaticallyImplyLeading: false,
+            automaticallyImplyLeading: false, // Don't allow back during onboarding
           ),
           body: SafeArea(
             child: SingleChildScrollView(

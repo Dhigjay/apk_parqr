@@ -3,30 +3,29 @@ import 'package:parqr/domain/entities/parking_slot_entity.dart';
 class ParkingSlotModel extends ParkingSlotEntity {
   const ParkingSlotModel({
     required super.id,
-    required super.lotId,
+    required super.parkingLotId,
     required super.code,
-    required super.floorNumber,
-    required super.status,
+    required super.floor,
+    required super.isAvailable,
   });
 
   factory ParkingSlotModel.fromJson(Map<String, dynamic> json) {
     return ParkingSlotModel(
       id: json['id'] as String,
-      lotId: (json['lot_id'] ?? json['parking_lot_id']) as String,
+      parkingLotId: json['parking_lot_id'] as String,
       code: json['code'] as String,
-      floorNumber: json['floor_number'] as int? ??
-          int.tryParse(json['floor']?.toString() ?? '') ??
-          1,
-      status: json['status'] as String? ?? 'available',
+      floor: json['floor'] as String,
+      isAvailable: json['is_available'] as bool,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'parking_lot_id': lotId,
+      'id': id,
+      'parking_lot_id': parkingLotId,
       'code': code,
-      'floor': floorNumber.toString(),
-      'status': status,
+      'floor': floor,
+      'is_available': isAvailable,
     };
   }
 }

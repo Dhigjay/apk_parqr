@@ -15,51 +15,15 @@ class ActiveParkingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Terima data dari QrEntryPage via route extra
-    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
-
-    final sessionId = extra?['sessionId'] as String? ?? 'demo-session-001';
-    final parkingLotName =
-        extra?['parkingLotName'] as String? ?? 'ParQr Parking';
-    final vehiclePlate = extra?['vehiclePlate'] as String? ?? 'B 1234 QR';
-    final vehicleName = extra?['vehicleName'] as String? ?? '-';
-    final slot = extra?['slot'] as String? ?? '-';
-    final tariffPerHour = extra?['tariffPerHour'] as double? ?? 5000.0;
-    final startTimeStr = extra?['startTime'] as String?;
-    final startTime = startTimeStr != null
-        ? DateTime.tryParse(startTimeStr) ?? DateTime.now()
-        : DateTime.now();
-
     return BlocProvider(
-      create: (_) => ActiveSessionCubit()
-        ..loadSession(
-          sessionId: sessionId,
-          startTime: startTime,
-          tariffPerHour: tariffPerHour,
-        ),
-      child: ActiveParkingView(
-        parkingLotName: parkingLotName,
-        vehiclePlate: vehiclePlate,
-        vehicleName: vehicleName,
-        slot: slot,
-      ),
+      create: (context) => ActiveSessionCubit()..subscribeToSession('demo-session-001'),
+      child: const ActiveParkingView(),
     );
   }
 }
 
 class ActiveParkingView extends StatelessWidget {
-  const ActiveParkingView({
-    super.key,
-    required this.parkingLotName,
-    required this.vehiclePlate,
-    required this.vehicleName,
-    required this.slot,
-  });
-
-  final String parkingLotName;
-  final String vehiclePlate;
-  final String vehicleName;
-  final String slot;
+  const ActiveParkingView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -72,26 +36,24 @@ class ActiveParkingView extends StatelessWidget {
       body: SafeArea(
         child: BlocBuilder<ActiveSessionCubit, ActiveSessionState>(
           builder: (context, state) {
-            if (state is ActiveSessionInitial ||
-                state is ActiveSessionLoading) {
+            if (state is ActiveSessionInitial || state is ActiveSessionLoading) {
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
                 ),
               );
-            }
-
-            if (state is ActiveSessionActive) {
+            } else if (state is ActiveSessionActive) {
               return ListView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 children: [
+                  // Header
                   Center(
                     child: Column(
                       children: [
-                        Text(parkingLotName,
-                            style: AppTextStyles.h2.copyWith(fontSize: 22)),
+                        Text(
+                          'ParQr Sudirman Hub',
+                          style: AppTextStyles.h2.copyWith(fontSize: 24),
+                        ),
                         const SizedBox(height: 8),
                         const StatusBadge(
                           label: 'DURASI PARKIR',
@@ -102,7 +64,7 @@ class ActiveParkingView extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // Stopwatch
+                  // Stopwatch Display
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 36),
@@ -124,7 +86,7 @@ class ActiveParkingView extends StatelessWidget {
                         StopwatchWidget(startTime: state.startTime),
                         const SizedBox(height: 12),
                         Text(
-                          'Tarif: Rp${state.tariffPerHour.toInt()} / jam',
+                          'Tarif berjalan: Rp5.000 / jam',
                           style: AppTextStyles.bodySecondary.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
@@ -164,15 +126,17 @@ class ActiveParkingView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                vehiclePlate,
+                                'B 1234 QR',
                                 style: AppTextStyles.body.copyWith(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(vehicleName,
-                                  style: AppTextStyles.bodySecondary),
+                              Text(
+                                'Honda Vario 125 (Motor)',
+                                style: AppTextStyles.bodySecondary,
+                              ),
                             ],
                           ),
                         ),
@@ -181,7 +145,7 @@ class ActiveParkingView extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Lokasi Slot
+                  // Detail Lokasi & Peta Mock
                   Text('Lokasi Parkir', style: AppTextStyles.h3),
                   const SizedBox(height: 12),
                   Container(
@@ -191,25 +155,92 @@ class ActiveParkingView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.location_on_rounded,
-                          color: AppColors.accentPurple,
-                          size: 22,
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_rounded,
+                              color: AppColors.accentPurple,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Lantai 2 - Slot B12',
+                              style: AppTextStyles.body.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Slot $slot',
-                          style: AppTextStyles.body
-                              .copyWith(fontWeight: FontWeight.w600),
+                        const SizedBox(height: 12),
+                        // Mock Map Area
+                        Container(
+                          height: 120,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.bgElevated,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Grid pattern mockup
+                              Opacity(
+                                opacity: 0.15,
+                                child: GridView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 6,
+                                    mainAxisSpacing: 8,
+                                    crossAxisSpacing: 8,
+                                  ),
+                                  itemCount: 24,
+                                  itemBuilder: (context, index) => Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.white, width: 0.5),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Marker
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.my_location_rounded,
+                                    color: AppColors.accentBlue,
+                                    size: 32,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.bgCard,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: AppColors.border),
+                                    ),
+                                    child: Text(
+                                      'B12',
+                                      style: AppTextStyles.caption.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.accentBlue,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 36),
 
-                  // Keluar Parkir
+                  // Button Checkout
                   AppButton(
                     label: 'Keluar Parkir',
                     icon: Icons.exit_to_app_rounded,
@@ -226,45 +257,53 @@ class ActiveParkingView extends StatelessWidget {
                   ),
                 ],
               );
-            }
-
-            if (state is ActiveSessionCompleted) {
+            } else if (state is ActiveSessionCompleted) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.check_circle_outline_rounded,
-                        color: AppColors.success, size: 64),
+                    const Icon(
+                      Icons.check_circle_outline_rounded,
+                      color: AppColors.success,
+                      size: 64,
+                    ),
                     const SizedBox(height: 16),
-                    Text('Sesi Parkir Selesai', style: AppTextStyles.h2),
+                    Text(
+                      'Sesi Parkir Telah Selesai',
+                      style: AppTextStyles.h2,
+                    ),
                     const SizedBox(height: 24),
                     AppButton(
-                      label: 'Kembali ke Home',
+                      label: 'Kembali Ke Home',
                       onPressed: () => context.go(RouteNames.home),
                     ),
                   ],
                 ),
               );
-            }
-
-            final message = state is ActiveSessionError
-                ? state.message
-                : 'Terjadi kesalahan.';
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline_rounded,
-                        color: AppColors.error, size: 64),
-                    const SizedBox(height: 16),
-                    Text(message,
-                        style: AppTextStyles.body, textAlign: TextAlign.center),
-                  ],
+            } else {
+              final message = state is ActiveSessionError ? state.message : 'Terjadi kesalahan.';
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: AppColors.error,
+                        size: 64,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        message,
+                        style: AppTextStyles.body,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           },
         ),
       ),

@@ -5,12 +5,12 @@ import 'package:parqr/core/constants/app_colors.dart';
 import 'package:parqr/core/constants/app_strings.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
-import 'package:parqr/injection/injection_container.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_state.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
 import 'package:parqr/presentation/widgets/app_text_field.dart';
 import 'package:parqr/presentation/widgets/form_feedback_banner.dart';
+import 'package:parqr/injection/injection_container.dart';
 
 class AddVehiclePage extends StatelessWidget {
   const AddVehiclePage({super.key});
@@ -18,20 +18,20 @@ class AddVehiclePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<VehicleCubit>(),
-      child: const _AddVehicleView(),
+      create: (context) => sl<VehicleCubit>(),
+      child: const AddVehicleView(),
     );
   }
 }
 
-class _AddVehicleView extends StatefulWidget {
-  const _AddVehicleView();
+class AddVehicleView extends StatefulWidget {
+  const AddVehicleView({super.key});
 
   @override
-  State<_AddVehicleView> createState() => _AddVehicleViewState();
+  State<AddVehicleView> createState() => _AddVehicleViewState();
 }
 
-class _AddVehicleViewState extends State<_AddVehicleView> {
+class _AddVehicleViewState extends State<AddVehicleView> {
   final _formKey = GlobalKey<FormState>();
   final _brandController = TextEditingController();
   final _modelController = TextEditingController();
@@ -52,41 +52,36 @@ class _AddVehicleViewState extends State<_AddVehicleView> {
     if (!(_formKey.currentState?.validate() ?? false) || _vehicleType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('Lengkapi merk, model, jenis, dan nomor polisi kendaraan.'),
+          content: Text('Lengkapi merk, model, jenis, dan nomor polisi kendaraan.'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    // Call VehicleCubit to add vehicle to database
     context.read<VehicleCubit>().addVehicle(
-          brand: _brandController.text.trim(),
-          model: _modelController.text.trim(),
-          vehicleType: _vehicleType!,
-          plateNumber: _plateController.text.trim(),
-          photoPath: _hasPhoto ? 'https://placeholder.com/vehicle.jpg' : null,
-        );
+      brand: _brandController.text.trim(),
+      model: _modelController.text.trim(),
+      vehicleType: _vehicleType!,
+      plateNumber: _plateController.text.trim(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<VehicleCubit, VehicleState>(
       listener: (context, state) {
-        if (state is VehicleAddedSuccess) {
+        if (state is VehicleAdded) {
+          // Vehicle saved successfully, go to home
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text(
-                  'Kendaraan berhasil ditambahkan! Selamat datang di ParQr.'),
+              content: Text('Kendaraan berhasil ditambahkan! Selamat datang di ParQr.'),
               backgroundColor: Colors.green,
             ),
           );
-          // Navigasi ke home setelah berhasil
-          if (context.canPop()) {
-            context.pop();
-          } else {
-            context.go(RouteNames.home);
-          }
+          // Navigate to home
+          context.go(RouteNames.home);
         } else if (state is VehicleError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -103,7 +98,7 @@ class _AddVehicleViewState extends State<_AddVehicleView> {
         return Scaffold(
           appBar: AppBar(
             title: const Text(AppStrings.addVehicle),
-            automaticallyImplyLeading: false,
+            automaticallyImplyLeading: false, // Don't allow back during onboarding
           ),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -144,11 +139,9 @@ class _AddVehicleViewState extends State<_AddVehicleView> {
                           : null,
                     ),
                     const SizedBox(height: 18),
-                    Text(
-                      'Jenis Kendaraan',
-                      style: AppTextStyles.caption
-                          .copyWith(fontWeight: FontWeight.w600),
-                    ),
+                    Text('Jenis Kendaraan',
+                        style: AppTextStyles.caption
+                            .copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     SegmentedButton<String>(
                       segments: const [
@@ -163,22 +156,19 @@ class _AddVehicleViewState extends State<_AddVehicleView> {
                           label: Text('Mobil'),
                         ),
                       ],
-                      selected:
-                          _vehicleType == null ? <String>{} : {_vehicleType!},
+                      selected: _vehicleType == null ? <String>{} : {_vehicleType!},
                       emptySelectionAllowed: true,
-                      onSelectionChanged: isLoading
-                          ? null
-                          : (values) {
-                              setState(() => _vehicleType =
-                                  values.isEmpty ? null : values.first);
-                            },
+                      onSelectionChanged: isLoading ? null : (values) {
+                        setState(() =>
+                            _vehicleType = values.isEmpty ? null : values.first);
+                      },
                     ),
                     if (_vehicleType == null) ...[
                       const SizedBox(height: 8),
                       Text(
                         'Jenis kendaraan wajib dipilih',
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.error),
+                        style:
+                            AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                     const SizedBox(height: 18),
@@ -199,9 +189,7 @@ class _AddVehicleViewState extends State<_AddVehicleView> {
                     const SizedBox(height: 18),
                     _VehiclePhotoPicker(
                       hasPhoto: _hasPhoto,
-                      onTap: isLoading
-                          ? null
-                          : () => setState(() => _hasPhoto = true),
+                      onTap: isLoading ? null : () => setState(() => _hasPhoto = true),
                     ),
                     const SizedBox(height: 28),
                     if (errorMessage != null) ...[
@@ -231,7 +219,7 @@ class _AddVehicleViewState extends State<_AddVehicleView> {
 class _VehiclePhotoPicker extends StatelessWidget {
   const _VehiclePhotoPicker({
     required this.hasPhoto,
-    required this.onTap,
+    this.onTap,
   });
 
   final bool hasPhoto;

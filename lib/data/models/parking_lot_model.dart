@@ -23,14 +23,11 @@ class ParkingLotModel extends ParkingLotEntity {
       address: json['address'] as String? ?? '',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-      totalCapacity: (json['total_capacity'] ?? json['capacity']) as int? ?? 0,
-      totalFloors: json['floors'] as int? ?? 1,
-      pricePerHour:
-          ((json['price_per_hour'] ?? json['hourly_rate']) as num?)
-                  ?.toDouble() ??
-              0.0,
+      totalCapacity: json['total_capacity'] as int? ?? 0,
+      totalFloors: (json['floors'] ?? json['total_floors']) as int? ?? 0,
+      pricePerHour: ((json['hourly_rate'] ?? json['price_per_hour']) as num?)?.toDouble() ?? 0.0,
       photoUrl: json['photo_url'] as String?,
-      createdAt: json['created_at'] != null
+      createdAt: json['created_at'] != null 
           ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
           : DateTime.now(),
     );
@@ -38,6 +35,7 @@ class ParkingLotModel extends ParkingLotEntity {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'owner_id': operatorId,
       'name': name,
       'address': address,
@@ -46,8 +44,8 @@ class ParkingLotModel extends ParkingLotEntity {
       'total_capacity': totalCapacity,
       'floors': totalFloors,
       'hourly_rate': pricePerHour,
-      'status': 'active',
       'photo_url': photoUrl,
+      'created_at': createdAt.toIso8601String(),
     };
   }
 }

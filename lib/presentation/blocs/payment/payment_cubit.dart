@@ -10,43 +10,37 @@ class PaymentCubit extends Cubit<PaymentState> {
   Timer? _pollingTimer;
   RealtimeChannel? _paymentChannel;
 
-  // ----------------------------------------------------------------
-  // Resolve session ID: jika bukan UUID valid, buat session baru
-  // ----------------------------------------------------------------
-  Future<String> _resolveSessionId(
-      SupabaseClient supabase, String sessionId) async {
+  Future<String> _getInternalUserId(SupabaseClient supabase) async {
+    final authUser = supabase.auth.currentUser;
+    if (authUser == null) throw Exception('Autentikasi gagal. Harap login kembali.');
+
+    final userRow = await supabase
+        .from('users')
+        .select('id, is_profile_complete')
+        .eq('auth_id', authUser.id)
+        .maybeSingle();
+
+    if (userRow == null) {
+      throw Exception('Profil user tidak ditemukan. Silakan lengkapi profil terlebih dahulu.');
+    }
+
+    final isComplete = userRow['is_profile_complete'] as bool? ?? false;
+    if (!isComplete) {
+      throw Exception('Profil belum lengkap. Silakan isi nama dan alamat terlebih dahulu.');
+    }
+
+    return userRow['id'] as String;
+  }
+
+  Future<String> _resolveSessionId(SupabaseClient supabase, String sessionId) async {
     final uuidRegex = RegExp(
       r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
     );
 
     if (uuidRegex.hasMatch(sessionId)) return sessionId;
 
-    // Session dummy — buat session nyata
-    final currentUser = supabase.auth.currentUser;
-    if (currentUser == null)
-      throw Exception('Autentikasi gagal. Harap login kembali.');
+    final userId = await _getInternalUserId(supabase);
 
-    // public.users.id == auth.uid() langsung (bukan auth_id terpisah)
-    final userCheck = await supabase
-        .from('users')
-        .select('id, profile_completed')
-        .eq('id', currentUser.id)
-        .maybeSingle();
-
-    if (userCheck == null) {
-      throw Exception(
-          'Profil user tidak ditemukan. Silakan lengkapi profil terlebih dahulu.');
-    }
-
-    final isComplete = userCheck['profile_completed'] as bool? ?? false;
-    if (!isComplete) {
-      throw Exception(
-          'Profil belum lengkap. Silakan isi nama dan alamat terlebih dahulu.');
-    }
-
-    final userId = userCheck['id'] as String;
-
-    // Cari kendaraan user
     final vehicleQuery = await supabase
         .from('vehicles')
         .select('id')
@@ -55,77 +49,46 @@ class PaymentCubit extends Cubit<PaymentState> {
         .maybeSingle();
 
     if (vehicleQuery == null) {
-      throw Exception(
-          'Belum ada kendaraan terdaftar. Tambah kendaraan di halaman Profil.');
+      throw Exception('Belum ada kendaraan terdaftar. Silakan tambahkan kendaraan terlebih dahulu.');
     }
-    final vehicleId = vehicleQuery['id'] as String;
 
-    // Cari parking lot aktif.
-    var lotQuery = await supabase
+    final lotQuery = await supabase
         .from('parking_lots')
         .select('id')
         .eq('status', 'active')
         .limit(1)
         .maybeSingle();
 
-    lotQuery ??= await supabase
-        .from('parking_lots')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
+    if (lotQuery == null) throw Exception('Tidak ada area parkir aktif.');
 
-    if (lotQuery == null) {
-      throw Exception(
-          'Tidak ada area parkir aktif. Silakan daftarkan operator terlebih dahulu.');
-    }
-    final lotId = lotQuery['id'] as String;
-
-    // Buat session — nama kolom sesuai MASTER_SCHEMA_CLEAN.sql
     final now = DateTime.now();
-    final expiresAt = now.add(const Duration(hours: 24));
-    final insertedSession = await supabase
-        .from('parking_sessions')
-        .insert({
-          'user_id': userId,
-          'vehicle_id': vehicleId,
-          'lot_id': lotId,
-          'status': 'active',
-          'entry_qr_token': 'mock-entry-${now.millisecondsSinceEpoch}',
-          'entry_qr_expires_at': expiresAt.toIso8601String(),
-          'entered_at': now.toIso8601String(),
-          'amount_due': 0,
-        })
-        .select('id')
-        .single();
+    final insertedSession = await supabase.from('parking_sessions').insert({
+      'user_id': userId,
+      'vehicle_id': vehicleQuery['id'] as String,
+      'parking_lot_id': lotQuery['id'] as String,
+      'status': 'active',
+      'check_in_time': now.toIso8601String(),
+      'entry_qr_code': 'mock-entry-${now.millisecondsSinceEpoch}',
+    }).select('id').single();
 
     return insertedSession['id'] as String;
   }
 
-  // ----------------------------------------------------------------
-  // Helper: insert ke tabel payments, return paymentId
-  // ----------------------------------------------------------------
   Future<String> _createPaymentRecord(
     SupabaseClient supabase,
     String sessionId,
     double amount,
     String method,
   ) async {
-    final response = await supabase
-        .from('payments')
-        .insert({
-          'session_id': sessionId,
-          'amount': amount,
-          'method': method.toLowerCase(),
-          'status': 'pending',
-        })
-        .select('id')
-        .single();
+    final response = await supabase.from('payments').insert({
+      'session_id': sessionId,
+      'amount': amount,
+      'method': method,
+      'status': 'pending',
+    }).select('id').single();
     return response['id'] as String;
   }
 
-  // ----------------------------------------------------------------
-  // Realtime listener untuk status pembayaran
-  // ----------------------------------------------------------------
   void _listenToPayment(SupabaseClient supabase, String paymentId) {
     try {
       _paymentChannel?.unsubscribe();
@@ -146,11 +109,8 @@ class PaymentCubit extends Cubit<PaymentState> {
                 emit(PaymentSuccess(
                   exitQrPayload: '{"type":"EXIT","payment_id":"$paymentId"}',
                 ));
-              } else if (status == 'failed' ||
-                  status == 'expired' ||
-                  status == 'cancelled') {
-                emit(const PaymentFailed(
-                    'Pembayaran dibatalkan atau kedaluwarsa.'));
+              } else if (status == 'failed' || status == 'expired' || status == 'cancelled') {
+                emit(const PaymentFailed('Pembayaran dibatalkan atau kedaluwarsa.'));
               }
             },
           )
@@ -160,48 +120,20 @@ class PaymentCubit extends Cubit<PaymentState> {
     }
   }
 
-  // ----------------------------------------------------------------
-  // CASH
-  // ----------------------------------------------------------------
-  void processCashPayment({String sessionId = 'demo-session-001'}) async {
+  void processCashPayment() async {
     emit(const PaymentProcessing(method: 'cash'));
-
-    try {
-      final supabase = Supabase.instance.client;
-      final resolvedSessionId = await _resolveSessionId(supabase, sessionId);
-      final paymentId = await _createPaymentRecord(
-        supabase,
-        resolvedSessionId,
-        0,
-        'cash',
-      );
-
-      await supabase
-          .from('payments')
-          .update({'status': 'waiting_operator'}).eq('id', paymentId);
-
-      emit(PaymentAwaitingVerification());
-      _listenToPayment(supabase, paymentId);
-    } catch (e) {
-      emit(PaymentFailed('Gagal memproses pembayaran cash: $e'));
-    }
+    await Future.delayed(const Duration(seconds: 1));
+    emit(PaymentAwaitingVerification());
   }
 
-  // ----------------------------------------------------------------
-  // SNAP (QRIS + VA via Midtrans Snap)
-  // ----------------------------------------------------------------
-  void processSnapPayment(
-      String sessionId, double amount, String method) async {
+  void processSnapPayment(String sessionId, double amount, String method) async {
     emit(PaymentProcessing(method: method));
 
     try {
       final supabase = Supabase.instance.client;
       final resolvedSessionId = await _resolveSessionId(supabase, sessionId);
       final paymentId = await _createPaymentRecord(
-        supabase,
-        resolvedSessionId,
-        amount,
-        method.toLowerCase(),
+        supabase, resolvedSessionId, amount, method.toLowerCase(),
       );
 
       final res = await supabase.functions.invoke(
@@ -211,6 +143,8 @@ class PaymentCubit extends Cubit<PaymentState> {
           'amount': amount.toInt(),
         },
       );
+
+      print('Snap Response: status=${res.status}, data=${res.data}');
 
       if (res.status == 200 && res.data != null) {
         final snapUrl = res.data['data']?['snap_url'] as String?;
@@ -230,20 +164,11 @@ class PaymentCubit extends Cubit<PaymentState> {
             emit(const PaymentFailed('Tidak bisa membuka halaman pembayaran.'));
           }
         } else {
-          emit(const PaymentFailed(
-              'Gagal mendapatkan link pembayaran. Coba lagi.'));
+          emit(const PaymentFailed('Gagal mendapatkan link pembayaran. Coba lagi.'));
         }
       } else {
-        final errorMsg =
-            res.data?['error']?.toString() ?? 'Error tidak diketahui';
-        if (errorMsg.contains('MIDTRANS_SERVER_KEY')) {
-          emit(const PaymentFailed(
-            'Konfigurasi Midtrans belum lengkap.\n'
-            'Admin: Set MIDTRANS_SERVER_KEY di Supabase → Settings → Edge Functions → Secrets',
-          ));
-        } else {
-          emit(PaymentFailed('Gagal membuat pembayaran: $errorMsg'));
-        }
+        final errorMsg = res.data?['error']?.toString() ?? 'Error tidak diketahui';
+        emit(PaymentFailed('Gagal membuat pembayaran: $errorMsg'));
       }
     } on FunctionException catch (e) {
       emit(PaymentFailed('Error Edge Function: ${e.details}'));

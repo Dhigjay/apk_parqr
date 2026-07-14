@@ -28,8 +28,15 @@ class OperatorRegistrationRemoteDataSource {
     }
 
     try {
-      // public.users.id == auth.uid() langsung — tidak ada kolom auth_id terpisah
-      final applicantUserId = currentUser.id;
+      // applicant_user_id mengacu ke public.users.id, BUKAN auth.users.id langsung,
+      // jadi kita cari dulu id internal dari auth_id.
+      final userRow = await _supabaseClient
+          .from('users')
+          .select('id')
+          .eq('auth_id', currentUser.id)
+          .single();
+
+      final applicantUserId = userRow['id'] as String;
 
       await _supabaseClient.from('operator_registrations').insert({
         'applicant_user_id': applicantUserId,
@@ -59,15 +66,15 @@ class OperatorRegistrationRemoteDataSource {
     try {
       final storagePath = 'operator_registrations/$fileName';
 
-      await _supabaseClient.storage.from('lot-photos').upload(
+      await _supabaseClient.storage
+          .from('lot-photos')
+          .upload(
             storagePath,
             file,
             fileOptions: const FileOptions(upsert: true),
           );
 
-      return _supabaseClient.storage
-          .from('lot-photos')
-          .getPublicUrl(storagePath);
+      return _supabaseClient.storage.from('lot-photos').getPublicUrl(storagePath);
     } on StorageException catch (e) {
       throw ServerException(message: 'Gagal mengunggah foto: ${e.message}');
     }

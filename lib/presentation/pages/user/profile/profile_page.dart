@@ -4,10 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:parqr/core/constants/app_colors.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
-import 'package:parqr/domain/entities/vehicle_entity.dart';
 import 'package:parqr/presentation/blocs/profile/profile_cubit.dart';
-import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
-import 'package:parqr/presentation/blocs/vehicle/vehicle_state.dart';
 import 'package:parqr/presentation/widgets/app_bottom_nav.dart';
 
 import 'package:parqr/injection/injection_container.dart';
@@ -18,11 +15,8 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => sl<ProfileCubit>()..fetchProfile()),
-        BlocProvider(create: (_) => sl<VehicleCubit>()..fetchVehicles()),
-      ],
+    return BlocProvider(
+      create: (_) => sl<ProfileCubit>()..fetchProfile(),
       child: const _ProfileView(),
     );
   }
@@ -65,78 +59,6 @@ class _ProfileView extends StatelessWidget {
     }
   }
 
-  void _onEditVehicle(BuildContext context, VehicleEntity vehicle) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.bgCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (bottomSheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 8, bottom: 16),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              if (!vehicle.isPrimary)
-                ListTile(
-                  leading: const Icon(Icons.star_rounded, color: AppColors.accentBlue),
-                  title: const Text('Jadikan Utama', style: TextStyle(color: Colors.white)),
-                  onTap: () {
-                    Navigator.pop(bottomSheetContext);
-                    context.read<VehicleCubit>().setPrimaryVehicle(vehicle.id);
-                  },
-                ),
-              ListTile(
-                leading: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                title: const Text('Hapus Kendaraan', style: TextStyle(color: AppColors.error)),
-                onTap: () async {
-                  Navigator.pop(bottomSheetContext);
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (dialogContext) => AlertDialog(
-                      backgroundColor: const Color(0xFF161B22),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      title: const Text(
-                        'Hapus Kendaraan',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                      content: Text(
-                        'Apakah kamu yakin ingin menghapus kendaraan ${vehicle.plateNumber}?',
-                        style: const TextStyle(color: Color(0xFF8B949E)),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(dialogContext).pop(false),
-                          child: const Text('Batal', style: TextStyle(color: Color(0xFF8B949E))),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(dialogContext).pop(true),
-                          child: const Text('Hapus', style: TextStyle(color: Color(0xFFFF4D4D), fontWeight: FontWeight.w600)),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed == true && context.mounted) {
-                    context.read<VehicleCubit>().deleteVehicle(vehicle.id);
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,68 +90,14 @@ class _ProfileView extends StatelessWidget {
           // ── Kendaraan ────────────────────────────────────────
           const _SectionLabel(label: 'Kendaraan Terdaftar'),
           const SizedBox(height: 12),
-          BlocBuilder<VehicleCubit, VehicleState>(
-            builder: (context, state) {
-              if (state is VehicleLoading) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: CircularProgressIndicator(color: AppColors.accentBlue),
-                  ),
-                );
-              } else if (state is VehicleLoaded) {
-                final vehicles = state.vehicles;
-                if (vehicles.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      'Belum ada kendaraan terdaftar.',
-                      style: AppTextStyles.bodySecondary,
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-                return Column(
-                  children: vehicles.map((vehicle) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: _VehicleCard(
-                        plate: vehicle.plateNumber,
-                        vehicleName: vehicle.displayName,
-                        type: vehicle.vehicleType,
-                        isPrimary: vehicle.isPrimary,
-                        onEdit: () => _onEditVehicle(context, vehicle),
-                      ),
-                    );
-                  }).toList(),
-                );
-              } else if (state is VehicleError) {
-                return Column(
-                  children: [
-                    Text(
-                      'Gagal memuat kendaraan: ${state.message}',
-                      style: AppTextStyles.bodySecondary.copyWith(color: AppColors.error),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () => context.read<VehicleCubit>().fetchVehicles(),
-                      child: const Text('Coba Lagi'),
-                    ),
-                  ],
-                );
-              }
-              return const SizedBox();
-            },
+          _VehicleCard(
+            plate: 'B 1234 QR',
+            vehicleName: 'Honda Vario 125',
+            type: 'Motor',
+            onEdit: () {},
           ),
           const SizedBox(height: 8),
-          _AddVehicleButton(
-            onTap: () async {
-              await context.push(RouteNames.addVehicle);
-              if (context.mounted) {
-                context.read<VehicleCubit>().fetchVehicles();
-              }
-            },
-          ),
+          _AddVehicleButton(onTap: () {}),
           const SizedBox(height: 28),
 
           // ── Pengaturan Akun ──────────────────────────────────
@@ -324,7 +192,7 @@ class _ProfileHeader extends StatelessWidget {
             child: Center(
               child: Text(
                 name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -404,14 +272,12 @@ class _VehicleCard extends StatelessWidget {
     required this.vehicleName,
     required this.type,
     required this.onEdit,
-    this.isPrimary = false,
   });
 
   final String plate;
   final String vehicleName;
   final String type;
   final VoidCallback onEdit;
-  final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
@@ -421,10 +287,7 @@ class _VehicleCard extends StatelessWidget {
         color: AppColors.bgCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isPrimary 
-              ? AppColors.success.withValues(alpha: 0.5) 
-              : AppColors.accentBlue.withValues(alpha: 0.3),
-          width: isPrimary ? 2 : 1,
+          color: AppColors.accentBlue.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -433,16 +296,12 @@ class _VehicleCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: isPrimary
-                  ? AppColors.success.withValues(alpha: 0.12)
-                  : AppColors.accentBlue.withValues(alpha: 0.12),
+              color: AppColors.accentBlue.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              type.toLowerCase() == 'mobil' 
-                  ? Icons.directions_car_rounded
-                  : Icons.directions_bike_rounded,
-              color: isPrimary ? AppColors.success : AppColors.accentBlue,
+            child: const Icon(
+              Icons.directions_bike_rounded,
+              color: AppColors.accentBlue,
               size: 24,
             ),
           ),
@@ -451,38 +310,16 @@ class _VehicleCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      plate,
-                      style: AppTextStyles.body.copyWith(
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    if (isPrimary) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          'Utama',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.success,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+                Text(
+                  plate,
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '$vehicleName • ${type.toUpperCase()}',
+                  '$vehicleName • $type',
                   style: AppTextStyles.caption,
                 ),
               ],
