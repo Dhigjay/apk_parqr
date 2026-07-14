@@ -5,8 +5,8 @@ import 'package:parqr/presentation/blocs/profile/profile_state.dart';
 class ProfileCubit extends Cubit<ProfileState> {
   final IUserRepository _userRepository;
 
-  ProfileCubit({required IUserRepository userRepository}) 
-      : _userRepository = userRepository, 
+  ProfileCubit({required IUserRepository userRepository})
+      : _userRepository = userRepository,
         super(ProfileInitial());
 
   Future<void> fetchProfile() async {
@@ -14,7 +14,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     try {
       final user = await _userRepository.requireCurrentProfile();
       emit(ProfileLoaded(
-        name: user.fullName ?? '', 
+        name: user.fullName ?? '',
         address: user.address ?? '',
         phone: user.phone ?? '',
         email: user.email,
@@ -30,10 +30,11 @@ class ProfileCubit extends Cubit<ProfileState> {
   }) async {
     emit(ProfileLoading());
     try {
-      final user = await _userRepository.completeProfile(fullName: name, address: address);
-      // Emit ProfileCompleted instead of ProfileLoaded for onboarding flow
+      final user = await _userRepository.completeProfile(
+          fullName: name, address: address);
+      // Emit ProfileCompleted so onboarding pages dapat auto-navigate
       emit(ProfileCompleted(
-        name: user.fullName ?? '', 
+        name: user.fullName ?? '',
         address: user.address ?? '',
         phone: user.phone ?? '',
         email: user.email,
@@ -48,15 +49,19 @@ class ProfileCubit extends Cubit<ProfileState> {
     required String phone,
     required String address,
   }) async {
+    if (name.trim().isEmpty) {
+      emit(const ProfileError('Nama lengkap tidak boleh kosong.'));
+      return;
+    }
     emit(ProfileLoading());
     try {
       final user = await _userRepository.upsertCurrentProfile(
-        fullName: name,
-        phone: phone,
-        address: address,
+        fullName: name.trim(),
+        phone: phone.trim().isEmpty ? null : phone.trim(),
+        address: address.trim().isEmpty ? null : address.trim(),
       );
       emit(ProfileLoaded(
-        name: user.fullName ?? '', 
+        name: user.fullName ?? '',
         address: user.address ?? '',
         phone: user.phone ?? '',
         email: user.email,
