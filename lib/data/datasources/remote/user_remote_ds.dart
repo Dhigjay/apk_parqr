@@ -135,4 +135,11 @@ class UserRemoteDataSource {
       profileCompleted: true,
     );
   }
+
+  String? _blankToNull(String? text) {
+    if (text == null) return null;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return null;
+    return trimmed;
+  }
 }
