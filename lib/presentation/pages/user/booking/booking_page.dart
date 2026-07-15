@@ -5,6 +5,7 @@ import 'package:parqr/core/constants/app_colors.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/data/datasources/remote/notification_remote_ds.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_state.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
@@ -191,6 +192,15 @@ class _BookingViewState extends State<_BookingView> {
         internalUserId:  internalUserId,  // ✅ pakai internal id
         entryQrPayload:  entryQrPayload,
       );
+
+      try {
+        await sl<NotificationRemoteDataSource>().createNotification(
+          title: 'Booking Berhasil',
+          body: 'Booking parkir untuk $_selectedVehiclePlate di $_parkingLotName berhasil. QR masuk telah dibuat.',
+          type: 'booking_success',
+          userId: internalUserId,
+        );
+      } catch (_) {}
 
       if (!mounted) return;
       context.go(

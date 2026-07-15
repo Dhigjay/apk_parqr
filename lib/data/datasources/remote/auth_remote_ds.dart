@@ -1,4 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/data/datasources/remote/notification_remote_ds.dart';
 
 class AuthRemoteDataSource {
   AuthRemoteDataSource({required SupabaseClient supabaseClient})
@@ -78,6 +80,16 @@ class AuthRemoteDataSource {
         password: newPassword,
       ),
     );
+
+    try {
+      final internalUser = await _supabaseClient.from('users').select('id').eq('auth_id', user.id).single();
+      await sl<NotificationRemoteDataSource>().createNotification(
+        title: 'Password Diubah',
+        body: 'Password akun Anda berhasil diperbarui.',
+        type: 'password_changed',
+        userId: internalUser['id'],
+      );
+    } catch (_) {}
   }
 
   /// Dipanggil dari AuthBloc saat AuthCheckStatusRequested (splash screen)

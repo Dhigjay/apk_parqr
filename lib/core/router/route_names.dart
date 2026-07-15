@@ -19,6 +19,9 @@ class RouteNames {
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
   static const String changePassword = '/change-password';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String notifications = '/notifications';
+  static const String notificationSettings = '/notification-settings';
 
   // Operator
   static const String operatorRegister = '/operator-register';

@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:parqr/data/models/payment_model.dart';
+import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/data/datasources/remote/notification_remote_ds.dart';
 
 abstract class IPaymentRemoteDataSource {
   Future<PaymentModel> createPayment(
@@ -60,7 +62,22 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
         .select()
         .single();
 
-    return response['status'] == 'paid';
+    final isPaid = response['status'] == 'paid';
+    
+    if (isPaid) {
+      try {
+        final sessionResponse = await supabaseClient.from('payments').select('session_id').eq('id', paymentId).single();
+        final userIdResponse = await supabaseClient.from('parking_sessions').select('user_id').eq('id', sessionResponse['session_id']).single();
+        await sl<NotificationRemoteDataSource>().createNotification(
+          title: 'Pembayaran Berhasil',
+          body: 'Pembayaran cash Anda berhasil diverifikasi.',
+          type: 'payment_success',
+          userId: userIdResponse['user_id'],
+        );
+      } catch (_) {}
+    }
+
+    return isPaid;
   }
 
   @override
