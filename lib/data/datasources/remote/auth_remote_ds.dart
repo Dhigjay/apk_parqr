@@ -29,19 +29,21 @@ class AuthRemoteDataSource {
     }
 
     try {
+      // Menggunakan auth_id karena struktur DB saat ini memakai auth_id untuk link ke auth.users
       final response = await _supabaseClient
           .from('users')
           .select('role')
           .eq('auth_id', user.id)
           .single();
 
-      final role = response['role'] as String?;
-      _cachedRole = (role != null && role.isNotEmpty) ? role : 'visitor';
+      final role = response?['role'] as String?;
+      _cachedRole = (role != null && role.isNotEmpty) ? role : 'user';
       return _cachedRole!;
     } catch (e) {
+      print('DEBUG auth: ERROR fetching role for ${user.id} - $e');
       // Kalau row belum ada di public.users (race condition trigger)
-      // atau ada error lain, fallback aman ke visitor.
-      _cachedRole = 'visitor';
+      // atau ada error lain, fallback aman ke 'user'.
+      _cachedRole = 'user';
       return _cachedRole!;
     }
   }
@@ -59,7 +61,8 @@ class AuthRemoteDataSource {
   /// untuk memastikan cache role terisi meski app baru dibuka ulang.
   Future<String> refreshCurrentRole() => _fetchAndCacheRole();
 
-  Future<void> register(String email, String password, String name, String phone) async {
+  Future<void> register(
+      String email, String password, String name, String phone) async {
     await _supabaseClient.auth.signUp(
       email: email.trim(),
       password: password,
@@ -68,8 +71,32 @@ class AuthRemoteDataSource {
         'phone': phone.trim(),
       },
     );
-    // Trigger on_auth_user_created akan otomatis membuat row di public.users
-    // dengan role default 'visitor'.
+
+    // Fallback: jika trigger gagal/tidak ada, buat row public.users dari app
+    final user = currentUser;
+    if (user != null) {
+      try {
+        final existing = await _supabaseClient
+            .from('users')
+            .select('id')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (existing == null) {
+          await _supabaseClient.from('users').insert({
+            'id': user.id,
+            'email': email.trim(),
+            'full_name': name.trim(),
+            'phone': phone.trim(),
+            'role': 'user',
+            'profile_completed': false,
+          });
+        }
+      } catch (e) {
+        // Row mungkin sudah dibuat oleh trigger — abaikan error
+      }
+    }
+
     await _fetchAndCacheRole();
   }
 

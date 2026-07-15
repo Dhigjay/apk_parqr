@@ -17,13 +17,14 @@ class UserModel extends UserEntity {
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String? ?? '',
-      // Try full_name first, fallback to name for backward compatibility
-      fullName: (json['full_name'] as String?) ?? (json['name'] as String?),
-      // Try phone_number first, fallback to phone for backward compatibility
-      phone: (json['phone_number'] as String?) ?? (json['phone'] as String?),
+      // Kolom database: 'name' (bukan 'full_name')
+      // Fallback ke 'full_name' untuk kompatibilitas data lama
+      fullName: (json['name'] as String?) ?? (json['full_name'] as String?),
+      phone: json['phone'] as String?,
       address: json['address'] as String?,
-      role: json['role'] as String? ?? 'user',
-      profileCompleted: json['profile_completed'] as bool? ?? false,
+      role: json['role'] as String? ?? 'visitor',
+      // Kolom database: 'is_profile_complete' (bukan 'profile_completed')
+      profileCompleted: json['is_profile_complete'] as bool? ?? false,
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
     );
@@ -47,11 +48,15 @@ class UserModel extends UserEntity {
     return {
       'id': id,
       'email': email,
+<<<<<<< HEAD
       'name': fullName,
+=======
+      'name': fullName,                        // ✅ 'name', bukan 'full_name'
+>>>>>>> developers
       'phone': phone,
       'address': address,
       'role': role,
-      'profile_completed': profileCompleted,
+      'is_profile_complete': profileCompleted, // ✅ 'is_profile_complete'
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -61,23 +66,21 @@ class UserModel extends UserEntity {
     return {
       'id': id,
       'email': email,
+<<<<<<< HEAD
       'name': fullName,
+=======
+      'name': fullName,                        // ✅ 'name', bukan 'full_name'
+>>>>>>> developers
       'phone': phone,
       'address': address,
       'role': role,
-      'profile_completed': profileCompleted,
+      'is_profile_complete': profileCompleted, // ✅ 'is_profile_complete'
     };
   }
 }
 
 DateTime _parseDate(Object? value) {
-  if (value is DateTime) {
-    return value;
-  }
-
-  if (value is String && value.isNotEmpty) {
-    return DateTime.parse(value);
-  }
-
+  if (value is DateTime) return value;
+  if (value is String && value.isNotEmpty) return DateTime.parse(value);
   return DateTime.fromMillisecondsSinceEpoch(0);
 }

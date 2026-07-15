@@ -12,20 +12,31 @@ class VehicleRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
 
-  String get _currentUserId {
+  /// Ambil Auth UID — hanya untuk validasi login & storage path.
+  String get _currentAuthUid {
     final userId = _supabaseClient.auth.currentUser?.id;
-    if (userId == null) {
-      throw StateError('User belum terautentikasi.');
-    }
-
+    if (userId == null) throw StateError('User belum terautentikasi.');
     return userId;
   }
 
+  /// Ambil internal id dari public.users (FK yang dipakai di tabel vehicles).
+  /// TIDAK sama dengan auth.users.id — harus query ke public.users dulu.
+  Future<String> _getCurrentInternalUserId() async {
+    final authUid = _currentAuthUid;
+    final row = await _supabaseClient
+        .from('users')
+        .select('id')
+        .eq('auth_id', authUid)
+        .single();
+    return row['id'] as String;
+  }
+
   Future<List<VehicleModel>> getMyVehicles() async {
+    final userId = await _getCurrentInternalUserId();
     final data = await _supabaseClient
         .from('vehicles')
         .select()
-        .eq('user_id', _currentUserId)
+        .eq('user_id', userId)
         .order('is_primary', ascending: false)
         .order('created_at');
 
@@ -35,11 +46,12 @@ class VehicleRemoteDataSource {
   }
 
   Future<VehicleModel> getVehicleById(String id) async {
+    final userId = await _getCurrentInternalUserId();
     final data = await _supabaseClient
         .from('vehicles')
         .select()
         .eq('id', id)
-        .eq('user_id', _currentUserId)
+        .eq('user_id', userId)
         .single();
 
     return VehicleModel.fromJson(Map<String, dynamic>.from(data));
@@ -53,7 +65,8 @@ class VehicleRemoteDataSource {
     String? photoUrl,
     bool isPrimary = false,
   }) async {
-    final userId = _currentUserId;
+    final userId = await _getCurrentInternalUserId();
+
     final existingVehicles = await _supabaseClient
         .from('vehicles')
         .select('id')
@@ -68,13 +81,14 @@ class VehicleRemoteDataSource {
     final data = await _supabaseClient
         .from('vehicles')
         .insert({
-          'user_id': userId,
+          'user_id': userId,            // ✅ public.users.id, bukan auth UID
           'brand': brand.trim(),
           'model': model.trim(),
           'vehicle_type': _normalizeVehicleType(vehicleType),
           'plate_number': _normalizePlateNumber(plateNumber),
           'photo_url': _blankToNull(photoUrl),
           'is_primary': shouldBePrimary,
+          'is_active': true,
         })
         .select()
         .single();
@@ -91,7 +105,7 @@ class VehicleRemoteDataSource {
     String? photoUrl,
     bool? isPrimary,
   }) async {
-    final userId = _currentUserId;
+    final userId = await _getCurrentInternalUserId();
     final payload = <String, dynamic>{
       if (brand != null) 'brand': brand.trim(),
       if (model != null) 'model': model.trim(),
@@ -101,9 +115,7 @@ class VehicleRemoteDataSource {
       if (isPrimary != null) 'is_primary': isPrimary,
     };
 
-    if (payload.isEmpty) {
-      return getVehicleById(id);
-    }
+    if (payload.isEmpty) return getVehicleById(id);
 
     if (isPrimary == true) {
       await _clearPrimaryVehicle(userId);
@@ -128,11 +140,11 @@ class VehicleRemoteDataSource {
   }) async {
     await getVehicleById(vehicleId);
 
-    final userId = _currentUserId;
+    final authUid = _currentAuthUid;
     final safeExtension = _sanitizeExtension(fileExtension);
-    final fileName = '$vehicleId-${DateTime.now().millisecondsSinceEpoch}'
-        '.$safeExtension';
-    final objectPath = '$userId/$fileName';
+    final fileName =
+        '$vehicleId-${DateTime.now().millisecondsSinceEpoch}.$safeExtension';
+    final objectPath = '$authUid/$fileName';
 
     await _supabaseClient.storage.from(vehiclePhotoBucket).uploadBinary(
           objectPath,
@@ -143,16 +155,16 @@ class VehicleRemoteDataSource {
           ),
         );
 
-    final photoUrl =
-        _supabaseClient.storage.from(vehiclePhotoBucket).getPublicUrl(objectPath);
+    final photoUrl = _supabaseClient.storage
+        .from(vehiclePhotoBucket)
+        .getPublicUrl(objectPath);
 
     await updateVehicle(id: vehicleId, photoUrl: photoUrl);
-
     return photoUrl;
   }
 
   Future<VehicleModel> setPrimaryVehicle(String id) async {
-    final userId = _currentUserId;
+    final userId = await _getCurrentInternalUserId();
     await getVehicleById(id);
     await _clearPrimaryVehicle(userId);
 
@@ -168,17 +180,16 @@ class VehicleRemoteDataSource {
   }
 
   Future<void> deleteVehicle(String id) async {
+    final userId = await _getCurrentInternalUserId();
     final deletedVehicle = await getVehicleById(id);
 
     await _supabaseClient
         .from('vehicles')
         .delete()
         .eq('id', id)
-        .eq('user_id', _currentUserId);
+        .eq('user_id', userId);
 
-    if (!deletedVehicle.isPrimary) {
-      return;
-    }
+    if (!deletedVehicle.isPrimary) return;
 
     final remainingVehicles = await getMyVehicles();
     if (remainingVehicles.isNotEmpty) {
@@ -197,10 +208,7 @@ class VehicleRemoteDataSource {
 
 String _normalizeVehicleType(String vehicleType) {
   final normalized = vehicleType.trim().toLowerCase();
-  if (normalized == 'motor' || normalized == 'mobil') {
-    return normalized;
-  }
-
+  if (normalized == 'motor' || normalized == 'mobil') return normalized;
   throw ArgumentError.value(
     vehicleType,
     'vehicleType',
@@ -219,13 +227,7 @@ String? _blankToNull(String? value) {
 
 String _sanitizeExtension(String extension) {
   final normalized = extension.replaceFirst('.', '').trim().toLowerCase();
-  if (normalized == 'jpeg' ||
-      normalized == 'jpg' ||
-      normalized == 'png' ||
-      normalized == 'webp') {
-    return normalized;
-  }
-
+  if (['jpeg', 'jpg', 'png', 'webp'].contains(normalized)) return normalized;
   return 'jpg';
 }
 
