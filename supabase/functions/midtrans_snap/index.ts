@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -40,9 +41,7 @@ serve(async (req) => {
         order_id: orderId,
         gross_amount: Math.round(amount),
       },
-      credit_card: {
-        secure: true,
-      },
+      credit_card: { secure: true },
     }
 
     const snapRes = await fetch(
@@ -69,6 +68,25 @@ serve(async (req) => {
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
+    }
+
+    // ✅ Simpan order_id Midtrans ke kolom qris_reference di payments
+    // Supaya webhook bisa query berdasarkan order_id ini nanti
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { error: updateError } = await supabase
+      .from('payments')
+      .update({ qris_reference: orderId })
+      .eq('id', payment_id)
+
+    if (updateError) {
+      console.error('Gagal simpan qris_reference:', updateError)
+      // Non-fatal — lanjut return token ke Flutter
+    } else {
+      console.log(`qris_reference ${orderId} disimpan ke payment ${payment_id}`)
     }
 
     return new Response(
