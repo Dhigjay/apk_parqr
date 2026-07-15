@@ -29,7 +29,7 @@ class AuthRemoteDataSource {
     }
 
     try {
-      // Kolom untuk auth Supabase UUID di tabel users adalah 'auth_id'
+      // Menggunakan auth_id karena struktur DB saat ini memakai auth_id untuk link ke auth.users
       final response = await _supabaseClient
           .from('users')
           .select('role')
@@ -40,6 +40,7 @@ class AuthRemoteDataSource {
       _cachedRole = (role != null && role.isNotEmpty) ? role : 'user';
       return _cachedRole!;
     } catch (e) {
+      print('DEBUG auth: ERROR fetching role for ${user.id} - $e');
       // Kalau row belum ada di public.users (race condition trigger)
       // atau ada error lain, fallback aman ke 'user'.
       _cachedRole = 'user';
