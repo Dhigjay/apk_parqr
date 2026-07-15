@@ -29,19 +29,13 @@ class PaymentCubit extends Cubit<PaymentState> {
     // public.users.id == auth.uid() langsung (bukan auth_id terpisah)
     final userCheck = await supabase
         .from('users')
-        .select('id, profile_completed')
+        .select('id')
         .eq('id', currentUser.id)
         .maybeSingle();
 
     if (userCheck == null) {
       throw Exception(
           'Profil user tidak ditemukan. Silakan lengkapi profil terlebih dahulu.');
-    }
-
-    final isComplete = userCheck['profile_completed'] as bool? ?? false;
-    if (!isComplete) {
-      throw Exception(
-          'Profil belum lengkap. Silakan isi nama dan alamat terlebih dahulu.');
     }
 
     final userId = userCheck['id'] as String;
@@ -142,21 +136,46 @@ class PaymentCubit extends Cubit<PaymentState> {
             ),
             callback: (payload) {
               final status = payload.newRecord['status'] as String?;
-              if (status == 'paid') {
-                emit(PaymentSuccess(
-                  exitQrPayload: '{"type":"EXIT","payment_id":"$paymentId"}',
-                ));
-              } else if (status == 'failed' ||
-                  status == 'expired' ||
-                  status == 'cancelled') {
-                emit(const PaymentFailed(
-                    'Pembayaran dibatalkan atau kedaluwarsa.'));
-              }
+              _handlePaymentStatus(status, paymentId);
             },
           )
           .subscribe();
+
+      // Tambahkan polling fallback karena kadang Realtime tidak aktif di Supabase project
+      _pollingTimer?.cancel();
+      _pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
+        try {
+          final res = await supabase
+              .from('payments')
+              .select('status')
+              .eq('id', paymentId)
+              .maybeSingle();
+          if (res != null) {
+            _handlePaymentStatus(res['status'] as String?, paymentId);
+          }
+        } catch (e) {
+          // Abaikan error polling agar tidak mengganggu UI
+          print('DEBUG Polling error: $e');
+        }
+      });
     } catch (e) {
       emit(PaymentFailed('Terjadi kesalahan mendeteksi pembayaran: $e'));
+    }
+  }
+
+  void _handlePaymentStatus(String? status, String paymentId) {
+    if (status == 'paid') {
+      _pollingTimer?.cancel();
+      _paymentChannel?.unsubscribe();
+      emit(PaymentSuccess(
+        exitQrPayload: '{"type":"EXIT","payment_id":"$paymentId"}',
+      ));
+    } else if (status == 'failed' ||
+        status == 'expired' ||
+        status == 'cancelled') {
+      _pollingTimer?.cancel();
+      _paymentChannel?.unsubscribe();
+      emit(const PaymentFailed('Pembayaran dibatalkan atau kedaluwarsa.'));
     }
   }
 
