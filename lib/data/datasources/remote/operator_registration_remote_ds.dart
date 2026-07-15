@@ -28,8 +28,18 @@ class OperatorRegistrationRemoteDataSource {
     }
 
     try {
-      // public.users.id == auth.uid() langsung — tidak ada kolom auth_id terpisah
-      final applicantUserId = currentUser.id;
+      // Ambil users.id berdasarkan auth.uid() karena RLS membutuhkan users.id
+      final userResponse = await _supabaseClient
+          .from('users')
+          .select('id')
+          .eq('auth_id', currentUser.id)
+          .maybeSingle();
+
+      if (userResponse == null) {
+        throw ServerException(message: 'Data user tidak ditemukan di sistem.');
+      }
+
+      final applicantUserId = userResponse['id'] as String;
 
       await _supabaseClient.from('operator_registrations').insert({
         'applicant_user_id': applicantUserId,
