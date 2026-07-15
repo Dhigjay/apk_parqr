@@ -75,8 +75,9 @@ class _PaymentViewState extends State<PaymentView> {
 
   void _updateTime() {
     _totalDuration = StopwatchManager.calculateDuration(widget.startTime);
-    _totalTariff = StopwatchManager.calculateTariff(_totalDuration, widget.tariffPerHour);
-    
+    _totalTariff =
+        StopwatchManager.calculateTariff(_totalDuration, widget.tariffPerHour);
+
     if (_totalDuration.isNegative) {
       _totalDuration = Duration.zero;
       _totalTariff = 0.0;
@@ -94,7 +95,7 @@ class _PaymentViewState extends State<PaymentView> {
     if (_selectedMethod == 'QRIS') {
       // Go to QRIS page first
       context.push(
-        '${RouteNames.payment}/qris', 
+        '${RouteNames.payment}/qris',
         extra: {
           'sessionId': widget.sessionId,
           'totalTariff': _totalTariff,
@@ -114,7 +115,7 @@ class _PaymentViewState extends State<PaymentView> {
       );
     } else {
       // Cash payment via cubit
-      cubit.processCashPayment();
+      cubit.processCashPayment(sessionId: widget.sessionId);
     }
   }
 
@@ -144,175 +145,185 @@ class _PaymentViewState extends State<PaymentView> {
           isLoading: isLoading,
           message: 'Memproses pembayaran...',
           child: Scaffold(
-              appBar: AppBar(
-                title: const Text('Pembayaran Parkir'),
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  onPressed: (isLoading || isAwaiting) ? null : () => context.pop(),
-                ),
+            appBar: AppBar(
+              title: const Text('Pembayaran Parkir'),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed:
+                    (isLoading || isAwaiting) ? null : () => context.pop(),
               ),
-              body: SafeArea(
-                child: ListView(
-                  padding: const EdgeInsets.all(24),
-                  children: [
-                    // Lokasi & Durasi summary
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.bgCard,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('ParQr Sudirman Hub', style: AppTextStyles.h3),
-                          const SizedBox(height: 14),
-                          _DetailRow(
-                            label: 'Waktu Masuk',
-                            value: _formatDateTime(widget.startTime),
-                          ),
-                          _DetailRow(
-                            label: 'Durasi Parkir',
-                            value: StopwatchManager.formatDuration(_totalDuration),
-                          ),
-                          const _DetailRow(
-                            label: 'Kendaraan',
-                            value: 'B 1234 QR',
-                          ),
-                        ],
-                      ),
+            ),
+            body: SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  // Lokasi & Durasi summary
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgCard,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    const SizedBox(height: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('ParQr Sudirman Hub', style: AppTextStyles.h3),
+                        const SizedBox(height: 14),
+                        _DetailRow(
+                          label: 'Waktu Masuk',
+                          value: _formatDateTime(widget.startTime),
+                        ),
+                        _DetailRow(
+                          label: 'Durasi Parkir',
+                          value:
+                              StopwatchManager.formatDuration(_totalDuration),
+                        ),
+                        const _DetailRow(
+                          label: 'Kendaraan',
+                          value: 'B 1234 QR',
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
-                    // Rincian Biaya
-                    Text('Rincian Biaya', style: AppTextStyles.h3),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.bgCard,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        children: [
-                          _FareRow(
-                            label: 'Biaya Parkir (per jam)',
-                            value: 'Rp${widget.tariffPerHour.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
-                          ),
-                          const Divider(color: AppColors.border, height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Total Bayar',
-                                style: AppTextStyles.h3.copyWith(
-                                  color: AppColors.accentBlue,
-                                ),
-                              ),
-                              Text(
-                                'Rp${_totalTariff.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
-                                style: AppTextStyles.h2.copyWith(
-                                  color: AppColors.accentBlue,
-                                  fontSize: 22,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                  // Rincian Biaya
+                  Text('Rincian Biaya', style: AppTextStyles.h3),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgCard,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    const SizedBox(height: 28),
-
-                    // Metode Pembayaran
-                    Text('Metode Pembayaran', style: AppTextStyles.h3),
-                    const SizedBox(height: 12),
-                    _PaymentMethodTile(
-                      title: 'QRIS (Otomatis & Realtime)',
-                      subtitle: 'Bayar cashless via Gopay, OVO, Dana, LinkAja',
-                      icon: Icons.qr_code_2_rounded,
-                      isSelected: _selectedMethod == 'QRIS',
-                      onTap: (isLoading || isAwaiting)
-                          ? null
-                          : () => setState(() => _selectedMethod = 'QRIS'),
-                    ),
-                    const SizedBox(height: 10),
-                    _PaymentMethodTile(
-                      title: 'Virtual Account BCA',
-                      subtitle: 'Bayar via m-BCA atau ATM BCA',
-                      icon: Icons.account_balance_rounded,
-                      isSelected: _selectedMethod == 'VA_BCA',
-                      onTap: (isLoading || isAwaiting)
-                          ? null
-                          : () => setState(() => _selectedMethod = 'VA_BCA'),
-                    ),
-                    const SizedBox(height: 10),
-                    _PaymentMethodTile(
-                      title: 'Virtual Account BNI',
-                      subtitle: 'Bayar via BNI Mobile atau ATM BNI',
-                      icon: Icons.account_balance_rounded,
-                      isSelected: _selectedMethod == 'VA_BNI',
-                      onTap: (isLoading || isAwaiting)
-                          ? null
-                          : () => setState(() => _selectedMethod = 'VA_BNI'),
-                    ),
-                    const SizedBox(height: 10),
-                    _PaymentMethodTile(
-                      title: 'Bayar Cash ke Operator',
-                      subtitle: 'Lakukan pembayaran manual ke pos penjagaan',
-                      icon: Icons.payments_rounded,
-                      isSelected: _selectedMethod == 'Cash',
-                      onTap: (isLoading || isAwaiting)
-                          ? null
-                          : () => setState(() => _selectedMethod = 'Cash'),
-                    ),
-                    const SizedBox(height: 24),
-
-                    if (isAwaiting) ...[
-                      const Center(
-                        child: Column(
+                    child: Column(
+                      children: [
+                        _FareRow(
+                          label: 'Biaya Parkir (per jam)',
+                          value:
+                              'Rp${widget.tariffPerHour.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                        ),
+                        const Divider(color: AppColors.border, height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation(AppColors.warning),
+                            Text(
+                              'Total Bayar',
+                              style: AppTextStyles.h3.copyWith(
+                                color: AppColors.accentBlue,
                               ),
                             ),
-                            SizedBox(height: 12),
                             Text(
-                              'Menunggu Operator memverifikasi pembayaran...',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: AppColors.warning,
-                                fontWeight: FontWeight.w600,
+                              'Rp${_totalTariff.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                              style: AppTextStyles.h2.copyWith(
+                                color: AppColors.accentBlue,
+                                fontSize: 22,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    if (errorMsg != null) ...[
-                      FormFeedbackBanner(
-                        message: errorMsg,
-                        type: FormFeedbackType.error,
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-
-                    AppButton(
-                      label: _selectedMethod == 'Cash' ? 'Minta Verifikasi Operator' : 'Bayar Sekarang',
-                      icon: _selectedMethod == 'Cash' ? Icons.person_search_rounded : (_selectedMethod.startsWith('VA_') ? Icons.account_balance_rounded : Icons.qr_code_rounded),
-                      isLoading: isLoading,
-                      onPressed: isAwaiting ? null : () => _onPayPressed(context),
+                      ],
                     ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Metode Pembayaran
+                  Text('Metode Pembayaran', style: AppTextStyles.h3),
+                  const SizedBox(height: 12),
+                  _PaymentMethodTile(
+                    title: 'QRIS (Otomatis & Realtime)',
+                    subtitle: 'Bayar cashless via Gopay, OVO, Dana, LinkAja',
+                    icon: Icons.qr_code_2_rounded,
+                    isSelected: _selectedMethod == 'QRIS',
+                    onTap: (isLoading || isAwaiting)
+                        ? null
+                        : () => setState(() => _selectedMethod = 'QRIS'),
+                  ),
+                  const SizedBox(height: 10),
+                  _PaymentMethodTile(
+                    title: 'Virtual Account BCA',
+                    subtitle: 'Bayar via m-BCA atau ATM BCA',
+                    icon: Icons.account_balance_rounded,
+                    isSelected: _selectedMethod == 'VA_BCA',
+                    onTap: (isLoading || isAwaiting)
+                        ? null
+                        : () => setState(() => _selectedMethod = 'VA_BCA'),
+                  ),
+                  const SizedBox(height: 10),
+                  _PaymentMethodTile(
+                    title: 'Virtual Account BNI',
+                    subtitle: 'Bayar via BNI Mobile atau ATM BNI',
+                    icon: Icons.account_balance_rounded,
+                    isSelected: _selectedMethod == 'VA_BNI',
+                    onTap: (isLoading || isAwaiting)
+                        ? null
+                        : () => setState(() => _selectedMethod = 'VA_BNI'),
+                  ),
+                  const SizedBox(height: 10),
+                  _PaymentMethodTile(
+                    title: 'Bayar Cash ke Operator',
+                    subtitle: 'Lakukan pembayaran manual ke pos penjagaan',
+                    icon: Icons.payments_rounded,
+                    isSelected: _selectedMethod == 'Cash',
+                    onTap: (isLoading || isAwaiting)
+                        ? null
+                        : () => setState(() => _selectedMethod = 'Cash'),
+                  ),
+                  const SizedBox(height: 24),
+
+                  if (isAwaiting) ...[
+                    const Center(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor:
+                                  AlwaysStoppedAnimation(AppColors.warning),
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            'Menunggu Operator memverifikasi pembayaran...',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.warning,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                   ],
-                ),
+
+                  if (errorMsg != null) ...[
+                    FormFeedbackBanner(
+                      message: errorMsg,
+                      type: FormFeedbackType.error,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  AppButton(
+                    label: _selectedMethod == 'Cash'
+                        ? 'Minta Verifikasi Operator'
+                        : 'Bayar Sekarang',
+                    icon: _selectedMethod == 'Cash'
+                        ? Icons.person_search_rounded
+                        : (_selectedMethod.startsWith('VA_')
+                            ? Icons.account_balance_rounded
+                            : Icons.qr_code_rounded),
+                    isLoading: isLoading,
+                    onPressed: isAwaiting ? null : () => _onPayPressed(context),
+                  ),
+                ],
               ),
+            ),
           ),
         );
       },
@@ -321,7 +332,20 @@ class _PaymentViewState extends State<PaymentView> {
 
   String _formatDateTime(DateTime dt) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    final monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des'
+    ];
     final day = dt.day;
     final month = monthNames[dt.month - 1];
     final year = dt.year;
@@ -403,7 +427,9 @@ class _PaymentMethodTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.accentBlue.withValues(alpha: 0.05) : AppColors.bgCard,
+        color: isSelected
+            ? AppColors.accentBlue.withValues(alpha: 0.05)
+            : AppColors.bgCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isSelected ? AppColors.accentBlue : AppColors.border,
@@ -421,7 +447,9 @@ class _PaymentMethodTile extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: isSelected ? AppColors.accentBlue : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.accentBlue
+                      : AppColors.textSecondary,
                   size: 26,
                 ),
                 const SizedBox(width: 16),
@@ -433,7 +461,9 @@ class _PaymentMethodTile extends StatelessWidget {
                         title,
                         style: AppTextStyles.body.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? AppColors.accentBlue : AppColors.textPrimary,
+                          color: isSelected
+                              ? AppColors.accentBlue
+                              : AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -445,7 +475,9 @@ class _PaymentMethodTile extends StatelessWidget {
                   ),
                 ),
                 Icon(
-                  isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                  isSelected
+                      ? Icons.radio_button_checked_rounded
+                      : Icons.radio_button_off_rounded,
                   color: isSelected ? AppColors.accentBlue : AppColors.border,
                 ),
               ],

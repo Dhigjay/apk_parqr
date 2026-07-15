@@ -47,7 +47,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.appName),
@@ -150,30 +149,44 @@ class _HomePageState extends State<HomePage> {
                 }
 
                 return Column(
-                  children: lots.map(
-                    (lot) {
-                      final formatCurrency = NumberFormat.currency(
-                        locale: 'id_ID',
-                        symbol: 'Rp',
-                        decimalDigits: 0,
-                      );
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: ParkingCardWidget(
-                          name: lot.name,
-                          address: lot.address,
-                          distance: state.distances[lot.id] ?? 'TBD',
-                          pricePerHour: '${formatCurrency.format(lot.pricePerHour)}/jam',
-                          availableSlots: lot.totalCapacity, // Temporary use totalCapacity as available
-                          totalSlots: lot.totalCapacity,
-                          onTap: () => context.push(RouteNames.parkingDetail),
+                  children: lots.map((lot) {
+                    final formatCurrency = NumberFormat.currency(
+                      locale: 'id_ID',
+                      symbol: 'Rp',
+                      decimalDigits: 0,
+                    );
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: ParkingCardWidget(
+                        name: lot.name,
+                        address: lot.address,
+                        distance: state.distances[lot.id] ?? 'TBD',
+                        pricePerHour:
+                            '${formatCurrency.format(lot.pricePerHour)}/jam',
+                        availableSlots: lot.totalCapacity,
+                        totalSlots: lot.totalCapacity,
+                        onTap: () => context.push(
+                          RouteNames.parkingDetail,
+                          extra: {
+                            'id': lot.id,
+                            'name': lot.name,
+                            'address': lot.address,
+                            'totalCapacity': lot.totalCapacity,
+                            'totalFloors': lot.totalFloors,
+                            'pricePerHour': lot.pricePerHour,
+                            'latitude': lot.latitude,
+                            'longitude': lot.longitude,
+                            'distance': state.distances[lot.id] ?? '',
+                          },
                         ),
-                      );
-                    }
-                  ).toList(),
+                      ),
+                    );
+                  }).toList(),
                 );
               } else if (state is ParkingLotError) {
-                return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+                return Center(
+                    child: Text(state.message,
+                        style: const TextStyle(color: Colors.red)));
               }
               return const SizedBox();
             },
@@ -185,9 +198,6 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) {
           if (index == 1) {
             context.push(RouteNames.history);
-          } else if (index == 2) {
-            context.push(RouteNames.profile);
-            context.go(RouteNames.history);
           } else if (index == 2) {
             context.go(RouteNames.profile);
           }

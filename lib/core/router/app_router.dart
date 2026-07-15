@@ -40,6 +40,7 @@ import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart'
 import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
 import 'package:parqr/presentation/blocs/parking_lot/parking_lot_bloc.dart';
 import 'package:parqr/presentation/blocs/parking_lot/parking_lot_event.dart';
+import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 
 // Admin Pages
 import 'package:parqr/presentation/pages/admin/admin_dashboard_page.dart';
@@ -55,11 +56,11 @@ class AppRouter {
     refreshListenable: GoRouterRefreshStream(sl<AuthBloc>().stream),
     redirect: (context, state) {
       final authState = sl<AuthBloc>().state;
-      final isLoggingIn = state.matchedLocation == RouteNames.login || 
-                          state.matchedLocation == RouteNames.register ||
-                          state.matchedLocation == RouteNames.forgotPassword ||
-                          state.matchedLocation == RouteNames.splash;
-      
+      final isLoggingIn = state.matchedLocation == RouteNames.login ||
+          state.matchedLocation == RouteNames.register ||
+          state.matchedLocation == RouteNames.forgotPassword ||
+          state.matchedLocation == RouteNames.splash;
+
       if (authState is AuthInitial || authState is AuthLoading) {
         return null; // Don't redirect while checking or loading
       }
@@ -70,7 +71,7 @@ class AppRouter {
 
       if (authState is AuthAuthenticated) {
         final role = authState.role;
-        
+
         if (isLoggingIn) {
           if (role == 'operator') return RouteNames.operatorDashboard;
           if (role == 'admin') return RouteNames.adminDashboard;
@@ -78,13 +79,21 @@ class AppRouter {
         }
 
         // restrict routes based on role
-        if (role == 'user' && (state.matchedLocation.contains('operator') || state.matchedLocation.contains('admin'))) {
+        if (role == 'user' &&
+            (state.matchedLocation.contains('operator') ||
+                state.matchedLocation.contains('admin'))) {
           return RouteNames.home;
         }
-        if (role == 'operator' && (state.matchedLocation.contains('user') || state.matchedLocation.contains('admin') || state.matchedLocation == RouteNames.home)) {
+        if (role == 'operator' &&
+            (state.matchedLocation.contains('user') ||
+                state.matchedLocation.contains('admin') ||
+                state.matchedLocation == RouteNames.home)) {
           return RouteNames.operatorDashboard;
         }
-        if (role == 'admin' && (state.matchedLocation.contains('user') || state.matchedLocation.contains('operator') || state.matchedLocation == RouteNames.home)) {
+        if (role == 'admin' &&
+            (state.matchedLocation.contains('user') ||
+                state.matchedLocation.contains('operator') ||
+                state.matchedLocation == RouteNames.home)) {
           return RouteNames.adminDashboard;
         }
       }
@@ -114,12 +123,16 @@ class AppRouter {
       ),
       GoRoute(
         path: RouteNames.addVehicle,
-        builder: (context, state) => const AddVehiclePage(),
+        builder: (context, state) => BlocProvider<VehicleCubit>(
+          create: (context) => sl<VehicleCubit>(),
+          child: const AddVehiclePage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.home,
         builder: (context, state) => BlocProvider<ParkingLotBloc>(
-          create: (context) => sl<ParkingLotBloc>()..add(const SearchParkingLotsRequested('')),
+          create: (context) =>
+              sl<ParkingLotBloc>()..add(const SearchParkingLotsRequested('')),
           child: const HomePage(),
         ),
       ),
@@ -133,19 +146,23 @@ class AppRouter {
       ),
       GoRoute(
         path: RouteNames.qrEntry,
+        // Extra diteruskan otomatis — QrEntryPage baca via GoRouterState.of(context).extra
         builder: (context, state) => const QrEntryPage(),
       ),
 
       GoRoute(
         path: RouteNames.activeParking,
+        // Extra diteruskan otomatis — ActiveParkingPage baca via GoRouterState.of(context).extra
         builder: (context, state) => const ActiveParkingPage(),
       ),
       GoRoute(
         path: RouteNames.payment,
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final sessionId = extra?['sessionId'] as String? ?? 'demo-session-001';
-          final startTimeStr = extra?['startTime'] as String? ?? DateTime.now().toIso8601String();
+          final sessionId =
+              extra?['sessionId'] as String? ?? 'demo-session-001';
+          final startTimeStr = extra?['startTime'] as String? ??
+              DateTime.now().toIso8601String();
           final startTime = DateTime.tryParse(startTimeStr) ?? DateTime.now();
           final tariffPerHour = extra?['tariffPerHour'] as double? ?? 5000.0;
           return PaymentPage(
@@ -159,7 +176,8 @@ class AppRouter {
         path: '${RouteNames.payment}/qris',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final sessionId = extra?['sessionId'] as String? ?? 'demo-session-001';
+          final sessionId =
+              extra?['sessionId'] as String? ?? 'demo-session-001';
           final totalTariff = extra?['totalTariff'] as double? ?? 5000.0;
           final totalDuration = extra?['totalDuration'] as int? ?? 3600;
           return QrisPaymentPage(
@@ -173,7 +191,8 @@ class AppRouter {
         path: '${RouteNames.payment}/va',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final sessionId = extra?['sessionId'] as String? ?? 'demo-session-001';
+          final sessionId =
+              extra?['sessionId'] as String? ?? 'demo-session-001';
           final totalTariff = extra?['totalTariff'] as double? ?? 5000.0;
           final totalDuration = extra?['totalDuration'] as int? ?? 3600;
           final bank = extra?['bank'] as String? ?? 'bca';
@@ -189,7 +208,8 @@ class AppRouter {
         path: RouteNames.exitQr,
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final exitQrPayload = extra?['exitQrPayload'] as String? ?? 'EXIT-QR-123';
+          final exitQrPayload =
+              extra?['exitQrPayload'] as String? ?? 'EXIT-QR-123';
           final tariff = extra?['tariff'] as double? ?? 5000.0;
           final durationInSeconds = extra?['durationInSeconds'] as int? ?? 3600;
           final method = extra?['method'] as String? ?? 'Cash';
@@ -225,7 +245,8 @@ class AppRouter {
           final vehicle = extra?['vehicle'] as String? ?? '';
           final fare = extra?['fare'] as String? ?? '';
           final statusLabel = extra?['statusLabel'] as String? ?? '';
-          final statusType = extra?['statusType'] as StatusBadgeType? ?? StatusBadgeType.neutral;
+          final statusType = extra?['statusType'] as StatusBadgeType? ??
+              StatusBadgeType.neutral;
           final isOngoing = extra?['isOngoing'] as bool? ?? false;
           return HistoryDetailPage(
             id: id,
@@ -241,7 +262,7 @@ class AppRouter {
           );
         },
       ),
-      
+
       // Operator Routes
       GoRoute(
         path: RouteNames.operatorRegister,
@@ -280,11 +301,15 @@ class AppRouter {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final qrPayload = extra?['qrPayload'] as String?;
-          final sessionId = extra?['sessionId'] as String? ?? 'session-scanned-001';
-          final vehicleName = extra?['vehicleName'] as String? ?? 'Toyota Avanza';
+          final sessionId =
+              extra?['sessionId'] as String? ?? 'session-scanned-001';
+          final vehicleName =
+              extra?['vehicleName'] as String? ?? 'Toyota Avanza';
           final licensePlate = extra?['licensePlate'] as String? ?? 'B 1234 XY';
-          final checkInTimeStr = extra?['checkInTime'] as String? ?? DateTime.now().toIso8601String();
-          final checkInTime = DateTime.tryParse(checkInTimeStr) ?? DateTime.now();
+          final checkInTimeStr = extra?['checkInTime'] as String? ??
+              DateTime.now().toIso8601String();
+          final checkInTime =
+              DateTime.tryParse(checkInTimeStr) ?? DateTime.now();
           final floor = extra?['floor'] as String? ?? 'Lantai 1';
           final currentTariff = extra?['currentTariff'] as double? ?? 0.0;
 
@@ -299,7 +324,7 @@ class AppRouter {
           );
         },
       ),
-      
+
       // Admin Routes
       GoRoute(
         path: RouteNames.adminDashboard,
@@ -342,8 +367,8 @@ class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
     _subscription = stream.asBroadcastStream().listen(
-      (dynamic _) => notifyListeners(),
-    );
+          (dynamic _) => notifyListeners(),
+        );
   }
 
   late final StreamSubscription<dynamic> _subscription;

@@ -14,64 +14,21 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
 
   PaymentRemoteDataSourceImpl({required this.supabaseClient});
 
-  /// Ambil internal user id dari public.users (bukan auth UID langsung).
-  Future<String> _getCurrentInternalUserId() async {
-    final authUid = supabaseClient.auth.currentUser?.id;
-    if (authUid == null) throw Exception('User belum login.');
-    final row = await supabaseClient
-        .from('users')
-        .select('id')
-        .eq('auth_id', authUid)
-        .single();
-    return row['id'] as String;
-  }
-
   @override
   Future<PaymentModel> createPayment(
       String sessionId, double amount, String paymentMethod) async {
-    // Normalisasi method ke lowercase sesuai constraint DB
-    final method = paymentMethod.toLowerCase(); // 'qris' atau 'cash'
+    final method = paymentMethod.toLowerCase();
 
-    // Insert ke payments — pakai kolom 'session_id', bukan 'parking_session_id'
-    final response = await supabaseClient.from('payments').insert({
-      'session_id': sessionId,       // ✅ nama kolom yang benar
-      'amount': amount,
-      'method': method,              // ✅ lowercase: 'qris' / 'cash'
-      'status': 'pending',           // ✅ lowercase sesuai constraint
-    }).select().single();
-
-    final paymentId = response['id'] as String;
-
-    if (method == 'qris') {
-      try {
-        // Panggil Edge Function 'midtrans_change' (sesuai nama yang sudah di-deploy)
-        final res = await supabaseClient.functions.invoke(
-          'midtrans_change',         // ✅ nama function yang benar
-          body: {
-            'payment_id': paymentId,
-            'amount': amount,
-          },
-        );
-
-        if (res.status == 200) {
-          // Edge function berhasil — ambil data terbaru dari DB
-          final updatedResponse = await supabaseClient
-              .from('payments')
-              .select()
-              .eq('id', paymentId)
-              .single();
-          return PaymentModel.fromJson(updatedResponse);
-        } else {
-          print('Edge function error: ${res.data}');
-        }
-      } on FunctionException catch (e) {
-        print('FunctionException: ${e.status} ${e.details}');
-        rethrow;
-      } catch (e) {
-        print('Error invoking edge function: $e');
-        rethrow;
-      }
-    }
+    final response = await supabaseClient
+        .from('payments')
+        .insert({
+          'session_id': sessionId, // ✅ bukan 'parking_session_id'
+          'amount': amount,
+          'method': method, // ✅ lowercase
+          'status': 'pending', // ✅ lowercase
+        })
+        .select()
+        .single();
 
     return PaymentModel.fromJson(response);
   }
@@ -89,17 +46,16 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
 
   @override
   Future<bool> verifyCashPayment(String paymentId, String operatorId) async {
-    // operatorId yang diterima harus sudah berupa public.users.id
-    // (pastikan pemanggil sudah resolve internal id sebelum memanggil ini)
     await supabaseClient.from('operator_verifications').insert({
       'payment_id': paymentId,
       'operator_id': operatorId,
-      'action': 'verified',          // ✅ sesuai constraint: 'verified' | 'rejected'
+      'amount': 0,
+      'notes': 'Cash verified',
     });
 
     final response = await supabaseClient
         .from('payments')
-        .update({'status': 'paid'})  // ✅ lowercase
+        .update({'status': 'paid'}) // ✅ lowercase
         .eq('id', paymentId)
         .select()
         .single();

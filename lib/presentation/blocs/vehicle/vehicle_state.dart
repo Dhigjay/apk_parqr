@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:parqr/domain/entities/vehicle_entity.dart';
 
 abstract class VehicleState extends Equatable {
   const VehicleState();
@@ -12,7 +13,7 @@ class VehicleInitial extends VehicleState {}
 class VehicleLoading extends VehicleState {}
 
 class VehicleLoaded extends VehicleState {
-  final List<dynamic> vehicles;
+  final List<VehicleEntity> vehicles;
   
   const VehicleLoaded({required this.vehicles});
 
