@@ -29,11 +29,11 @@ class AuthRemoteDataSource {
     }
 
     try {
-      // Kolom primary key di public.users adalah 'id', bukan 'auth_id'
+      // Kolom untuk auth Supabase UUID di tabel users adalah 'auth_id'
       final response = await _supabaseClient
           .from('users')
           .select('role')
-          .eq('id', user.id)
+          .eq('auth_id', user.id)
           .single();
 
       final role = response?['role'] as String?;
