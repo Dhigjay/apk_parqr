@@ -29,16 +29,19 @@ class AuthRemoteDataSource {
     }
 
     try {
+      print('DEBUG auth: fetching role for user id=${user.id}');
       final response = await _supabaseClient
           .from('users')
           .select('role')
-          .eq('id', user.id)
+          .eq('auth_id', user.id)
           .single();
 
       final role = response['role'] as String?;
+      print('DEBUG auth: fetched role = $role');
       _cachedRole = (role != null && role.isNotEmpty) ? role : 'visitor';
       return _cachedRole!;
     } catch (e) {
+      print('DEBUG auth: ERROR fetching role for ${user.id} - $e');
       // Kalau row belum ada di public.users (race condition trigger)
       // atau ada error lain, fallback aman ke visitor.
       _cachedRole = 'visitor';
