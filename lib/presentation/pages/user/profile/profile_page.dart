@@ -245,7 +245,9 @@ class _ProfileView extends StatelessWidget {
           _SettingsTile(
             icon: Icons.lock_outline_rounded,
             label: 'Ubah Kata Sandi',
-            onTap: () {},
+            onTap: () {
+              context.push(RouteNames.changePassword);
+            },
           ),
           _SettingsTile(
             icon: Icons.notifications_none_rounded,

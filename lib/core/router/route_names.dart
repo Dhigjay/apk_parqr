@@ -18,6 +18,7 @@ class RouteNames {
   static const String historyDetail = '/history-detail';
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
+  static const String changePassword = '/change-password';
 
   // Operator
   static const String operatorRegister = '/operator-register';

@@ -57,6 +57,29 @@ class AuthRemoteDataSource {
     await _fetchAndCacheRole();
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null || user.email == null) {
+      throw const AuthException('User tidak ditemukan atau belum login');
+    }
+
+    // 1. Verifikasi password lama dengan login ulang
+    await _supabaseClient.auth.signInWithPassword(
+      email: user.email!,
+      password: currentPassword,
+    );
+
+    // 2. Jika berhasil, update password
+    await _supabaseClient.auth.updateUser(
+      UserAttributes(
+        password: newPassword,
+      ),
+    );
+  }
+
   /// Dipanggil dari AuthBloc saat AuthCheckStatusRequested (splash screen)
   /// untuk memastikan cache role terisi meski app baru dibuka ulang.
   Future<String> refreshCurrentRole() => _fetchAndCacheRole();

@@ -35,6 +35,7 @@ import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 import 'package:parqr/presentation/blocs/parking_session/active_session_cubit.dart';
 import 'package:parqr/presentation/blocs/payment/payment_cubit.dart';
 import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart';
+import 'package:parqr/presentation/blocs/profile/change_password_cubit.dart';
 import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
 import 'package:parqr/presentation/blocs/parking_lot/parking_lot_bloc.dart';
 import 'package:parqr/presentation/blocs/history/history_cubit.dart';
@@ -95,6 +96,9 @@ Future<void> initInjection() async {
   );
   sl.registerFactory<ProfileCubit>(
     () => ProfileCubit(userRepository: sl()),
+  );
+  sl.registerFactory<ChangePasswordCubit>(
+    () => ChangePasswordCubit(sl()),
   );
   sl.registerFactory<VehicleCubit>(
     () => VehicleCubit(vehicleRepository: sl()),
