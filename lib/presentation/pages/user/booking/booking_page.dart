@@ -41,117 +41,174 @@ class _BookingViewState extends State<_BookingView> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Data ini idealnya diterima dari parking_detail via route extra.
-  // Untuk sementara diambil dari Supabase langsung.
   String? _parkingLotId;
   String _parkingLotName = 'Memuat...';
   double _tariffPerHour = 5000.0;
 
+  bool _isInit = false;
+
   @override
   void initState() {
     super.initState();
-    _loadParkingLot();
+    print('DEBUG initState called'); 
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInit) {
+      _isInit = true;
+      _loadParkingLot();
+    }
+  }
+
+  /// Ambil internal user id dari public.users (bukan Auth UID).
+  /// Pola yang sama dipakai di vehicle_remote_ds, payment_cubit, dll.
+  Future<String> _getInternalUserId(SupabaseClient supabase) async {
+    final authUser = supabase.auth.currentUser;
+    if (authUser == null) throw Exception('Tidak terautentikasi.');
+
+    final row = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', authUser.id)
+        .single();
+
+    return row['id'] as String;
   }
 
   Future<void> _loadParkingLot() async {
-    // Coba baca dari route extra dulu (dikirim ParkingDetailPage)
-    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
-    if (extra != null && extra['lotId'] != null) {
-      setState(() {
-        _parkingLotId = extra['lotId'] as String;
-        _parkingLotName = extra['lotName'] as String? ?? 'Parkir';
-        _tariffPerHour = _toDouble(extra['pricePerHour']) ?? 5000.0;
-      });
-      return;
+    print('DEBUG _loadParkingLot START');
+
+    // Coba baca dari route extra dulu (dikirim dari ParkingDetailPage)
+    try {
+      final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+      print('DEBUG extra: $extra');
+
+      if (extra != null && extra['lotId'] != null) {
+        print('DEBUG got lotId from extra: ${extra['lotId']}');
+        setState(() {
+          _parkingLotId   = extra['lotId'] as String;
+          _parkingLotName = extra['lotName'] as String? ?? 'Parkir';
+          _tariffPerHour  = _toDouble(extra['pricePerHour']) ?? 5000.0;
+        });
+        print('DEBUG _parkingLotId set to: $_parkingLotId');
+        return;
+      }
+    } catch (e) {
+      print('DEBUG ERROR accessing extra: $e');
     }
 
-    // Fallback: ambil dari Supabase jika tidak ada extra
+    // Fallback: ambil dari Supabase
     try {
+      print('DEBUG querying parking_lots...');
       final supabase = Supabase.instance.client;
+
       var lot = await supabase
           .from('parking_lots')
           .select()
-          .eq('status', 'active')
+          .eq('is_active', true)
           .limit(1)
           .maybeSingle();
 
-      lot ??= await supabase.from('parking_lots').select().limit(1).maybeSingle();
+      print('DEBUG lot (active): $lot');
+
+      lot ??= await supabase
+          .from('parking_lots')
+          .select()
+          .limit(1)
+          .maybeSingle();
+
+      print('DEBUG lot (fallback): $lot');
+      print('DEBUG mounted: $mounted');
 
       if (lot != null && mounted) {
-        final selectedLot = lot;
         setState(() {
-          _parkingLotId = selectedLot['id']?.toString();
-          _parkingLotName = selectedLot['name']?.toString() ?? 'Parkir';
-          _tariffPerHour = _toDouble(
-                selectedLot['hourly_rate'] ?? selectedLot['price_per_hour'],
-              ) ??
-              5000.0;
+          _parkingLotId   = lot!['id']?.toString();
+          _parkingLotName = lot!['name']?.toString() ?? 'Parkir';
+          _tariffPerHour  = _toDouble(
+                lot!['hourly_rate'] ?? lot!['price_per_hour'],
+              ) ?? 5000.0;
+        });
+        print('DEBUG _parkingLotId set to: $_parkingLotId');
+      } else if (mounted) {
+        setState(() {
+          _errorMessage   = 'Tidak ada lahan parkir tersedia. Hubungi admin.';
+          _parkingLotName = 'Tidak tersedia';
         });
       }
-    } catch (_) {
-      // Gunakan fallback jika gagal load
+    } catch (e, stack) {
+      print('DEBUG ERROR in _loadParkingLot: $e');
+      print('DEBUG STACK: $stack');
+      if (mounted) {
+        setState(() {
+          _errorMessage   = 'Gagal memuat data parkir: $e';
+          _parkingLotName = 'Gagal dimuat';
+        });
+      }
     }
   }
 
   Future<void> _confirmBooking() async {
+    print('DEBUG _confirmBooking: _parkingLotId=$_parkingLotId, _selectedVehicleId=$_selectedVehicleId, _selectedSlot=$_selectedSlot');
     if (_selectedVehicleId == null || _selectedSlot == null) {
       setState(() => _errorMessage =
           'Pilih kendaraan dan slot/lantai sebelum konfirmasi.');
       return;
     }
     if (_parkingLotId == null) {
-      setState(
-          () => _errorMessage = 'Data lahan parkir belum tersedia. Coba lagi.');
+      setState(() =>
+          _errorMessage = 'Data lahan parkir belum tersedia. Coba lagi.');
       return;
     }
 
     setState(() {
-      _isLoading = true;
+      _isLoading    = true;
       _errorMessage = null;
     });
 
     try {
-      final supabase = Supabase.instance.client;
-      final currentUser = supabase.auth.currentUser;
-      if (currentUser == null) throw Exception('Tidak terautentikasi.');
+      final supabase   = Supabase.instance.client;
 
-      final sessionId = const Uuid().v4();
-      final now = DateTime.now();
-      final expiresAt = now.add(const Duration(hours: 24));
+      // ✅ Ambil internal user id dari public.users (bukan Auth UID)
+      final internalUserId = await _getInternalUserId(supabase);
+
+      final sessionId  = const Uuid().v4();
+      final now        = DateTime.now();
+      final expiresAt  = now.add(const Duration(hours: 24));
 
       final entryQrPayload = jsonEncode({
         'session_id': sessionId,
-        'type': 'entry',
-        'issued_at': now.toIso8601String(),
+        'type':       'entry',
+        'issued_at':  now.toIso8601String(),
         'expires_at': expiresAt.toIso8601String(),
-        'nonce': const Uuid().v4(),
+        'nonce':      const Uuid().v4(),
       });
 
       await _insertParkingSession(
-        supabase: supabase,
-        sessionId: sessionId,
-        userId: currentUser.id,
-        entryQrPayload: entryQrPayload,
-        expiresAt: expiresAt,
+        supabase:        supabase,
+        sessionId:       sessionId,
+        internalUserId:  internalUserId,  // ✅ pakai internal id
+        entryQrPayload:  entryQrPayload,
       );
 
       if (!mounted) return;
       context.go(
         RouteNames.qrEntry,
         extra: {
-          'sessionId': sessionId,
+          'sessionId':      sessionId,
           'entryQrPayload': entryQrPayload,
           'parkingLotName': _parkingLotName,
-          'vehiclePlate': _selectedVehiclePlate ?? '',
-          'vehicleName': _selectedVehicleName ?? '',
-          'slot': _selectedSlot,
-          'tariffPerHour': _tariffPerHour,
-          'bookedAt': now.toIso8601String(),
+          'vehiclePlate':   _selectedVehiclePlate ?? '',
+          'vehicleName':    _selectedVehicleName ?? '',
+          'slot':           _selectedSlot,
+          'tariffPerHour':  _tariffPerHour,
+          'bookedAt':       now.toIso8601String(),
         },
       );
     } catch (e) {
       setState(() {
-        _isLoading = false;
+        _isLoading    = false;
         _errorMessage = 'Gagal membuat booking: $e';
       });
     }
@@ -166,44 +223,17 @@ class _BookingViewState extends State<_BookingView> {
   Future<void> _insertParkingSession({
     required SupabaseClient supabase,
     required String sessionId,
-    required String userId,
+    required String internalUserId,   // ✅ public.users.id, bukan auth UID
     required String entryQrPayload,
-    required DateTime expiresAt,
   }) async {
-    final sprint0Payload = {
-      'id': sessionId,
-      'user_id': userId,
-      'vehicle_id': _selectedVehicleId,
-      'parking_lot_id': _parkingLotId,
-      'status': 'booked',
-      'entry_qr': entryQrPayload,
-    };
-
-    final initialSchemaPayload = {
-      'id': sessionId,
-      'user_id': userId,
-      'vehicle_id': _selectedVehicleId,
-      'lot_id': _parkingLotId,
-      'status': 'booked',
-      'entry_qr_token': entryQrPayload,
-      'entry_qr_expires_at': expiresAt.toIso8601String(),
-      'amount_due': 0,
-    };
-
-    try {
-      await supabase.from('parking_sessions').insert(sprint0Payload);
-    } on PostgrestException catch (e) {
-      if (!_isSchemaMismatch(e)) rethrow;
-      await supabase.from('parking_sessions').insert(initialSchemaPayload);
-    }
-  }
-
-  bool _isSchemaMismatch(PostgrestException e) {
-    return e.code == '42703' ||
-        e.code == '23502' ||
-        e.code == 'PGRST204' ||
-        e.message.toLowerCase().contains('schema cache') ||
-        e.message.toLowerCase().contains('column');
+    await supabase.from('parking_sessions').insert({
+      'id':             sessionId,
+      'user_id':        internalUserId,       // ✅ FK ke public.users.id
+      'vehicle_id':     _selectedVehicleId,
+      'parking_lot_id': _parkingLotId,        // ✅ nama kolom yang benar
+      'status':         'booked',
+      'entry_qr_code':  entryQrPayload,       // ✅ nama kolom yang benar
+    });
   }
 
   @override
@@ -239,9 +269,9 @@ class _BookingViewState extends State<_BookingView> {
                           statusLabel:
                               _selectedVehicleId == v.id ? 'Dipilih' : null,
                           onTap: () => setState(() {
-                            _selectedVehicleId = v.id;
+                            _selectedVehicleId    = v.id;
                             _selectedVehiclePlate = v.plateNumber;
-                            _selectedVehicleName = '${v.brand} ${v.model}';
+                            _selectedVehicleName  = '${v.brand} ${v.model}';
                           }),
                         ),
                       ))
@@ -351,7 +381,8 @@ class _SummaryRow extends StatelessWidget {
         children: [
           Expanded(child: Text(label, style: AppTextStyles.bodySecondary)),
           Text(value,
-              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+              style:
+                  AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
         ],
       ),
     );
