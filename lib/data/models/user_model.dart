@@ -48,11 +48,7 @@ class UserModel extends UserEntity {
     return {
       'id': id,
       'email': email,
-<<<<<<< HEAD
-      'name': fullName,
-=======
       'name': fullName,                        // ✅ 'name', bukan 'full_name'
->>>>>>> developers
       'phone': phone,
       'address': address,
       'role': role,
@@ -66,11 +62,7 @@ class UserModel extends UserEntity {
     return {
       'id': id,
       'email': email,
-<<<<<<< HEAD
-      'name': fullName,
-=======
       'name': fullName,                        // ✅ 'name', bukan 'full_name'
->>>>>>> developers
       'phone': phone,
       'address': address,
       'role': role,
