@@ -18,11 +18,17 @@ class PaymentPage extends StatelessWidget {
     required this.sessionId,
     required this.startTime,
     required this.tariffPerHour,
+    this.parkingLotName = 'Parkir',
+    this.vehiclePlate = '-',
+    this.vehicleName = '-',
   });
 
   final String sessionId;
   final DateTime startTime;
   final double tariffPerHour;
+  final String parkingLotName;
+  final String vehiclePlate;
+  final String vehicleName;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +38,9 @@ class PaymentPage extends StatelessWidget {
         sessionId: sessionId,
         startTime: startTime,
         tariffPerHour: tariffPerHour,
+        parkingLotName: parkingLotName,
+        vehiclePlate: vehiclePlate,
+        vehicleName: vehicleName,
       ),
     );
   }
@@ -43,11 +52,17 @@ class PaymentView extends StatefulWidget {
     required this.sessionId,
     required this.startTime,
     required this.tariffPerHour,
+    this.parkingLotName = 'Parkir',
+    this.vehiclePlate = '-',
+    this.vehicleName = '-',
   });
 
   final String sessionId;
   final DateTime startTime;
   final double tariffPerHour;
+  final String parkingLotName;
+  final String vehiclePlate;
+  final String vehicleName;
 
   @override
   State<PaymentView> createState() => _PaymentViewState();
@@ -168,7 +183,7 @@ class _PaymentViewState extends State<PaymentView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('ParQr Sudirman Hub', style: AppTextStyles.h3),
+                        Text(widget.parkingLotName, style: AppTextStyles.h3),
                         const SizedBox(height: 14),
                         _DetailRow(
                           label: 'Waktu Masuk',
@@ -179,9 +194,11 @@ class _PaymentViewState extends State<PaymentView> {
                           value:
                               StopwatchManager.formatDuration(_totalDuration),
                         ),
-                        const _DetailRow(
+                        _DetailRow(
                           label: 'Kendaraan',
-                          value: 'B 1234 QR',
+                          value: widget.vehiclePlate.isNotEmpty && widget.vehiclePlate != '-'
+                              ? '${widget.vehiclePlate}${widget.vehicleName.isNotEmpty && widget.vehicleName != '-' ? ' (${widget.vehicleName})' : ''}'
+                              : '-',
                         ),
                       ],
                     ),

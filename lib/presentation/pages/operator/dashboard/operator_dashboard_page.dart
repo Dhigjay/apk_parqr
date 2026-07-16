@@ -62,13 +62,15 @@ class _OperatorDashboardPageState extends State<OperatorDashboardPage> {
             final vehicles = state.activeVehicles;
 
             return RefreshIndicator(
-              onRefresh: () => context.read<OperatorDashboardCubit>().loadDashboard(),
+              onRefresh: () =>
+                  context.read<OperatorDashboardCubit>().loadDashboard(),
               child: ListView(
                 padding: const EdgeInsets.all(24),
                 children: [
                   Text(
                     'Ringkasan Hari Ini',
-                    style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                    style:
+                        AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 14),
                   StatsRowWidget(
@@ -82,10 +84,13 @@ class _OperatorDashboardPageState extends State<OperatorDashboardPage> {
                     children: [
                       Text(
                         'Kendaraan Aktif (${vehicles.length})',
-                        style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                        style: AppTextStyles.h3
+                            .copyWith(fontWeight: FontWeight.bold),
                       ),
                       TextButton.icon(
-                        onPressed: () => context.read<OperatorDashboardCubit>().loadDashboard(),
+                        onPressed: () => context
+                            .read<OperatorDashboardCubit>()
+                            .loadDashboard(),
                         icon: const Icon(Icons.refresh_rounded, size: 16),
                         label: const Text('Segarkan'),
                       ),
@@ -124,6 +129,7 @@ class _OperatorDashboardPageState extends State<OperatorDashboardPage> {
                         checkInTime: vehicle.checkInTime,
                         floor: vehicle.floor,
                         currentTariff: vehicle.currentTariff.toDouble(),
+                        statusLabel: vehicle.statusLabel,
                         onTap: () {
                           // Navigate to Scanned Vehicle Detail Page
                           context.push(
@@ -132,7 +138,8 @@ class _OperatorDashboardPageState extends State<OperatorDashboardPage> {
                               'sessionId': vehicle.sessionId,
                               'vehicleName': vehicle.vehicleName,
                               'licensePlate': vehicle.licensePlate,
-                              'checkInTime': vehicle.checkInTime.toIso8601String(),
+                              'checkInTime':
+                                  vehicle.checkInTime.toIso8601String(),
                               'floor': vehicle.floor,
                               'currentTariff': vehicle.currentTariff.toDouble(),
                             },

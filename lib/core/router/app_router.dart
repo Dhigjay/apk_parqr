@@ -169,10 +169,16 @@ class AppRouter {
               DateTime.now().toIso8601String();
           final startTime = DateTime.tryParse(startTimeStr) ?? DateTime.now();
           final tariffPerHour = extra?['tariffPerHour'] as double? ?? 5000.0;
+          final parkingLotName = extra?['parkingLotName'] as String? ?? 'Parkir';
+          final vehiclePlate = extra?['vehiclePlate'] as String? ?? '-';
+          final vehicleName = extra?['vehicleName'] as String? ?? '-';
           return PaymentPage(
             sessionId: sessionId,
             startTime: startTime,
             tariffPerHour: tariffPerHour,
+            parkingLotName: parkingLotName,
+            vehiclePlate: vehiclePlate,
+            vehicleName: vehicleName,
           );
         },
       ),

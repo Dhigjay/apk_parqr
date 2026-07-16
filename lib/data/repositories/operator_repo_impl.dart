@@ -43,7 +43,8 @@ class OperatorRepoImpl implements IOperatorRepository {
   }
 
   @override
-  Future<OperatorRegistrationEntity?> getOperatorRegistrationStatus(String userId) async {
+  Future<OperatorRegistrationEntity?> getOperatorRegistrationStatus(
+      String userId) async {
     try {
       final response = await _supabaseClient
           .from('operator_registrations')
@@ -61,9 +62,9 @@ class OperatorRepoImpl implements IOperatorRepository {
   @override
   Future<Map<String, dynamic>> getDashboardStats(String operatorId) async {
     try {
-      final response = await _supabaseClient
-          .rpc('get_operator_dashboard_stats', params: {'p_operator_id': operatorId});
-      
+      final response = await _supabaseClient.rpc('get_operator_dashboard_stats',
+          params: {'p_operator_id': operatorId});
+
       return Map<String, dynamic>.from(response as Map);
     } catch (e) {
       throw Exception('Failed to get dashboard stats: $e');
@@ -71,17 +72,18 @@ class OperatorRepoImpl implements IOperatorRepository {
   }
 
   @override
-  Future<ParkingSessionEntity> scanCheckIn(String entryQrToken, String operatorId) async {
+  Future<ParkingSessionEntity> scanCheckIn(
+      String entryQrToken, String operatorId) async {
     try {
       // Find the session by token
       final sessionResponse = await _supabaseClient
           .from('parking_sessions')
-          .select('*, parking_lots!inner(operator_id)')
+          .select('*, parking_lots!inner(owner_id)')
           .eq('entry_qr_token', entryQrToken)
           .eq('status', 'booked')
           .single();
 
-      if (sessionResponse['parking_lots']['operator_id'] != operatorId) {
+      if (sessionResponse['parking_lots']['owner_id'] != operatorId) {
         throw Exception('This QR code is not for your parking lot.');
       }
 
@@ -103,17 +105,18 @@ class OperatorRepoImpl implements IOperatorRepository {
   }
 
   @override
-  Future<ParkingSessionEntity> scanCheckOut(String exitQrToken, String operatorId) async {
+  Future<ParkingSessionEntity> scanCheckOut(
+      String exitQrToken, String operatorId) async {
     try {
-       // Find the session by token
+      // Find the session by token
       final sessionResponse = await _supabaseClient
           .from('parking_sessions')
-          .select('*, parking_lots!inner(operator_id)')
+          .select('*, parking_lots!inner(owner_id)')
           .eq('exit_qr_token', exitQrToken)
           .eq('status', 'paid')
           .single();
 
-      if (sessionResponse['parking_lots']['operator_id'] != operatorId) {
+      if (sessionResponse['parking_lots']['owner_id'] != operatorId) {
         throw Exception('This QR code is not for your parking lot.');
       }
 
@@ -136,12 +139,11 @@ class OperatorRepoImpl implements IOperatorRepository {
 
   @override
   Stream<List<ParkingSessionEntity>> listenToActiveSessions(String lotId) {
-    return _supabaseClient
-        .from('parking_sessions')
-        .stream(primaryKey: ['id'])
-        .map((events) => events
-            .where((json) => json['lot_id'] == lotId && json['status'] == 'active')
-            .map((json) => ParkingSessionModel.fromJson(json))
-            .toList());
+    return _supabaseClient.from('parking_sessions').stream(primaryKey: [
+      'id'
+    ]).map((events) => events
+        .where((json) => json['lot_id'] == lotId && json['status'] == 'active')
+        .map((json) => ParkingSessionModel.fromJson(json))
+        .toList());
   }
 }
