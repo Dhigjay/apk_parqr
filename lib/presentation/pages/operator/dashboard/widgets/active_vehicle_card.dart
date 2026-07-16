@@ -11,6 +11,7 @@ class ActiveVehicleCard extends StatelessWidget {
     required this.checkInTime,
     required this.floor,
     required this.currentTariff,
+    required this.statusLabel,
     this.onTap,
   });
 
@@ -19,6 +20,7 @@ class ActiveVehicleCard extends StatelessWidget {
   final DateTime checkInTime;
   final String floor;
   final double currentTariff;
+  final String statusLabel;
   final VoidCallback? onTap;
 
   @override
@@ -103,6 +105,33 @@ class ActiveVehicleCard extends StatelessWidget {
                       Text(
                         vehicleName,
                         style: AppTextStyles.bodySecondary,
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusLabel == 'Menunggu Pembayaran'
+                              ? AppColors.warning.withValues(alpha: 0.15)
+                              : statusLabel == 'Checkout Diminta'
+                                  ? AppColors.accentPurple
+                                      .withValues(alpha: 0.15)
+                                  : AppColors.success.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          statusLabel,
+                          style: AppTextStyles.caption.copyWith(
+                            color: statusLabel == 'Menunggu Pembayaran'
+                                ? AppColors.warning
+                                : statusLabel == 'Checkout Diminta'
+                                    ? AppColors.accentPurple
+                                    : AppColors.success,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Row(
