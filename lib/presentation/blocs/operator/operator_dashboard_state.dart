@@ -9,6 +9,7 @@ class ActiveVehicle extends Equatable {
   final String floor;
   final double currentTariff;
   final bool awaitingCashVerification;
+  final String statusLabel;
 
   const ActiveVehicle({
     required this.sessionId,
@@ -18,6 +19,7 @@ class ActiveVehicle extends Equatable {
     required this.floor,
     required this.currentTariff,
     this.awaitingCashVerification = false,
+    this.statusLabel = 'Aktif',
   });
 
   @override
@@ -29,6 +31,7 @@ class ActiveVehicle extends Equatable {
         floor,
         currentTariff,
         awaitingCashVerification,
+        statusLabel,
       ];
 }
 

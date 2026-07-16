@@ -76,12 +76,12 @@ class OperatorRepoImpl implements IOperatorRepository {
       // Find the session by token
       final sessionResponse = await _supabaseClient
           .from('parking_sessions')
-          .select('*, parking_lots!inner(operator_id)')
+          .select('*, parking_lots!inner(owner_id)')
           .eq('entry_qr_token', entryQrToken)
           .eq('status', 'booked')
           .single();
 
-      if (sessionResponse['parking_lots']['operator_id'] != operatorId) {
+      if (sessionResponse['parking_lots']['owner_id'] != operatorId) {
         throw Exception('This QR code is not for your parking lot.');
       }
 
@@ -108,12 +108,12 @@ class OperatorRepoImpl implements IOperatorRepository {
        // Find the session by token
       final sessionResponse = await _supabaseClient
           .from('parking_sessions')
-          .select('*, parking_lots!inner(operator_id)')
+          .select('*, parking_lots!inner(owner_id)')
           .eq('exit_qr_token', exitQrToken)
           .eq('status', 'paid')
           .single();
 
-      if (sessionResponse['parking_lots']['operator_id'] != operatorId) {
+      if (sessionResponse['parking_lots']['owner_id'] != operatorId) {
         throw Exception('This QR code is not for your parking lot.');
       }
 
