@@ -22,8 +22,16 @@ class HistoryCubit extends Cubit<HistoryState> {
         emit(const HistoryError('User not logged in'));
         return;
       }
+
+      // Fetch internal user ID from public.users table based on auth.uid()
+      final userRow = await _supabaseClient
+          .from('users')
+          .select('id')
+          .eq('auth_id', user.id)
+          .single();
+      final internalUserId = userRow['id'] as String;
       
-      final history = await _sessionRepository.getUserHistory(user.id);
+      final history = await _sessionRepository.getUserHistory(internalUserId);
       emit(HistoryLoaded(history));
     } catch (e) {
       emit(HistoryError(e.toString()));
