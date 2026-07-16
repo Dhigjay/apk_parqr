@@ -220,6 +220,9 @@ class ActiveParkingView extends StatelessWidget {
                           'sessionId': state.sessionId,
                           'startTime': state.startTime.toIso8601String(),
                           'tariffPerHour': state.tariffPerHour,
+                          'parkingLotName': parkingLotName,
+                          'vehiclePlate': vehiclePlate,
+                          'vehicleName': vehicleName,
                         },
                       );
                     },
