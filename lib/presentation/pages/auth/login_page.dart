@@ -177,22 +177,11 @@ class _AuthBrandHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
+        Image.asset(
+          'assets/images/logo.png',
           width: 72,
           height: 72,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentPurple.withValues(alpha: 0.22),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.local_parking_rounded,
-              size: 42, color: Colors.white),
+          fit: BoxFit.contain,
         ),
         const SizedBox(height: 24),
         Text(AppStrings.appName, style: AppTextStyles.h1),

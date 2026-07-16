@@ -1,5 +1,18 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:parqr/data/models/payment_model.dart';
+import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/data/datasources/remote/notification_remote_ds.dart';
+
+bool shouldReuseExistingPaymentRecord(String? status) {
+  final normalized = (status ?? '').trim().toLowerCase();
+  return <String>[
+    'pending',
+    'waiting_operator',
+    'failed',
+    'expired',
+    'cancelled'
+  ].contains(normalized);
+}
 
 abstract class IPaymentRemoteDataSource {
   Future<PaymentModel> createPayment(
@@ -19,13 +32,38 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
       String sessionId, double amount, String paymentMethod) async {
     final method = paymentMethod.toLowerCase();
 
+    final existingResponse = await supabaseClient
+        .from('payments')
+        .select('id, status')
+        .eq('session_id', sessionId)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+
+    if (existingResponse != null &&
+        shouldReuseExistingPaymentRecord(
+            existingResponse['status']?.toString())) {
+      final response = await supabaseClient
+          .from('payments')
+          .update({
+            'amount': amount,
+            'method': method,
+            'status': 'pending',
+          })
+          .eq('id', existingResponse['id'])
+          .select()
+          .single();
+
+      return PaymentModel.fromJson(response);
+    }
+
     final response = await supabaseClient
         .from('payments')
         .insert({
-          'session_id': sessionId, // ✅ bukan 'parking_session_id'
+          'session_id': sessionId,
           'amount': amount,
-          'method': method, // ✅ lowercase
-          'status': 'pending', // ✅ lowercase
+          'method': method,
+          'status': 'pending',
         })
         .select()
         .single();
@@ -60,7 +98,30 @@ class PaymentRemoteDataSourceImpl implements IPaymentRemoteDataSource {
         .select()
         .single();
 
-    return response['status'] == 'paid';
+    final isPaid = response['status'] == 'paid';
+
+    if (isPaid) {
+      try {
+        final sessionResponse = await supabaseClient
+            .from('payments')
+            .select('session_id')
+            .eq('id', paymentId)
+            .single();
+        final userIdResponse = await supabaseClient
+            .from('parking_sessions')
+            .select('user_id')
+            .eq('id', sessionResponse['session_id'])
+            .single();
+        await sl<NotificationRemoteDataSource>().createNotification(
+          title: 'Pembayaran Berhasil',
+          body: 'Pembayaran cash Anda berhasil diverifikasi.',
+          type: 'payment_success',
+          userId: userIdResponse['user_id'],
+        );
+      } catch (_) {}
+    }
+
+    return isPaid;
   }
 
   @override

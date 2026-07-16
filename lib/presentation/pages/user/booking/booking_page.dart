@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:parqr/core/constants/app_colors.dart';
 import 'package:parqr/core/constants/app_text_style.dart';
 import 'package:parqr/core/router/route_names.dart';
 import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/data/datasources/remote/notification_remote_ds.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_state.dart';
 import 'package:parqr/presentation/widgets/app_button.dart';
@@ -38,19 +39,22 @@ class _BookingViewState extends State<_BookingView> {
   String? _selectedVehiclePlate;
   String? _selectedVehicleName;
   String? _selectedSlot;
+  int? _selectedFloor;
+  String? _selectedSlotCode;
   bool _isLoading = false;
   String? _errorMessage;
 
   String? _parkingLotId;
   String _parkingLotName = 'Memuat...';
   double _tariffPerHour = 5000.0;
+  int _totalFloors = 1;
+  Map<int, List<Map<String, String>>> _slotsPerFloor = {};
 
   bool _isInit = false;
 
   @override
   void initState() {
     super.initState();
-    print('DEBUG initState called'); 
   }
 
   @override
@@ -62,8 +66,6 @@ class _BookingViewState extends State<_BookingView> {
     }
   }
 
-  /// Ambil internal user id dari public.users (bukan Auth UID).
-  /// Pola yang sama dipakai di vehicle_remote_ds, payment_cubit, dll.
   Future<String> _getInternalUserId(SupabaseClient supabase) async {
     final authUser = supabase.auth.currentUser;
     if (authUser == null) throw Exception('Tidak terautentikasi.');
@@ -78,32 +80,26 @@ class _BookingViewState extends State<_BookingView> {
   }
 
   Future<void> _loadParkingLot() async {
-    print('DEBUG _loadParkingLot START');
-
-    // Coba baca dari route extra dulu (dikirim dari ParkingDetailPage)
     try {
       final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
-      print('DEBUG extra: $extra');
-
       if (extra != null && extra['lotId'] != null) {
-        print('DEBUG got lotId from extra: ${extra['lotId']}');
         setState(() {
-          _parkingLotId   = extra['lotId'] as String;
+          _parkingLotId = extra['lotId'] as String;
           _parkingLotName = extra['lotName'] as String? ?? 'Parkir';
-          _tariffPerHour  = _toDouble(extra['pricePerHour']) ?? 5000.0;
+          _tariffPerHour = _toDouble(extra['pricePerHour']) ?? 5000.0;
+          _totalFloors = extra['totalFloors'] as int? ?? 1;
         });
-        print('DEBUG _parkingLotId set to: $_parkingLotId');
+        if (_parkingLotId != null) {
+          await _loadSlotsForLot();
+        }
         return;
       }
     } catch (e) {
-      print('DEBUG ERROR accessing extra: $e');
+      debugPrint('DEBUG ERROR accessing extra: $e');
     }
 
-    // Fallback: ambil dari Supabase
     try {
-      print('DEBUG querying parking_lots...');
       final supabase = Supabase.instance.client;
-
       var lot = await supabase
           .from('parking_lots')
           .select()
@@ -111,104 +107,153 @@ class _BookingViewState extends State<_BookingView> {
           .limit(1)
           .maybeSingle();
 
-      print('DEBUG lot (active): $lot');
-
-      lot ??= await supabase
-          .from('parking_lots')
-          .select()
-          .limit(1)
-          .maybeSingle();
-
-      print('DEBUG lot (fallback): $lot');
-      print('DEBUG mounted: $mounted');
+      lot ??=
+          await supabase.from('parking_lots').select().limit(1).maybeSingle();
 
       if (lot != null && mounted) {
+        final parkingLotData = lot;
         setState(() {
-          _parkingLotId   = lot!['id']?.toString();
-          _parkingLotName = lot!['name']?.toString() ?? 'Parkir';
-          _tariffPerHour  = _toDouble(
-                lot!['hourly_rate'] ?? lot!['price_per_hour'],
-              ) ?? 5000.0;
+          _parkingLotId = parkingLotData['id']?.toString();
+          _parkingLotName = parkingLotData['name']?.toString() ?? 'Parkir';
+          _tariffPerHour = _toDouble(
+                parkingLotData['hourly_rate'] ??
+                    parkingLotData['price_per_hour'],
+              ) ??
+              5000.0;
+          _totalFloors = (parkingLotData['floors'] ??
+                  parkingLotData['total_floors']) as int? ??
+              1;
         });
-        print('DEBUG _parkingLotId set to: $_parkingLotId');
+        await _loadSlotsForLot();
       } else if (mounted) {
         setState(() {
-          _errorMessage   = 'Tidak ada lahan parkir tersedia. Hubungi admin.';
+          _errorMessage = 'Tidak ada lahan parkir tersedia. Hubungi admin.';
           _parkingLotName = 'Tidak tersedia';
         });
       }
-    } catch (e, stack) {
-      print('DEBUG ERROR in _loadParkingLot: $e');
-      print('DEBUG STACK: $stack');
+    } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage   = 'Gagal memuat data parkir: $e';
+          _errorMessage = 'Gagal memuat data parkir: $e';
           _parkingLotName = 'Gagal dimuat';
         });
       }
     }
   }
 
+  Future<void> _loadSlotsForLot() async {
+    if (_parkingLotId == null) return;
+    try {
+      final supabase = Supabase.instance.client;
+      final parkingLotId = _parkingLotId!;
+      final response = await supabase
+          .from('parking_slots')
+          .select('code, floor, floor_number, status')
+          .eq('parking_lot_id', parkingLotId);
+
+      final slots = response as List<dynamic>;
+      final map = <int, List<Map<String, String>>>{};
+
+      for (final slot in slots) {
+        int floor = 1;
+        if (slot['floor_number'] != null) {
+          floor = slot['floor_number'] as int? ?? 1;
+        } else if (slot['floor'] != null) {
+          final floorText = slot['floor'].toString();
+          final match = RegExp(r'(\d+)').firstMatch(floorText);
+          if (match != null) {
+            floor = int.tryParse(match.group(1) ?? '') ?? 1;
+          }
+        }
+
+        final code = slot['code']?.toString() ?? 'Slot';
+        final status = slot['status']?.toString() ?? 'occupied';
+
+        map.putIfAbsent(floor, () => []);
+        map[floor]!.add({'code': code, 'status': status});
+      }
+
+      if (mounted) {
+        setState(() {
+          _slotsPerFloor = map;
+        });
+      }
+    } catch (e) {
+      debugPrint('DEBUG _loadSlotsForLot error: $e');
+    }
+  }
+
   Future<void> _confirmBooking() async {
-    print('DEBUG _confirmBooking: _parkingLotId=$_parkingLotId, _selectedVehicleId=$_selectedVehicleId, _selectedSlot=$_selectedSlot');
-    if (_selectedVehicleId == null || _selectedSlot == null) {
+    if (_selectedVehicleId == null ||
+        (_selectedSlotCode == null && _selectedFloor == null)) {
       setState(() => _errorMessage =
           'Pilih kendaraan dan slot/lantai sebelum konfirmasi.');
       return;
     }
     if (_parkingLotId == null) {
-      setState(() =>
-          _errorMessage = 'Data lahan parkir belum tersedia. Coba lagi.');
+      setState(
+          () => _errorMessage = 'Data lahan parkir belum tersedia. Coba lagi.');
       return;
     }
 
     setState(() {
-      _isLoading    = true;
+      _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final supabase   = Supabase.instance.client;
-
-      // ✅ Ambil internal user id dari public.users (bukan Auth UID)
+      final supabase = Supabase.instance.client;
       final internalUserId = await _getInternalUserId(supabase);
 
-      final sessionId  = const Uuid().v4();
-      final now        = DateTime.now();
-      final expiresAt  = now.add(const Duration(hours: 24));
+      final sessionId = const Uuid().v4();
+      final now = DateTime.now();
+      final expiresAt = now.add(const Duration(hours: 24));
 
       final entryQrPayload = jsonEncode({
         'session_id': sessionId,
-        'type':       'entry',
-        'issued_at':  now.toIso8601String(),
+        'type': 'entry',
+        'issued_at': now.toIso8601String(),
         'expires_at': expiresAt.toIso8601String(),
-        'nonce':      const Uuid().v4(),
+        'nonce': const Uuid().v4(),
       });
 
       await _insertParkingSession(
-        supabase:        supabase,
-        sessionId:       sessionId,
-        internalUserId:  internalUserId,  // ✅ pakai internal id
-        entryQrPayload:  entryQrPayload,
+        supabase: supabase,
+        sessionId: sessionId,
+        internalUserId: internalUserId,
+        entryQrPayload: entryQrPayload,
       );
+
+      try {
+        await sl<NotificationRemoteDataSource>().createNotification(
+          title: 'Booking Berhasil',
+          body:
+              'Booking parkir untuk $_selectedVehiclePlate di $_parkingLotName berhasil. QR masuk telah dibuat.',
+          type: 'booking_success',
+          userId: internalUserId,
+        );
+      } catch (_) {}
 
       if (!mounted) return;
       context.go(
         RouteNames.qrEntry,
         extra: {
-          'sessionId':      sessionId,
+          'sessionId': sessionId,
           'entryQrPayload': entryQrPayload,
           'parkingLotName': _parkingLotName,
-          'vehiclePlate':   _selectedVehiclePlate ?? '',
-          'vehicleName':    _selectedVehicleName ?? '',
-          'slot':           _selectedSlot,
-          'tariffPerHour':  _tariffPerHour,
-          'bookedAt':       now.toIso8601String(),
+          'vehiclePlate': _selectedVehiclePlate ?? '',
+          'vehicleName': _selectedVehicleName ?? '',
+          'slot': _selectedSlotCode ??
+              (_selectedFloor != null
+                  ? 'Lantai ${_selectedFloor!}'
+                  : _selectedSlot),
+          'tariffPerHour': _tariffPerHour,
+          'bookedAt': now.toIso8601String(),
         },
       );
     } catch (e) {
       setState(() {
-        _isLoading    = false;
+        _isLoading = false;
         _errorMessage = 'Gagal membuat booking: $e';
       });
     }
@@ -223,16 +268,16 @@ class _BookingViewState extends State<_BookingView> {
   Future<void> _insertParkingSession({
     required SupabaseClient supabase,
     required String sessionId,
-    required String internalUserId,   // ✅ public.users.id, bukan auth UID
+    required String internalUserId,
     required String entryQrPayload,
   }) async {
     await supabase.from('parking_sessions').insert({
-      'id':             sessionId,
-      'user_id':        internalUserId,       // ✅ FK ke public.users.id
-      'vehicle_id':     _selectedVehicleId,
-      'parking_lot_id': _parkingLotId,        // ✅ nama kolom yang benar
-      'status':         'booked',
-      'entry_qr_code':  entryQrPayload,       // ✅ nama kolom yang benar
+      'id': sessionId,
+      'user_id': internalUserId,
+      'vehicle_id': _selectedVehicleId,
+      'parking_lot_id': _parkingLotId,
+      'status': 'booked',
+      'entry_qr_code': entryQrPayload,
     });
   }
 
@@ -269,9 +314,9 @@ class _BookingViewState extends State<_BookingView> {
                           statusLabel:
                               _selectedVehicleId == v.id ? 'Dipilih' : null,
                           onTap: () => setState(() {
-                            _selectedVehicleId    = v.id;
+                            _selectedVehicleId = v.id;
                             _selectedVehiclePlate = v.plateNumber;
-                            _selectedVehicleName  = '${v.brand} ${v.model}';
+                            _selectedVehicleName = '${v.brand} ${v.model}';
                           }),
                         ),
                       ))
@@ -295,28 +340,88 @@ class _BookingViewState extends State<_BookingView> {
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
-                  children: ['L1-A08', 'L2-B12', 'L2-B18', 'B1-C04']
-                      .map((slot) => ChoiceChip(
-                            label: Text(slot),
-                            selected: _selectedSlot == slot,
-                            onSelected: (_) =>
-                                setState(() => _selectedSlot = slot),
-                            selectedColor:
-                                AppColors.accentBlue.withValues(alpha: 0.18),
-                            backgroundColor: AppColors.bgCard,
-                            side: BorderSide(
-                              color: _selectedSlot == slot
-                                  ? AppColors.accentBlue
-                                  : AppColors.border,
-                            ),
-                            labelStyle: AppTextStyles.body.copyWith(
-                              color: _selectedSlot == slot
-                                  ? AppColors.accentBlue
-                                  : AppColors.textPrimary,
-                            ),
-                          ))
-                      .toList(),
+                  children:
+                      List.generate(_totalFloors, (i) => i + 1).map((floorNum) {
+                    final label = 'Lantai $floorNum';
+                    final selected =
+                        _selectedFloor == floorNum && _selectedSlotCode == null;
+                    return ChoiceChip(
+                      label: Text(label),
+                      selected: selected ||
+                          (_selectedFloor == floorNum &&
+                              _selectedSlotCode != null),
+                      onSelected: (_) => setState(() {
+                        _selectedFloor = floorNum;
+                        _selectedSlotCode = null;
+                        _selectedSlot = null;
+                      }),
+                      selectedColor:
+                          AppColors.accentBlue.withValues(alpha: 0.18),
+                      backgroundColor: AppColors.bgCard,
+                      side: BorderSide(
+                        color:
+                            selected ? AppColors.accentBlue : AppColors.border,
+                      ),
+                      labelStyle: AppTextStyles.body.copyWith(
+                        color: selected
+                            ? AppColors.accentBlue
+                            : AppColors.textPrimary,
+                      ),
+                    );
+                  }).toList(),
                 ),
+                const SizedBox(height: 12),
+                if (_selectedFloor != null) ...[
+                  Text('Pilih Slot - Lantai $_selectedFloor',
+                      style: AppTextStyles.h3),
+                  const SizedBox(height: 8),
+                  Builder(builder: (ctx) {
+                    final slots = _slotsPerFloor[_selectedFloor!] ?? [];
+                    if (slots.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Text(
+                          'Tidak ada data slot untuk lantai ini',
+                          style: AppTextStyles.bodySecondary,
+                        ),
+                      );
+                    }
+                    return Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: slots.map((s) {
+                        final code = s['code'] ?? 'Slot';
+                        final status = s['status'] ?? 'occupied';
+                        final isAvailable = status == 'available';
+                        final isSelected = _selectedSlotCode == code;
+                        return ChoiceChip(
+                          label: Text(code),
+                          selected: isSelected,
+                          onSelected: isAvailable
+                              ? (_) => setState(() {
+                                    _selectedSlotCode = code;
+                                    _selectedSlot = code;
+                                  })
+                              : null,
+                          selectedColor:
+                              AppColors.accentBlue.withValues(alpha: 0.18),
+                          backgroundColor: AppColors.bgCard,
+                          side: BorderSide(
+                            color: isSelected
+                                ? AppColors.accentBlue
+                                : AppColors.border,
+                          ),
+                          labelStyle: AppTextStyles.body.copyWith(
+                            color: isSelected
+                                ? AppColors.accentBlue
+                                : AppColors.textPrimary,
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  }),
+                  const SizedBox(height: 12),
+                ],
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -340,7 +445,10 @@ class _BookingViewState extends State<_BookingView> {
                       ),
                       _SummaryRow(
                         label: 'Slot',
-                        value: _selectedSlot ?? 'Belum dipilih',
+                        value: _selectedSlotCode ??
+                            (_selectedFloor != null
+                                ? 'Lantai $_selectedFloor'
+                                : 'Belum dipilih'),
                       ),
                     ],
                   ),
@@ -381,8 +489,7 @@ class _SummaryRow extends StatelessWidget {
         children: [
           Expanded(child: Text(label, style: AppTextStyles.bodySecondary)),
           Text(value,
-              style:
-                  AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
         ],
       ),
     );

@@ -53,13 +53,13 @@ class _SplashPageState extends State<SplashPage> {
       child: Scaffold(
         body: Container(
           decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
-          child: const Center(
+          child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.local_parking_rounded, size: 80, color: Colors.white),
-                SizedBox(height: 16),
-                Text(
+                Image.asset('assets/images/logo.png', width: 120, height: 120),
+                const SizedBox(height: 16),
+                const Text(
                   AppStrings.appName,
                   style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
                 ),

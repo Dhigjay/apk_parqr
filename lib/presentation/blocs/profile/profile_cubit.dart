@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parqr/domain/repositories/i_user_repository.dart';
 import 'package:parqr/presentation/blocs/profile/profile_state.dart';
+import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/data/datasources/remote/notification_remote_ds.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
   final IUserRepository _userRepository;
@@ -66,6 +68,15 @@ class ProfileCubit extends Cubit<ProfileState> {
         phone: user.phone ?? '',
         email: user.email,
       ));
+
+      try {
+        await sl<NotificationRemoteDataSource>().createNotification(
+          title: 'Profil Diperbarui',
+          body: 'Data profil Anda telah berhasil diperbarui.',
+          type: 'profile_updated',
+          userId: user.id,
+        );
+      } catch (_) {}
     } catch (e) {
       emit(ProfileError(e.toString()));
     }

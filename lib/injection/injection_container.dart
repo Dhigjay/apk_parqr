@@ -35,6 +35,12 @@ import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 import 'package:parqr/presentation/blocs/parking_session/active_session_cubit.dart';
 import 'package:parqr/presentation/blocs/payment/payment_cubit.dart';
 import 'package:parqr/presentation/blocs/operator/operator_dashboard_cubit.dart';
+import 'package:parqr/presentation/blocs/profile/change_password_cubit.dart';
+import 'package:parqr/data/datasources/remote/notification_remote_ds.dart';
+import 'package:parqr/domain/repositories/i_notification_repository.dart';
+import 'package:parqr/data/repositories/notification_repo_impl.dart';
+import 'package:parqr/presentation/blocs/notification/notification_cubit.dart';
+import 'package:parqr/presentation/blocs/notification/notification_settings_cubit.dart';
 import 'package:parqr/presentation/blocs/admin/admin_approval_cubit.dart';
 import 'package:parqr/presentation/blocs/parking_lot/parking_lot_bloc.dart';
 import 'package:parqr/presentation/blocs/history/history_cubit.dart';
@@ -62,6 +68,9 @@ Future<void> initInjection() async {
   sl.registerLazySingleton<IPaymentRemoteDataSource>(
     () => PaymentRemoteDataSourceImpl(supabaseClient: sl()),
   );
+  sl.registerLazySingleton<NotificationRemoteDataSource>(
+    () => NotificationRemoteDataSource(supabaseClient: sl()),
+  );
 
   // --- Repositories ---
   sl.registerLazySingleton<IAuthRepository>(
@@ -88,6 +97,9 @@ Future<void> initInjection() async {
   sl.registerLazySingleton<IPaymentRepository>(
     () => PaymentRepositoryImpl(remoteDataSource: sl()),
   );
+  sl.registerLazySingleton<INotificationRepository>(
+    () => NotificationRepoImpl(sl()),
+  );
 
   // --- Blocs / Cubits ---
   sl.registerFactory<AuthBloc>(
@@ -95,6 +107,15 @@ Future<void> initInjection() async {
   );
   sl.registerFactory<ProfileCubit>(
     () => ProfileCubit(userRepository: sl()),
+  );
+  sl.registerFactory<ChangePasswordCubit>(
+    () => ChangePasswordCubit(sl()),
+  );
+  sl.registerFactory<NotificationCubit>(
+    () => NotificationCubit(sl()),
+  );
+  sl.registerFactory<NotificationSettingsCubit>(
+    () => NotificationSettingsCubit(sl()),
   );
   sl.registerFactory<VehicleCubit>(
     () => VehicleCubit(vehicleRepository: sl()),

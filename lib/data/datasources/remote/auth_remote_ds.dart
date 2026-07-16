@@ -1,4 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:parqr/injection/injection_container.dart';
+import 'package:parqr/data/datasources/remote/notification_remote_ds.dart';
 
 class AuthRemoteDataSource {
   AuthRemoteDataSource({required SupabaseClient supabaseClient})
@@ -55,6 +57,39 @@ class AuthRemoteDataSource {
     );
     // Penting: ambil role dari DB segera setelah login sukses
     await _fetchAndCacheRole();
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null || user.email == null) {
+      throw const AuthException('User tidak ditemukan atau belum login');
+    }
+
+    // 1. Verifikasi password lama dengan login ulang
+    await _supabaseClient.auth.signInWithPassword(
+      email: user.email!,
+      password: currentPassword,
+    );
+
+    // 2. Jika berhasil, update password
+    await _supabaseClient.auth.updateUser(
+      UserAttributes(
+        password: newPassword,
+      ),
+    );
+
+    try {
+      final internalUser = await _supabaseClient.from('users').select('id').eq('auth_id', user.id).single();
+      await sl<NotificationRemoteDataSource>().createNotification(
+        title: 'Password Diubah',
+        body: 'Password akun Anda berhasil diperbarui.',
+        type: 'password_changed',
+        userId: internalUser['id'],
+      );
+    } catch (_) {}
   }
 
   /// Dipanggil dari AuthBloc saat AuthCheckStatusRequested (splash screen)

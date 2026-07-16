@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:parqr/data/datasources/remote/payment_remote_ds.dart';
 import 'package:parqr/presentation/blocs/payment/payment_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,12 +21,15 @@ class PaymentCubit extends Cubit<PaymentState> {
       r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
     );
 
-    if (uuidRegex.hasMatch(sessionId)) return sessionId;
+    if (uuidRegex.hasMatch(sessionId)) {
+      return sessionId;
+    }
 
     // Session dummy — buat session nyata
     final currentUser = supabase.auth.currentUser;
-    if (currentUser == null)
+    if (currentUser == null) {
       throw Exception('Autentikasi gagal. Harap login kembali.');
+    }
 
     // public.users.id == auth.uid() langsung (bukan auth_id terpisah)
     final userCheck = await supabase
@@ -62,11 +67,8 @@ class PaymentCubit extends Cubit<PaymentState> {
         .limit(1)
         .maybeSingle();
 
-    lotQuery ??= await supabase
-        .from('parking_lots')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
+    lotQuery ??=
+        await supabase.from('parking_lots').select('id').limit(1).maybeSingle();
 
     if (lotQuery == null) {
       throw Exception(
@@ -98,12 +100,39 @@ class PaymentCubit extends Cubit<PaymentState> {
   // ----------------------------------------------------------------
   // Helper: insert ke tabel payments, return paymentId
   // ----------------------------------------------------------------
+  // ----------------------------------------------------------------
+  // Helper: insert ke tabel payments, return paymentId
+  // ----------------------------------------------------------------
   Future<String> _createPaymentRecord(
     SupabaseClient supabase,
     String sessionId,
     double amount,
     String method,
   ) async {
+    final existingResponse = await supabase
+        .from('payments')
+        .select('id, status')
+        .eq('session_id', sessionId)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+
+    if (existingResponse != null &&
+        shouldReuseExistingPaymentRecord(
+            existingResponse['status']?.toString())) {
+      final response = await supabase
+          .from('payments')
+          .update({
+            'amount': amount,
+            'method': method.toLowerCase(),
+            'status': 'pending',
+          })
+          .eq('id', existingResponse['id'])
+          .select('id')
+          .single();
+      return response['id'] as String;
+    }
+
     final response = await supabase
         .from('payments')
         .insert({
@@ -117,6 +146,9 @@ class PaymentCubit extends Cubit<PaymentState> {
     return response['id'] as String;
   }
 
+  // ----------------------------------------------------------------
+  // Realtime listener untuk status pembayaran
+  // ----------------------------------------------------------------
   // ----------------------------------------------------------------
   // Realtime listener untuk status pembayaran
   // ----------------------------------------------------------------
@@ -136,6 +168,16 @@ class PaymentCubit extends Cubit<PaymentState> {
             ),
             callback: (payload) {
               final status = payload.newRecord['status'] as String?;
+              if (status == 'paid') {
+                emit(PaymentSuccess(
+                  exitQrPayload: '{"type":"EXIT","payment_id":"$paymentId"}',
+                ));
+              } else if (status == 'failed' ||
+                  status == 'expired' ||
+                  status == 'cancelled') {
+                emit(const PaymentFailed(
+                    'Pembayaran dibatalkan atau kedaluwarsa.'));
+              }
               _handlePaymentStatus(status, paymentId);
             },
           )
@@ -155,7 +197,7 @@ class PaymentCubit extends Cubit<PaymentState> {
           }
         } catch (e) {
           // Abaikan error polling agar tidak mengganggu UI
-          print('DEBUG Polling error: $e');
+          debugPrint('DEBUG Polling error: $e');
         }
       });
     } catch (e) {

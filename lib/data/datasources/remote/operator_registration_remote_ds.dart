@@ -28,8 +28,15 @@ class OperatorRegistrationRemoteDataSource {
     }
 
     try {
-      // public.users.id == auth.uid() langsung — tidak ada kolom auth_id terpisah
-      final applicantUserId = currentUser.id;
+      // applicant_user_id mengacu ke public.users.id, BUKAN auth.users.id langsung,
+      // jadi kita cari dulu id internal dari auth_id.
+      final userRow = await _supabaseClient
+          .from('users')
+          .select('id')
+          .eq('auth_id', currentUser.id)
+          .single();
+
+      final applicantUserId = userRow['id'] as String;
 
       await _supabaseClient.from('operator_registrations').insert({
         'applicant_user_id': applicantUserId,

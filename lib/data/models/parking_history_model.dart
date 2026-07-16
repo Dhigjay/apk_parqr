@@ -16,9 +16,15 @@ class ParkingHistoryModel extends ParkingHistoryEntity {
   });
 
   factory ParkingHistoryModel.fromJson(Map<String, dynamic> json) {
-    // Supabase joined tables are returned as nested maps
-    final lot = json['parking_lots'] as Map<String, dynamic>? ?? {};
-    final vehicle = json['vehicles'] as Map<String, dynamic>? ?? {};
+    var lotRaw = json['parking_lots'];
+    Map<String, dynamic> lot = {};
+    if (lotRaw is List && lotRaw.isNotEmpty) lot = lotRaw.first as Map<String, dynamic>;
+    else if (lotRaw is Map<String, dynamic>) lot = lotRaw;
+
+    var vehicleRaw = json['vehicles'];
+    Map<String, dynamic> vehicle = {};
+    if (vehicleRaw is List && vehicleRaw.isNotEmpty) vehicle = vehicleRaw.first as Map<String, dynamic>;
+    else if (vehicleRaw is Map<String, dynamic>) vehicle = vehicleRaw;
     
     // For payments, it might be a list of payments if multiple exist, but usually it's one.
     // We'll safely parse the amount from the first payment or direct object if one-to-one
@@ -30,8 +36,10 @@ class ParkingHistoryModel extends ParkingHistoryEntity {
       fare = (payments['amount'] as num?)?.toDouble();
     }
 
-    final entry = DateTime.parse(json['entry_time'] as String);
-    final exit = json['exit_time'] != null ? DateTime.parse(json['exit_time'] as String) : null;
+    final entryStr = json['entry_time'] ?? json['entered_at'] ?? json['created_at'];
+    final entry = entryStr != null ? DateTime.parse(entryStr as String) : DateTime.now();
+    final exitStr = json['exit_time'] ?? json['exited_at'];
+    final exit = exitStr != null ? DateTime.parse(exitStr as String) : null;
     final statusStr = json['status'] as String? ?? 'active';
 
     return ParkingHistoryModel(

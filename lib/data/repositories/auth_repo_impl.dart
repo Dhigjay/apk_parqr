@@ -35,4 +35,12 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<void> logout() {
     return _remoteDataSource.logout();
   }
+
+  @override
+  Future<void> changePassword(String currentPassword, String newPassword) {
+    return _remoteDataSource.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+  }
 }

@@ -98,10 +98,19 @@ class ParkingSessionRepoImpl implements IParkingSessionRepository {
           .order('created_at', ascending: false);
 
       final List<dynamic> data = response as List<dynamic>;
+      print('DEBUG getUserHistory data: $data');
       return data
-          .map((json) => ParkingHistoryModel.fromJson(json as Map<String, dynamic>))
+          .map((json) {
+            try {
+              return ParkingHistoryModel.fromJson(json as Map<String, dynamic>);
+            } catch (e, stack) {
+              print('DEBUG error parsing history item: $e\n$stack');
+              rethrow;
+            }
+          })
           .toList();
-    } catch (e) {
+    } catch (e, stack) {
+      print('DEBUG getUserHistory error: $e\n$stack');
       throw Exception('Failed to fetch user parking history: $e');
     }
   }

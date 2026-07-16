@@ -8,6 +8,7 @@ import 'package:parqr/domain/entities/vehicle_entity.dart';
 import 'package:parqr/presentation/blocs/profile/profile_cubit.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_cubit.dart';
 import 'package:parqr/presentation/blocs/vehicle/vehicle_state.dart';
+import 'package:parqr/presentation/blocs/notification/notification_cubit.dart';
 import 'package:parqr/presentation/widgets/app_bottom_nav.dart';
 
 import 'package:parqr/injection/injection_container.dart';
@@ -22,6 +23,7 @@ class ProfilePage extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => sl<ProfileCubit>()..fetchProfile()),
         BlocProvider(create: (_) => sl<VehicleCubit>()..fetchVehicles()),
+        BlocProvider(create: (_) => sl<NotificationCubit>()..fetchNotifications()),
       ],
       child: const _ProfileView(),
     );
@@ -245,12 +247,50 @@ class _ProfileView extends StatelessWidget {
           _SettingsTile(
             icon: Icons.lock_outline_rounded,
             label: 'Ubah Kata Sandi',
-            onTap: () {},
+            onTap: () {
+              context.push(RouteNames.changePassword);
+            },
+          ),
+
+          BlocBuilder<NotificationCubit, NotificationState>(
+            builder: (context, state) {
+              int unreadCount = 0;
+              if (state is NotificationLoaded) unreadCount = state.unreadCount;
+              
+              return _SettingsTile(
+                icon: Icons.notifications_none_rounded,
+                label: 'Notifikasi',
+                trailing: unreadCount > 0
+                    ? Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          unreadCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    : null,
+                onTap: () {
+                  context.push(RouteNames.notifications).then((_) {
+                    context.read<NotificationCubit>().refreshUnreadCount();
+                  });
+                },
+              );
+            },
           ),
           _SettingsTile(
-            icon: Icons.notifications_none_rounded,
-            label: 'Notifikasi',
-            onTap: () {},
+            icon: Icons.settings_outlined,
+            label: 'Pengaturan Notifikasi',
+            onTap: () {
+              context.push(RouteNames.notificationSettings);
+            },
           ),
           const SizedBox(height: 28),
 
@@ -265,7 +305,9 @@ class _ProfileView extends StatelessWidget {
           _SettingsTile(
             icon: Icons.policy_outlined,
             label: 'Kebijakan Privasi',
-            onTap: () {},
+            onTap: () {
+              context.push(RouteNames.privacyPolicy);
+            },
           ),
           _SettingsTile(
             icon: Icons.info_outline_rounded,
